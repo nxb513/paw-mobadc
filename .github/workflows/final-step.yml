@@ -1,0 +1,84 @@
+name: final run step (reusable)
+
+# One step part of rerun/rerun_steps.m (id or id#k/n) on a GitHub-hosted runner with MATLAB R2022b + Simulink.
+# Called by final.yml. Wind segments: artifact "wind" of the same run (job prep). Result files of earlier waves:
+# the "results-*" artifacts (rerun_run merges their parts first). The part's results/ and log are uploaded even
+# when it fails or hits the time limit; re-running the failed job resumes where it stopped (runners save per
+# segment). MATLAB on GitHub-hosted runners: free for public repositories.
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        required: true
+        type: string
+
+jobs:
+  run:
+    name: ${{ inputs.id }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: artifact name
+        id: nm
+        run: echo "safe=$(echo '${{ inputs.id }}' | tr '#/' '__')" >> "$GITHUB_OUTPUT"
+
+      - uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2022b
+          products: Simulink
+          cache: true
+
+      - name: wind segments
+        uses: actions/download-artifact@v4
+        with:
+          name: wind
+          path: .
+
+      - name: results of earlier waves
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: results-*
+          path: results
+          merge-multiple: true
+
+      - name: snapshot of the downloaded results
+        run: |
+          mkdir -p results
+          find results -type f -print0 | xargs -0 -r sha1sum | sort > "$RUNNER_TEMP/before.sha"
+
+      - name: run ${{ inputs.id }}
+        uses: matlab-actions/run-command@v2
+        timeout-minutes: 345
+        with:
+          command: addpath('rerun'); rerun_run('${{ inputs.id }}')
+
+      - name: keep only the files this job wrote
+        if: always()
+        run: |
+          find results -type f -print0 | xargs -0 -r sha1sum | sort > "$RUNNER_TEMP/after.sha"
+          comm -13 "$RUNNER_TEMP/before.sha" "$RUNNER_TEMP/after.sha" | awk '{print $2}' | while read -r f; do
+            mkdir -p "out/$(dirname "$f")" && cp "$f" "out/$f"; done
+          mkdir -p out/results
+          echo "files written by this job:"; (cd out && find results -type f | sort)
+
+      - name: upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ steps.nm.outputs.safe }}
+          path: out/results/
+          overwrite: true
+          if-no-files-found: ignore
+
+      - name: upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-${{ steps.nm.outputs.safe }}
+          path: logs/
+          overwrite: true
+          if-no-files-found: ignore

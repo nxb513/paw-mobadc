@@ -33,3 +33,24 @@ $PY python/export_wind_sim.py --real-dir m5/explore  --real-split dev --real-max
 $PY python/export_wind_sim.py --real-dir m5/dev      --real-split dev --real-max 10000 --ckpt $CK --out wind_real_t150.mat
 $PY python/export_wind_sim.py --real-dir m5/confirm2 --real-split dev --real-max 10000 --ckpt $CK --out wind_conf2/wind_conf2_t150.mat
 echo "== done: $(ls wind_real_t150_i*.mat | wc -l) real, $(ls wind_expl_t150_i*.mat | wc -l) exploration, $(ls wind_conf2/wind_conf2_t150_i*.mat | wc -l) CONFIRM2 segments =="
+
+# ---- subsets re-exported with another wind MEASUREMENT (w_plant identical: --check-against .) ----
+#   wind_sn010/ : S40 + S40hover (rerun/subset_sn.txt, 51 files), sensor noise 0.1 m/s (REGISTER_P2 sec 43.3 seeds)
+#   wind_spk/   : circle_main + N6_hover (rerun/subset_spk.txt, 162 files), causal spike filter 5 m/s (REGISTER_FINAL E2)
+subset_export() {   # list outdir extra-args... (seed offsets: real 20240601, exploration 20740601)
+  local list=$1 out=$2; shift 2
+  mkdir -p "$out"
+  for src in real expl; do
+    idx=$(tr -d '\r' < "$list" | grep "^wind_${src}_t150_i" | sed -E 's/.*_i([0-9]+)\.mat/\1/' \
+          | while read -r x; do echo $((10#$x)); done | paste -sd, -)
+    [ -z "$idx" ] && continue
+    dir=m5/dev; seed=20240601
+    [ "$src" = expl ] && { dir=m5/explore; seed=20740601; }
+    $PY python/export_wind_sim.py --real-dir "$dir" --real-split dev --ckpt $CK --only-index "$idx" \
+        --check-against . --sensor-seed $seed --out "$out/wind_${src}_t150.mat" "$@"
+  done
+  echo "  $out: $(ls "$out"/wind_*_t150_i*.mat | wc -l) files"
+}
+echo "== subsets =="
+subset_export rerun/subset_sn.txt  wind_sn010 --sensor-noise 0.1
+subset_export rerun/subset_spk.txt wind_spk   --meas-spike-hold 5.0

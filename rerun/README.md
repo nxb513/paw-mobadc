@@ -1,23 +1,27 @@
-# rerun/ - re-running the paper's results on another machine
+# rerun/ - the final run of the paper
 
-Added 2026-10-05. The original result files (`results/`, 39 files, `data/SHA256SUMS.txt`) and wind segments live on
-the author's machine only. This folder rebuilds them from public data and re-runs every result file with the
-registered parameters. **Agreement is expected to be close, not bit for bit** (other machine, other MATLAB release
-when run locally, wind segments re-exported). Nothing here changes a registered claim or the CONFIRM2 record.
+Added 2026-10-05. **The paper's numbers come from one new run** (`docs/REGISTER_FINAL.md`), not from the stored
+results of `docs/REGISTER_P2.md`. Wind data are rebuilt from public NREL M5 files, horizons re-measured, every step run
+on GitHub-hosted runners (MATLAB R2022b + Simulink) in parallel.
 
 | file | what |
 |---|---|
 | `m5_dev_urls.txt` | the 260 NREL M5 files (65 dev-split days of 2024, hours 02/08/14/20), from `python/plan_real_download.py --split dev --all-days` |
-| `m5_explore_files.txt` | the 128 files of the 32 exploration days (REGISTER_P2 sec 5.4: `--exclude-used` before D23 added the characterisation days) |
-| `m5_confirm2_files.txt` | the 56 files of the 14 CONFIRM2 days (16 manifest days minus 2024-01-18, 2024-04-15; D23) |
-| `prep_data.sh` | download + export (`wind_real_t150_i*`, `wind_expl_t150_i*`, `wind_conf2/`) |
-| `rerun_steps.m` | every runner call behind the 39 files, with the steps each one reuses |
-| `rerun_run.m` | run some steps in one MATLAB process: `addpath('rerun'); rerun_run({'D2', 'six-circle-h3'})` |
+| `m5_explore_files.txt` | the 128 files of the 32 exploration days (REGISTER_P2 sec 5.4) |
+| `m5_confirm2_files.txt` | the 56 files of the 14 CONFIRM2 days (exported for completeness; not used by the final run) |
+| `subset_sn.txt`, `subset_spk.txt` | segments re-exported with sensor noise 0.1 m/s (E1) / with the spike filter (E2) |
+| `prep_data.sh` | download + export of every wind file the steps read |
+| `rerun_steps.m` | every step: id, wave A-F, number of parallel parts, call |
+| `rerun_run.m` | run steps in one MATLAB process: `addpath('rerun'); rerun_run({'D2#1/4', 'N0P-circle'})` |
+| `final_tau.m` | the horizons, read from the saved sweeps by the rule of REGISTER_FINAL sec 3 |
+| `rerun_merge.m` | merge the parallel parts (`<name>__s<k>of<n>N<N>.mat`) and the N0P parts |
+| `rerun_summary.m` | list every result file and re-print each step's report (no simulation) |
+| `make_workflow.py` | writes `.github/workflows/final.yml` from `rerun_steps.m` (`--check` in CI) |
 
-Checks after the export (MATLAB): `p2_segset('all', 'CapPerDay', 4)` - every set must print its registered SHA-256
-(REGISTER_P2 sec 6.3.1) and the exploration fingerprint `73749ad2...` (sec 6.1); the 30 field_grid segments are
-asserted against `field_grid_K050.mat` T.U to 1e-9. If they differ, the runners refuse the set (SHA assert).
+Check of the export (2026-10-05, local, before any run): the fresh export reproduces the registered development data
+exactly (field_grid U, exploration fingerprint `73749ad2...`, every set SHA-256, fixed-5). Local R2024a also reproduced
+D2 row 1 (`wind_real_t150_i0000`) to the printed digit: 0.0414 / 0.0334 / 0.0140 / 0.0136.
 
-GitHub Actions: `.github/workflows/rerun.yml` (manual start) runs the steps in four waves along the reuse chain;
-each step is one job (6 h limit; a job that stops uploads its partial results, and re-running it resumes).
-MATLAB on GitHub-hosted runners is free for public repositories; a private one needs the secret `MLM_LICENSE_TOKEN`.
+Start: GitHub -> Actions -> "final run (MATLAB, parallel)" -> Run workflow (`gh workflow run final.yml`). Waves A..F
+need each other (`if: always()`); a part that fails or hits the 6-h limit uploads what it ran; "Re-run failed jobs"
+resumes it. Results: artifact `final-results` of the report job. `rerun.yml` was the pilot (not used for numbers).

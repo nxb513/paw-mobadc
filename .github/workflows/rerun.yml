@@ -1,5 +1,9 @@
-name: rerun (MATLAB, parallel)
+name: rerun PILOT (superseded by final.yml)
 
+# PILOT ONLY (2026-10-05, run 37340688346): checks MATLAB R2022b / Simulink on the Linux runners and the time per
+# segment. Superseded by final.yml (docs/REGISTER_FINAL.md); its step ids are those of rerun_steps.m at 504c9fd,
+# so starting it again on a later commit fails. No number of the paper comes from it.
+#
 # Re-runs every result file of the paper (data/SHA256SUMS.txt) on GitHub-hosted runners, in parallel where the
 # reuse chain allows (rerun/rerun_steps.m lists each step and the steps it reuses). Manual start only:
 #   GitHub -> Actions -> "rerun (MATLAB, parallel)" -> Run workflow      or      gh workflow run rerun.yml

@@ -1,69 +1,87 @@
 function T = rerun_steps()
-%RERUN_STEPS  Every runner call of the paper's 39 result files (data/SHA256SUMS.txt), with the
-%  registered tau / SHA values of the nights that produced them (experiments/gd*.m, REGISTER_P2).
-%  Re-run on another machine / MATLAB release: the numbers are expected to agree closely, not bit for bit.
+%RERUN_STEPS  Every step of the final run (docs/REGISTER_FINAL.md), in waves along the reuse chain.
 %
-%  T(k) = struct: id, call (function handle), needs (ids whose result files the call reuses).
-CM   = 'a227e9d87a2ac436';                                         % circle_main, cap 4
-S40  = '1db1de02532a3896';
+%  T(k) = struct: id, wave ('A'..'F'), shards (parallel parts, core/shard_files.m), call (@(sh) ..., sh = [k n]
+%  or []). Horizons are read when the step runs from the sweeps of earlier waves (rerun/final_tau.m, rule fixed
+%  in REGISTER_FINAL sec 3); segment sets are the registered ones (their SHA-256, checked by every runner, were
+%  reproduced by the fresh export on 2026-10-05).
+%    A  horizon sweeps on the fixed-5: N0P (7 conditions), N0V (3), N0H3
+%    B  sweeps that need a payload tau (N0W, N0W-6, N0M square); D2; Guo; the T3b and circle-S40 tables
+%    C  steps reusing D2 / reading tau_w, tau_6, tau_m; N6; the square table; the wind groups; E1, E2
+%    D  steps reusing N6 / N4b-P2-base / static-circle
+%    E  steps reusing H3-hover / F-hover
+%    F  steps reusing iii-hover
+CM   = 'a227e9d87a2ac436';  S40 = '1db1de02532a3896';  S40H = '53facf03712c81ee';
 N6H  = '43226c02f081460607d5f98676c57cfa1207e98498ad2919c642af5d717144c7';
-S40H = '53facf03712c81ee';
-tab  = @(varargin) run_p2_gd6('TAB', 'Only', {'circle'}, 'TauPrev', 0.180, 'Sha', S40, varargin{:});
+t = @final_tau;
+tab = @(sh, varargin) run_p2_gd6('TAB', 'Only', {'circle'}, 'TauPrev', t('V:circle'), 'Sha', S40, 'Paw', true, ...
+    'Shard', sh, varargin{:});
+g7c = @(grp, sh, varargin) run_p2_gd7(grp, 'TauW', t('w6'), 'TauPred', t('circle'), 'Shard', sh, varargin{:});
+g7h = @(grp, sh, varargin) run_p2_gd7(grp, 'TauW', t('w6'), 'TauPred', t('hover'), 'Shard', sh, varargin{:});
+g7w = @(grp, sh, tp, sha) run_p2_gd7(grp, 'TauW', t('w'), 'TauPred', tp, 'Sha', sha, 'Shard', sh);
 c = {
- % ---- circle chain (D2 first: its L3 column is reused) ----
- 'D2',               @() run_p2_gd6('D2', 'TauPred', 0.290, 'TauPrev', 0.180, 'Sha', CM),                         {}
- 'six-circle-h3',    @() run_p2_gd7('six-circle-h3', 'TauW', 0.280, 'TauPred', 0.290, 'H3Hz', 32, 'Sha', CM),     {'D2'}
- 'H3-circle',        @() run_p2_gd7('H3-circle', 'TauW', 0.280, 'TauPred', 0.290, 'H3Hz', 32, 'Sha', CM),         {'D2'}
- 'static-circle',    @() run_p2_gd7('static-circle', 'TauW', 0.280, 'TauPred', 0.290, 'Sha', S40),                {'D2'}
- 'iii-circle',       @() run_p2_gd7('iii-circle', 'TauW', 0.280, 'TauPred', 0.290, 'TauM3', 0, 'Sha', S40),       {'D2'}
- 'N4b-P2-base',      @() run_p2_gd7('N4b-P2-base', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', CM),                   {'D2'}
- 'N4b-P2-d200',      @() run_p2_gd7('N4b-P2-d200', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', CM),                   {'N4b-P2-base'}
- 'N5-B-Weak',        @() run_p2_gd7('N5-B-Weak', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', 'a051c6fdcf0a6be2'),     {'N4b-P2-base'}
- 'N5-B-Medium',      @() run_p2_gd7('N5-B-Medium', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', 'dd710794f4786481'),   {'N4b-P2-base'}
- % ---- hover chain (N6 first) ----
- 'N6',               @() run_p2_gd7('N6', 'TauW', 0.280, 'TauPred', 0, 'Sha', N6H),                               {}
- 'H3-hover',         @() run_p2_gd7('H3-hover', 'TauW', 0.280, 'TauPred', 0, 'H3Hz', 32, 'Sha', N6H),             {'N6'}
- 'static-hover',     @() run_p2_gd7('static-hover', 'TauW', 0.280, 'TauPred', 0, 'H3Hz', 32, 'Sha', N6H),         {'N6', 'H3-hover'}
- 'F-hover',          @() run_p2_gd7('F-hover', 'TauW', 0.280, 'TauPred', 0, 'Sha', S40H),                         {'N6'}
- 'iii-hover',        @() run_p2_gd7('iii-hover', 'TauW', 0.280, 'TauPred', 0, 'TauM3', 0, 'Sha', S40H),           {'F-hover'}
- 'static-hover-k',   @() run_p2_gd7('static-hover-k', 'TauW', 0.280, 'TauPred', 0, 'Sha', S40H),                  {'F-hover', 'iii-hover'}
- 'static-indi-bias', @() run_p2_gd7('static-indi-bias', 'TauW', 0.280, 'TauPred', 0, 'H3Hz', 32, 'Sha', S40H),    {'F-hover', 'iii-hover', 'H3-hover'}
- 'N5-H-StrongRel',   @() run_p2_gd7('N5-H-StrongRel', 'TauW', 0.020, 'TauPred', 0, 'Sha', '7b105836187d9f25'),    {}
- % ---- no reuse source ----
- 'GUO',              @() run_p2_gd6('GUO', 'Sha', CM),                                                            {}
- 'GUOTRIM',          @() run_p2_gd6('GUOTRIM', 'Sha', CM),                                                        {'GUO'}
- 'TAB-T3b',          @() run_p2_gd6('TAB', 'Only', {'T3b'}, 'TauPred', 0.340, 'TauPrev', 0.210, 'Sha', '35bed7710bf224ee'), {}
- 'TAB-square',       @() run_p2_gd6('TAB', 'Only', {'square'}, 'TauPred', 0.120, 'TauPrev', 0.120, 'TauN6', 0.060, 'Sha', CM), {}
- 'TAB-mp025',        @() tab('MP', 0.25, 'TauPred', 0.290),                                                       {}
- 'TAB-mp065',        @() tab('MP', 0.65, 'TauPred', 0.290),                                                       {}
- 'TAB-L150',         @() tab('L', 1.5, 'TauPred', 0.260),                                                         {}
- 'TAB-L050',         @() tab('L', 0.5, 'TauPred', 0.330),                                                         {}
- 'TAB-mp025-L050',   @() tab('MP', 0.25, 'L', 0.5, 'TauPred', 0.330),                                             {}
- 'TAB-mp025-L150',   @() tab('MP', 0.25, 'L', 1.5, 'TauPred', 0.260),                                             {}
- 'TAB-mp065-L050',   @() tab('MP', 0.65, 'L', 0.5, 'TauPred', 0.330),                                             {}
- 'TAB-mp065-L150',   @() tab('MP', 0.65, 'L', 1.5, 'TauPred', 0.260),                                             {}
- 'N4b-P2-L15',       @() run_p2_gd7('N4b-P2-L15', 'TauW', 0.020, 'TauPred', 0.260, 'Sha', CM),                    {}
- 'N4b-P2-K10',       @() run_p2_gd7('N4b-P2-K10', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', '03fae8f8a845cb5b'),    {}
- 'N5-A-Weak',        @() run_p2_gd7('N5-A-Weak', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', 'a051c6fdcf0a6be2'),     {}
- 'N5-A-Medium',      @() run_p2_gd7('N5-A-Medium', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', '309278f9eb484c58'),   {}
- 'N5-A-StrongRel',   @() run_p2_gd7('N5-A-StrongRel', 'TauW', 0.020, 'TauPred', 0.290, 'Sha', 'f8479cc53cb0d8a0'), {}
- 'N0P',              @() run_p2_gd6('N0P'),                                                                       {}
- 'N0V',              @() run_n0v_all(),                                                                           {}
- % ---- CONFIRM2 (14 days, wind_conf2/), set SHA from REGISTER_P2 sec 61.1 ----
- 'C2-D2',            @() run_p2_gd6('D2', 'TauPred', 0.290, 'TauPrev', 0.180, 'Conf2', 'wind_conf2', ...
-                         'Sha', '2f442433f5f86be38450e3934cc22296e2eedf004e79d96573dcd8acfd3df91c'),            {}
- 'C2-circle',        @() run_p2_gd7('C2-circle', 'TauW', 0.280, 'TauPred', 0.290, 'H3Hz', 32, 'Conf2', 'wind_conf2', ...
-                         'Sha', '2f442433f5f86be38450e3934cc22296e2eedf004e79d96573dcd8acfd3df91c'),            {'C2-D2'}
- 'C2-hover',         @() run_p2_gd7('C2-hover', 'TauW', 0.280, 'TauPred', 0, 'H3Hz', 32, 'Conf2', 'wind_conf2', ...
-                         'Sha', '5b69e3ad8af37528df0e174c423872777cc5dfa7246196e5d86088d7bb25af5a'),            {}
- 'C2-hhover',        @() run_p2_gd7('C2-hhover', 'TauW', 0.020, 'TauPred', 0, 'Conf2', 'wind_conf2', ...
-                         'Sha', '19530f2821fe9ef482ebad0925fee7b7e930c8e9d5a83ba0e8d07e184b5d3854'),            {}
+ % ---- A: horizons (REGISTER_P2 sec 7.1 procedure), one condition per job ----
+ 'N0P-circle',        'A', 1, @(sh) run_p2_gd6('N0P', 'Only', {'circle'},     'OutFile', 'n0p_p2__circle.mat')
+ 'N0P-hover',         'A', 1, @(sh) run_p2_gd6('N0P', 'Only', {'hover'},      'OutFile', 'n0p_p2__hover.mat')
+ 'N0P-T3b',           'A', 1, @(sh) run_p2_gd6('N0P', 'Only', {'T3b'},        'OutFile', 'n0p_p2__T3b.mat')
+ 'N0P-square',        'A', 1, @(sh) run_p2_gd6('N0P', 'Only', {'square'},     'OutFile', 'n0p_p2__square.mat')
+ 'N0P-T5',            'A', 1, @(sh) run_p2_gd6('N0P', 'Only', {'T5'},         'OutFile', 'n0p_p2__T5.mat')
+ 'N0P-circle_L15',    'A', 1, @(sh) run_p2_gd6('N0P', 'Only', {'circle_L15'}, 'OutFile', 'n0p_p2__circle_L15.mat')
+ 'N0P-circle_L05',    'A', 1, @(sh) run_p2_gd6('N0P', 'Only', {'circle_L05'}, 'OutFile', 'n0p_p2__circle_L05.mat')
+ 'N0V-circle',        'A', 1, @(sh) run_p2_gd6('N0V',                         'OutFile', 'n0p_p2__V_circle.mat')
+ 'N0V-T3b',           'A', 1, @(sh) run_p2_gd6('N0V', 'Only', {'T3b'},        'OutFile', 'n0p_p2__V_T3b.mat')
+ 'N0V-square',        'A', 1, @(sh) run_p2_gd6('N0V', 'Only', {'square'},     'OutFile', 'n0p_p2__V_square.mat')
+ 'N0H3',              'A', 1, @(sh) run_p2_gd6('N0H3', 'Only', {'circle'})
+ % ---- B ----
+ 'N0W',               'B', 1, @(sh) run_p2_gd6('N0W', 'TauPred', t('circle'))
+ 'N0W6',              'B', 1, @(sh) run_p2_gd6('N0W6', 'TauPred', t('hover'))
+ 'N0M-square',        'B', 1, @(sh) run_p2_gd6('N0M', 'Only', {'square'}, 'TauPred', t('square'))
+ 'D2',                'B', 4, @(sh) run_p2_gd6('D2', 'TauPred', t('circle'), 'TauPrev', t('V:circle'), 'Sha', CM, 'Shard', sh)
+ 'GUO',               'B', 4, @(sh) run_p2_gd6('GUO', 'Sha', CM, 'Shard', sh)
+ 'TAB-T3b',           'B', 5, @(sh) run_p2_gd6('TAB', 'Only', {'T3b'}, 'TauPred', t('T3b'), 'TauPrev', t('V:T3b'), ...
+                                    'Sha', '35bed7710bf224ee', 'Paw', true, 'Shard', sh)
+ 'TAB-circle',        'B', 2, @(sh) tab(sh, 'TauPred', t('circle'))
+ 'TAB-mp025',         'B', 2, @(sh) tab(sh, 'MP', 0.25, 'TauPred', t('circle'))
+ 'TAB-mp065',         'B', 2, @(sh) tab(sh, 'MP', 0.65, 'TauPred', t('circle'))
+ 'TAB-L150',          'B', 2, @(sh) tab(sh, 'L', 1.5, 'TauPred', t('circle_L15'))
+ 'TAB-L050',          'B', 2, @(sh) tab(sh, 'L', 0.5, 'TauPred', t('circle_L05'))
+ 'TAB-mp025-L050',    'B', 2, @(sh) tab(sh, 'MP', 0.25, 'L', 0.5, 'TauPred', t('circle_L05'))
+ 'TAB-mp025-L150',    'B', 2, @(sh) tab(sh, 'MP', 0.25, 'L', 1.5, 'TauPred', t('circle_L15'))
+ 'TAB-mp065-L050',    'B', 2, @(sh) tab(sh, 'MP', 0.65, 'L', 0.5, 'TauPred', t('circle_L05'))
+ 'TAB-mp065-L150',    'B', 2, @(sh) tab(sh, 'MP', 0.65, 'L', 1.5, 'TauPred', t('circle_L15'))
+ % ---- C ----
+ 'six-circle-h3',     'C', 3, @(sh) g7c('six-circle-h3', sh, 'H3Hz', t('h3'), 'Sha', CM)
+ 'H3-circle',         'C', 3, @(sh) g7c('H3-circle', sh, 'H3Hz', t('h3'), 'Sha', CM)
+ 'static-circle',     'C', 1, @(sh) g7c('static-circle', sh, 'Sha', S40)
+ 'iii-circle',        'C', 1, @(sh) g7c('iii-circle', sh, 'TauM3', 0, 'Sha', S40)
+ 'static-circle-sn',  'C', 1, @(sh) g7c('static-circle-sn', sh, 'Sha', S40, 'DataDir', 'wind_sn010')
+ 'static-circle-spk', 'C', 3, @(sh) g7c('static-circle-spk', sh, 'Sha', CM, 'DataDir', 'wind_spk')
+ 'N6',                'C', 4, @(sh) g7h('N6', sh, 'Sha', N6H)
+ 'static-hover-sn',   'C', 1, @(sh) g7h('static-hover-sn', sh, 'Sha', S40H, 'DataDir', 'wind_sn010')
+ 'static-hover-spk',  'C', 3, @(sh) g7h('static-hover-spk', sh, 'Sha', N6H, 'DataDir', 'wind_spk')
+ 'TAB-square',        'C', 6, @(sh) run_p2_gd6('TAB', 'Only', {'square'}, 'TauPred', t('square'), 'TauPrev', t('V:square'), ...
+                                    'TauN6', t('m:square'), 'Sha', CM, 'Paw', true, 'Shard', sh)
+ 'GUOTRIM',           'C', 2, @(sh) run_p2_gd6('GUOTRIM', 'Sha', CM, 'Shard', sh)
+ 'N4b-P2-base',       'C', 4, @(sh) g7w('N4b-P2-base', sh, t('circle'), CM)
+ 'N4b-P2-L15',        'C', 4, @(sh) g7w('N4b-P2-L15', sh, t('circle_L15'), CM)
+ 'N4b-P2-K10',        'C', 4, @(sh) g7w('N4b-P2-K10', sh, t('circle'), '03fae8f8a845cb5b')
+ 'N5-A-Weak',         'C', 3, @(sh) g7w('N5-A-Weak', sh, t('circle'), 'a051c6fdcf0a6be2')
+ 'N5-A-Medium',       'C', 2, @(sh) g7w('N5-A-Medium', sh, t('circle'), '309278f9eb484c58')
+ 'N5-A-StrongRel',    'C', 1, @(sh) g7w('N5-A-StrongRel', sh, t('circle'), 'f8479cc53cb0d8a0')
+ 'N5-H-StrongRel',    'C', 1, @(sh) g7w('N5-H-StrongRel', sh, t('hover'), '7b105836187d9f25')
+ % ---- D ----
+ 'H3-hover',          'D', 2, @(sh) g7h('H3-hover', sh, 'H3Hz', t('h3'), 'Sha', N6H)
+ 'F-hover',           'D', 3, @(sh) g7h('F-hover', sh, 'Sha', S40H)
+ 'static-circle-k',   'D', 1, @(sh) g7c('static-circle-k', sh, 'Sha', S40)
+ 'N4b-P2-d200',       'D', 3, @(sh) g7w('N4b-P2-d200', sh, t('circle'), CM)
+ 'N5-B-Weak',         'D', 1, @(sh) g7w('N5-B-Weak', sh, t('circle'), 'a051c6fdcf0a6be2')
+ 'N5-B-Medium',       'D', 1, @(sh) g7w('N5-B-Medium', sh, t('circle'), 'dd710794f4786481')
+ % ---- E ----
+ 'static-hover',      'E', 2, @(sh) g7h('static-hover', sh, 'H3Hz', t('h3'), 'Sha', N6H)
+ 'iii-hover',         'E', 3, @(sh) g7h('iii-hover', sh, 'TauM3', 0, 'Sha', S40H)
+ % ---- F ----
+ 'static-hover-k',    'F', 2, @(sh) g7h('static-hover-k', sh, 'Sha', S40H)
+ 'static-indi-bias',  'F', 1, @(sh) g7h('static-indi-bias', sh, 'H3Hz', t('h3'), 'Sha', S40H)
  };
-T = struct('id', c(:, 1), 'call', c(:, 2), 'needs', c(:, 3));
-end
-
-function run_n0v_all()
-run_p2_gd6('N0V');
-run_p2_gd6('N0V', 'Only', {'T3b'});
-run_p2_gd6('N0V', 'Only', {'square'});
+T = struct('id', c(:, 1), 'wave', c(:, 2), 'shards', c(:, 3), 'call', c(:, 4));
 end

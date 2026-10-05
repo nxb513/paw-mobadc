@@ -1,0 +1,70 @@
+name: rerun step (reusable)
+
+# One step of rerun/rerun_steps.m on a GitHub-hosted runner with MATLAB R2022b + Simulink.
+# Called by rerun.yml. The wind segments come from the run's "wind" artifact (job prep); the result files of
+# earlier steps from the "results-*" artifacts. The step's results/ are uploaded even when it fails or hits the
+# time limit, so re-running the failed job resumes where it stopped (the runners save per segment).
+#
+# MATLAB licence: free for PUBLIC repositories. A private repository needs a MATLAB batch licensing token in the
+# repository secret MLM_LICENSE_TOKEN (https://github.com/mathworks-ref-arch/matlab-dockerfile/blob/main/alternates/non-interactive/MATLAB-BATCH.md).
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        required: true
+        type: string
+
+jobs:
+  run:
+    name: ${{ inputs.id }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2022b
+          products: Simulink
+          cache: true
+
+      - name: wind segments
+        uses: actions/download-artifact@v4
+        with:
+          name: wind
+          path: .
+
+      - name: results of earlier steps
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: results-*
+          path: results
+          merge-multiple: true
+
+      - name: run ${{ inputs.id }}
+        uses: matlab-actions/run-command@v2
+        timeout-minutes: 345
+        env:
+          MLM_LICENSE_TOKEN: ${{ secrets.MLM_LICENSE_TOKEN }}
+        with:
+          command: addpath('rerun'); rerun_run('${{ inputs.id }}')
+
+      - name: upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ inputs.id }}
+          path: results/
+          overwrite: true
+          if-no-files-found: ignore
+
+      - name: upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-${{ inputs.id }}
+          path: logs/
+          overwrite: true
+          if-no-files-found: ignore

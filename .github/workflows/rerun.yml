@@ -1,0 +1,130 @@
+name: rerun (MATLAB, parallel)
+
+# Re-runs every result file of the paper (data/SHA256SUMS.txt) on GitHub-hosted runners, in parallel where the
+# reuse chain allows (rerun/rerun_steps.m lists each step and the steps it reuses). Manual start only:
+#   GitHub -> Actions -> "rerun (MATLAB, parallel)" -> Run workflow      or      gh workflow run rerun.yml
+# Expect close agreement with the stored results, not bit-for-bit (another machine, rebuilt wind export).
+# Licence: see rerun-step.yml (public repository, or secret MLM_LICENSE_TOKEN).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prep:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: python packages
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy scipy
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: cache M5 raw files
+        uses: actions/cache@v4
+        with:
+          path: m5/dev
+          key: m5-dev-${{ hashFiles('rerun/m5_dev_urls.txt') }}
+      - name: download M5 and export the wind segments
+        run: PY=python bash rerun/prep_data.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wind
+          retention-days: 14
+          compression-level: 1
+          path: |
+            wind_real_t150_i*.mat
+            wind_real_t150_batch.json
+            wind_expl_t150_i*.mat
+            wind_expl_t150_batch.json
+            wind_conf2/
+
+  # ---- steps with no reuse source ----
+  first:
+    needs: prep
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [D2, N6, GUO, C2-D2, C2-hover, C2-hhover, N5-H-StrongRel, TAB-T3b, TAB-square,
+             TAB-mp025, TAB-mp065, TAB-L150, TAB-L050, TAB-mp025-L050, TAB-mp025-L150, TAB-mp065-L050,
+             TAB-mp065-L150, N4b-P2-L15, N4b-P2-K10, N5-A-Weak, N5-A-Medium, N5-A-StrongRel, N0P, N0V]
+    uses: ./.github/workflows/rerun-step.yml
+    with:
+      id: ${{ matrix.id }}
+    secrets: inherit
+
+  # ---- reuse D2 / N6 / GUO / C2-D2 ----
+  second:
+    needs: first
+    if: always()
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [six-circle-h3, H3-circle, static-circle, iii-circle, N4b-P2-base, H3-hover, F-hover, GUOTRIM, C2-circle]
+    uses: ./.github/workflows/rerun-step.yml
+    with:
+      id: ${{ matrix.id }}
+    secrets: inherit
+
+  # ---- reuse N4b-P2-base / H3-hover / F-hover ----
+  third:
+    needs: second
+    if: always()
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [N4b-P2-d200, N5-B-Weak, N5-B-Medium, static-hover, iii-hover]
+    uses: ./.github/workflows/rerun-step.yml
+    with:
+      id: ${{ matrix.id }}
+    secrets: inherit
+
+  # ---- reuse iii-hover ----
+  fourth:
+    needs: third
+    if: always()
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [static-hover-k, static-indi-bias]
+    uses: ./.github/workflows/rerun-step.yml
+    with:
+      id: ${{ matrix.id }}
+    secrets: inherit
+
+  # ---- numbers and tables from the re-run result files (no simulation) ----
+  report:
+    needs: fourth
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2022b
+          products: Simulink
+          cache: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: results-*
+          path: results
+          merge-multiple: true
+      - name: RESULTS_P2 and tables
+        uses: matlab-actions/run-command@v2
+        continue-on-error: true
+        env:
+          MLM_LICENSE_TOKEN: ${{ secrets.MLM_LICENSE_TOKEN }}
+        with:
+          command: setup_path; make_results_p2; make_p2_tables
+      - name: SHA-256 of the re-run result files
+        run: python3 tools/data_manifest.py --check || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: |
+            docs/RESULTS_P2.md
+            paper/tables/
+            results/

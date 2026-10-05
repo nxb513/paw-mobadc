@@ -215,6 +215,24 @@ def describe(m):
             f"I = {100 * m['I']:4.1f}%")
 
 
+SPIKE_MAX_HOLD = 2
+
+
+def spike_hold(w, thr, max_hold=SPIKE_MAX_HOLD):
+    """Causal spike rejection: hold the last accepted sample while the horizontal step to it exceeds
+    thr, at most max_hold samples in a row. Returns (filtered copy, number of held samples)."""
+    out = np.array(w, dtype=np.float64, copy=True)
+    held, n_held = 0, 0
+    for k in range(1, len(out)):
+        if np.hypot(*(out[k, :2] - out[k - 1, :2])) > thr and held < max_hold:
+            out[k] = out[k - 1]
+            held += 1
+            n_held += 1
+        else:
+            held = 0
+    return out, n_held
+
+
 def out_name(out_path, i):
     p = pathlib.Path(out_path)
     return str(p.with_name(f"{p.stem}_i{i:04d}{p.suffix}"))
@@ -280,6 +298,10 @@ def main():
     ap.add_argument("--sensor-seed", type=int, default=20240601,
                     help="sensor-noise seed. Each segment derives its own seed "
                          "from this one.")
+    ap.add_argument("--meas-spike-hold", type=float, default=0.0,
+                    help="rerun/: causal spike filter on the wind MEASUREMENT - hold the last accepted "
+                         "sample when the horizontal step exceeds this [m/s] (at most 2 samples in a "
+                         "row). w_plant is untouched. 0 = off, not one bit changes.")
     ap.add_argument("--only-index", default=None,
                     help="REGISTER_P2 sec 43 (wind-sensor-noise sensitivity): export ONLY these "
                          "segment indices (comma list, positions in the deterministic "
@@ -566,6 +588,17 @@ def export_one(a, w, fs, tau, window_s, W, model, S, mt, out_path):
         print("    ! The input is OUTSIDE the training distribution (the model "
               "was frozen on clean wind).")
 
+    # ---- optional causal spike filter on the MEASUREMENT (rerun/, 2026-10-05; default off) ----
+    # A sample whose horizontal step from the last accepted value exceeds the threshold is
+    # replaced by that value, at most SPIKE_MAX_HOLD samples in a row (a real step is then
+    # accepted). Threshold 5 m/s = the spike definition of P-QA (REGISTER_P2 sec 36). Only what
+    # the controller (and PI-MoE) reads changes; w_plant, the wind on the UAV, does not.
+    n_held = None
+    if a.meas_spike_hold > 0:
+        w_in, n_held = spike_hold(w_in, a.meas_spike_hold)
+        print(f"  SPIKE FILTER on w_meas: threshold {a.meas_spike_hold:.2f} m/s, "
+              f"{n_held} sample(s) held")
+
     t = np.arange(n) / fs
     out = {"t": t[:, None], "w_true": w_rot, "fs": fs,
            "w_meas": w_in,
@@ -575,6 +608,8 @@ def export_one(a, w, fs, tau, window_s, W, model, S, mt, out_path):
            "seed": seed, "mean_dir_deg": dir_deg,
            "rotated": a.mean_dir_deg is not None,
            "duration_s": n / fs}
+    if n_held is not None:                     # only when the filter is on: default files unchanged
+        out |= {"meas_spike_hold": float(a.meas_spike_hold), "meas_spike_n": float(n_held)}
     if rmeta is not None:
         # Enough recorded to rebuild exactly this segment without relying on
         # anything remembered outside the file.

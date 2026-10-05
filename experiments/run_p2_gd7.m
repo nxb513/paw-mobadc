@@ -64,7 +64,7 @@ function G = run_p2_gd7(group, varargin)
 %  data sufficiency verdicts and the two sec 0.6 reading notes.
 opt = struct('TauW', [], 'TauPred', [], 'Sha', '', 'CapPerDay', 4, 'DryRun', false, 'Report', false, ...
              'Recheck', {{}}, 'Side', false, 'TauN6', [], 'DataDir', '', 'TauM3', [], 'H3Hz', [], ...
-             'Conf2', '', 'DevTest', false, 'NDev', 2);
+             'Conf2', '', 'DevTest', false, 'NDev', 2, 'Shard', []);   % Shard: rerun/ (2026-10-05)
 for i = 1:2:numel(varargin)
     assert(isfield(opt, varargin{i}), 'run_p2_gd7: unknown option ''%s''.', varargin{i});
     opt.(varargin{i}) = varargin{i+1};
@@ -110,10 +110,11 @@ if ~opt.DryRun && ~opt.DevTest
 end
 key = struct('group', g.name, 'sha', S.sha256, 'TauW', opt.TauW, 'TauPred', opt.TauPred, 'K', g.K, ...
     'L', g.L, 'delay', g.delay, 'cond', g.cond, 'cols', {g.cols});
-assert(isempty(opt.DataDir) == ~g.sn, 'run_p2_gd7: DataDir is required by, and only by, SN-hover / iii-hover-sn (sec 43).');
-if g.sn
+assert(isempty(opt.DataDir) == ~(g.sn || g.spk), ['run_p2_gd7: DataDir is required by, and only by, the ' ...
+    'wind-sensor-noise groups (sec 43) and the spike-filter groups (rerun/).']);
+if g.sn || g.spk
     assert(exist(opt.DataDir, 'dir') == 7, 'run_p2_gd7: DataDir %s not found.', opt.DataDir);
-    sn_check_dir(opt.DataDir);
+    if g.sn, sn_check_dir(opt.DataDir); else, spk_check_dir(opt.DataDir); end
     key.DataDir = opt.DataDir;
 end
 if ~isempty(opt.Conf2), key.Conf2 = opt.Conf2; end      % sec 60.8 (absent on every dev key)
@@ -130,6 +131,7 @@ end
 files = S.files;  days = S.day;
 if opt.DryRun, files = files(1); days = days(1); end
 if opt.DevTest, files = files(1:min(opt.NDev, end)); days = days(1:numel(files)); end
+[files, days, outf] = shard_files(files, days, outf, opt.Shard);
 im = im_args(g);
 fprintf(['  %s, K %.2f, L %.1f, sensor delay %d ms, %s | columns %s | TauPred %.0f ms, tau_w* %.0f ms | ' ...
     '%d segment(s)\n'], g.cond, g.K, g.L, g.delay, im_text(im), strjoin(g.cols, ' '), 1000 * opt.TauPred, ...
@@ -211,8 +213,21 @@ function g = group_def(name)
 d = struct('name', name, 'set', name, 'cond', 'Test 4', 'K', 0.5, 'L', 1.0, 'delay', 50, ...
     'cols', {{'L3', 'P', 'O', 'O0'}}, 'reuse', {{}}, 'hover', false, 'n6', false, 'imtable', false, ...
     'explore', false, 'fsens', false, 'diag', false, 'sn', false, 'm3', false, 'd2sub', false, 'h3', false, ...
-    'st', false, 'c2', false, 'six', false);
+    'st', false, 'c2', false, 'six', false, 'spk', false);
 switch name
+    % ---- rerun/ (2026-10-05): checks of the static (1 + K-hat) feed-forward (iii-0), descriptive ----
+    case 'static-circle-k'                             % K-hat x 0.7 / x 1.3 on the circle (S40), as static-hover-k
+        d.set = 'S40';  d.d2sub = true;  d.st = true;
+        d.cols = {'L3', 'L3_iii0', 'L3_iii0_k070', 'L3_iii0_k130'};
+        d.reuse = {{'D2', {'L3'}}, {'static-circle', {'L3_iii0'}}};
+    case {'static-circle-sn', 'static-hover-sn'}       % wind-sensor noise 0.1 m/s (files of sec 43.3 in DataDir)
+        d.st = true;  d.sn = true;  d.cols = {'L3', 'L3_iii0'};
+        d.set = 'S40';
+        if strcmp(name, 'static-hover-sn'), d.set = 'S40hover';  d.cond = 'Hover';  d.hover = true; end
+    case {'static-circle-spk', 'static-hover-spk'}     % spike filter on the measured wind (files in DataDir)
+        d.st = true;  d.spk = true;  d.cols = {'L3', 'L3_iii0'};
+        d.set = 'circle_main';
+        if strcmp(name, 'static-hover-spk'), d.set = 'N6_hover';  d.cond = 'Hover';  d.hover = true; end
     case 'N4b-P2-base'
         d.set = 'circle_main';  d.cols = {'L3', 'P', 'O', 'O0', 'O150'};
         d.reuse = {{'D2', {'L3'}}};

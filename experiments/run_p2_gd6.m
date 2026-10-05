@@ -67,7 +67,8 @@ function G = run_p2_gd6(mode, varargin)
 opt = struct('Only', {{}}, 'DryRun', false, 'TauPred', [], 'TauPrev', [], 'Sha', '', ...
              'CapPerDay', 4, 'DryRunTau', [0 0.2], 'TauN6', [], 'MP', [], 'L', [], 'FromD2', false, ...
              'Imu', [], 'ThrustMax', [], 'Zeta', [], 'DataDir', '', ...
-             'Conf2', '', 'DevTest', false, 'NDev', 2);
+             'Conf2', '', 'DevTest', false, 'NDev', 2, ...
+             'Shard', [], 'OutFile', '', 'Paw', false);   % rerun/ (2026-10-05): parallel parts; N0P/N0V file; TAB + PAW columns
 for i = 1:2:numel(varargin)
     assert(isfield(opt, varargin{i}), 'run_p2_gd6: unknown option ''%s''.', varargin{i});
     opt.(varargin{i}) = varargin{i+1};
@@ -179,6 +180,7 @@ if opt.DryRun
     fprintf('  DryRun: 1 segment, %s = %s ms only\n', par, mat2str(1000 * opt.DryRunTau));
 end
 outf = fullfile(repo_root(), 'results', 'gd6', 'n0p_p2.mat');
+if ~isempty(opt.OutFile), outf = fullfile(repo_root(), 'results', 'gd6', opt.OutFile); end   % rerun/: one file per job
 T = struct('mode', {}, 'label', {}, 'cond', {}, 'L', {}, 'tau_star', {}, 'edge_ok', {}, ...
            'coarse', {}, 'fine', {}, 'files', {}, 'git', {}, 'time', {});
 if exist(outf, 'file') == 2 && ~opt.DryRun, Z = load(outf, 'T'); T = Z.T; end
@@ -580,6 +582,7 @@ if cm                                                % sec 60.8 (absent on the d
     if opt.DevTest, key.DevTest = opt.NDev; else, key.Conf2 = opt.Conf2; end
     rows = struct('file', {}, 'day', {}, 'E', {}, 'F', {}, 'p2', {}, 'Q', {});
 end
+[files, days, outf] = shard_files(files, days, outf, opt.Shard);
 if exist(outf, 'file') == 2 && ~opt.DryRun
     Z = load(outf, 'rows', 'key');
     assert(isequal(Z.key, key), 'run_p2_gd6 D2: %s belongs to another set/tau - not resumed.', outf);
@@ -689,6 +692,8 @@ if opt.DryRun, files = files(1); days = days(1); end
 cols = {'L0', 'L2', 'L3', 'V'};
 n6 = ~isempty(opt.TauN6);
 if n6, cols{end + 1} = 'L3_6'; end
+paw = opt.Paw;                                          % rerun/ (2026-10-05): + the static (1 + K-hat) feed-forward
+if paw, cols = [cols, {'L3_iii0', 'V_iii0'}]; end       %   on L3 (PAW-MOBADC) and on V (C2 + reference preview)
 im = im_args(c);
 evalc('evalin(''base'', ''init_MOBADC_params'')');     % op_set needs init's variables
 Cs = op_set(c.cond);
@@ -702,6 +707,8 @@ if ~isempty(opt.Imu), key.Imu = opt.Imu; end
 if ~isempty(opt.ThrustMax), key.ThrustMax = opt.ThrustMax; end
 if ~isempty(opt.Zeta), key.Zeta = opt.Zeta; end
 if sn, key.DataDir = opt.DataDir; end
+if paw, key.Paw = true; end
+[files, days, outf] = shard_files(files, days, outf, opt.Shard);
 if opt.FromD2                                          % sec 39: the nominal level = D2's rows on S40
     Z = load(fullfile(repo_root(), 'results', 'gd6', 'd2_p2.mat'), 'rows', 'key');
     assert(strncmp(Z.key.sha, 'a227e9d87a2ac436', 16) && Z.key.TauPred == opt.TauPred && ...
@@ -756,6 +763,16 @@ for i = 1:numel(files)
         try, Simulink.sdi.clear; catch, end
         src(end + 1, :) = {D, 'g_psens'};
     end
+    if paw                                              % PredScale body 1.5 = (1 + K-hat), K-hat 0.5 (REGISTER_P2 sec 54.2)
+        [~, P1] = pa_configs(ff, base{:}, im{:}, 'Only', {'g_psens'}, 'TauPred', opt.TauPred, 'TauPrev', 0, ...
+            'P2PredScale', [1 1 1 1.5]);
+        try, Simulink.sdi.clear; catch, end
+        [~, P2] = pa_configs(ff, base{:}, im{:}, 'Only', {'g_sens'}, 'TauPred', opt.TauPred, 'TauPrev', opt.TauPrev, ...
+            'P2PredScale', [1 1 1 1.5]);
+        try, Simulink.sdi.clear; catch, end
+        src(end + 1, :) = {P1, 'g_psens'};
+        src(end + 1, :) = {P2, 'g_sens'};
+    end
     nc = numel(cols);
     E = nan(1, nc);  F = cell(1, nc);  p2 = cell(1, nc);  Ec = nan(1, nc);  Ee = nan(1, nc);
     for k = 1:nc
@@ -779,6 +796,7 @@ for i = 1:numel(files)
     end
 end
 st = tab_stats(rows, cols);
+if paw, st.paw = paw_report(rows, cols); end
 if n6, st.h_model = hmodel_report(rows, cols, sq); end
 if corner, st.bins = bin_report(rows, cols, S, opt.MP); end
 if sn && ~opt.DryRun, st.sn = sn_report(rows, cols, opt); end
@@ -904,6 +922,7 @@ tp = 0.290;  if ~isempty(opt.TauPred), tp = opt.TauPred; end   % not read: g_bas
 outf = fullfile(repo_root(), 'results', 'gd6', tern(trim, 'guo_trim_p2.mat', 'guo_p2.mat'));
 key = struct('mode', tern(trim, 'GUOTRIM', 'GUO'), 'sha', S.sha256, 'ctrl', {CT(:, 1)'});
 rows = struct('file', {}, 'day', {}, 'E', {}, 'SD', {}, 'EH', {}, 'EV', {}, 'EZ', {}, 'F', {}, 'p2', {});
+[files, days, outf] = shard_files(files, days, outf, opt.Shard);
 if exist(outf, 'file') == 2 && ~opt.DryRun
     Z = load(outf, 'rows', 'key');
     assert(isequal(Z.key, key), 'run_p2_gd6 GUO: %s belongs to another set - not resumed.', outf);
@@ -1181,6 +1200,35 @@ fprintf('  segments with tilt_sat > 1%%%s\n', sprintf(' %-9d', sum(TS(ok, :) > 0
 fprintf('  motor sat_frac median      %s\n', sprintf('%-9.4f ', median(SF(ok, :), 1)));
 fprintf('  motor sat_frac max         %s\n', sprintf('%-9.4f ', max(SF(ok, :), [], 1)));
 st.tilt_sat = TS;  st.sat_frac = SF;  st.ok = ok;
+end
+
+function R = paw_report(rows, cols)
+%PAW_REPORT  rerun/ (2026-10-05, 'Paw', true): the static (1 + K-hat) payload-wind feed-forward on the table's one
+%  set - C2 on PA-MOBADC (1 - L3_iii0/L3), C2 on the reference preview (1 - V_iii0/V), and the totals against
+%  MOBADC-W (L2) and MOBADC (L0); SE (paired delete-one-day jackknife), by-day median, LOO [min, max].
+nc = numel(cols);
+E = reshape([rows.E], nc, []).';
+ok = all(isfinite(E), 2);
+ix = @(s) find(strcmp(cols, s), 1);
+i0 = ix('L0');  i2 = ix('L2');  i3 = ix('L3');  iv = ix('V');  ip = ix('L3_iii0');  iq = ix('V_iii0');
+pool = @(e) sqrt(mean(e.^2, 1));
+q = {'1 - L3_iii0/L3 (C2 on PA)',      @(e) 1 - pool(e(:, ip)) / pool(e(:, i3)); ...
+     '1 - V_iii0/V (C2 on preview)',   @(e) 1 - pool(e(:, iq)) / pool(e(:, iv)); ...
+     'L3_iii0/L2 - 1',                 @(e) pool(e(:, ip)) / pool(e(:, i2)) - 1; ...
+     'V_iii0/L2 - 1',                  @(e) pool(e(:, iq)) / pool(e(:, i2)) - 1; ...
+     'L3_iii0/L0 - 1',                 @(e) pool(e(:, ip)) / pool(e(:, i0)) - 1};
+Ek = E(ok, :);  dk = {rows(ok).day}';
+fprintf('\n  PAW columns (static (1 + K-hat) feed-forward, K-hat 0.5) on the one set: n %d, days %d\n', ...
+    sum(ok), numel(unique(dk)));
+R = struct('n', sum(ok));
+if sum(ok) < 2, fprintf('  fewer than 2 valid segments - not computed\n'); return; end
+for r = 1:size(q, 1)
+    [se, med, loo] = jk(q{r, 2}, Ek, dk);
+    v = q{r, 2}(Ek);
+    fprintf('  %-30s %+8.2f %%  SE %.2f  LOO [%+.2f, %+.2f] %%  by-day %+.2f %%\n', q{r, 1}, 100 * v, 100 * se, ...
+        100 * min(loo), 100 * max(loo), 100 * med);
+    R.(sprintf('q%d', r)) = struct('label', q{r, 1}, 'val', v, 'se', se, 'loo', [min(loo) max(loo)], 'byday', med);
+end
 end
 
 function H = hmodel_report(rows, cols, sq)

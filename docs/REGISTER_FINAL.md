@@ -75,6 +75,12 @@ as sec 50.1), N6 and F-hover (sources of later steps), the twelve C3 groups. Des
   configuration (the horizons of sec 3, read from the dev sweeps) are **registered in sec 6.1 of this file and
   approved by the user before the 2022 download**; run once.
 - CONFIRM2 (the 14 days of 2024 used once on 2026-10-03) is **not** used by the final run.
+- **Days fixed 2026-10-05, before any result of the final run and before any 2022 download** (server probed with HEAD
+  requests only): `plan_real_download.py --year 2022 --split heldout --all-days` -> **58 days, 232 files**
+  (2022-01-01 .. 2022-05-25; Jan 17, Feb 13, Apr 17, May 11 days), list `rerun/m5_conf3_urls.txt`; SHA-256 of the
+  sorted file names `d1632369ebf029ebe038316434bae11d2cc054a6b815749e8d713cf94566f797`, of the sorted days
+  `b992cc090383b0ef433b7dc8a45b8eff680d4abee17283b55b461cb5057b654e`. Every day is on the heldout side of
+  `split_of`; none is a characterisation day.
 
 ## 7. Report
 

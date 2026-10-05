@@ -1,0 +1,53 @@
+{
+ "tau_ms": 150,
+ "window_s": 30.0,
+ "fs": 20.0,
+ "tc_grid": [
+  2.0,
+  4.0,
+  7.0,
+  10.0,
+  15.0,
+  25.0,
+  40.0,
+  60.0
+ ],
+ "sd_floor": 0.01,
+ "train_types": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "seed": 0,
+ "steps": 3000,
+ "expert_names": [
+  "dry_Tc2",
+  "dry_Tc4",
+  "dry_Tc7",
+  "dry_Tc10",
+  "dry_Tc15",
+  "dry_Tc25",
+  "dry_Tc40",
+  "dry_Tc60",
+  "von_Tc2",
+  "von_Tc4",
+  "von_Tc7",
+  "von_Tc10",
+  "von_Tc15",
+  "von_Tc25",
+  "von_Tc40",
+  "von_Tc60",
+  "per_0.05-0.15Hz",
+  "per_0.15-0.35Hz",
+  "per_0.35-0.65Hz",
+  "per_0.65-1Hz",
+  "per_0.05-1Hz",
+  "eog_T5",
+  "eog_T10.5",
+  "eog_T20",
+  "kalman_l0.05",
+  "kalman_l1",
+  "residual"
+ ]
+}

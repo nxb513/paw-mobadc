@@ -1,0 +1,47 @@
+# .gitignore - P2 paper repository (rewritten 2026-10-04 when the v1 study was removed; v1 rules live at tag v1-final)
+
+# ---- Python ----
+__pycache__/
+*.pyc
+
+# ---- Result and data files: NEVER in git ----
+# Every .mat is a run product or wind data. The results the paper is built from live in results/ (one machine;
+# their SHA-256 are listed in data/SHA256SUMS.txt and they go to Zenodo at submission). Wind segments are rebuilt
+# by python/export_wind_sim.py from the public NREL M5 data.
+*.mat
+results/
+dataset/
+wind_conf2/
+wind_e0check/
+wind_expl_*
+wind_conf_*
+m5/
+wind_real_*
+e1b_cu/
+
+# ONE .mat is tracked, because code needs it: core/p2_segset.m builds the P2 development pool from its 30 segments
+# and core/p2_fixed5.m takes the N0P fixed-5 set from it (5 KB).
+!field_grid_K050.mat
+
+# ---- Model checkpoints: exactly one is tracked ----
+# PROTOCOL_LOCK.md names w4_frozen_20hz_t150_train2345_s0 as the frozen wind predictor (trained on synthetic wind
+# only, never retrained); the oracle study C3 uses it. The .json holds the architecture the .pt is rebuilt into.
+*.pt
+w4_frozen_*.json
+!w4_frozen_20hz_t150_train2345_s0.pt
+!w4_frozen_20hz_t150_train2345_s0.json
+
+# ---- Run logs (cited by docs/REGISTER_P2.md; moved here by tools/local_tidy.py) ----
+logs/
+
+# ---- Simulink and MATLAB products, not sources ----
+*.slxc
+slprj/
+*.autosave
+*.original
+*.asv
+baseline1_baseline_backup.slx
+.vscode/
+
+# ---- Publisher PDFs used to check equations: never committed (copyright) ----
+refs/

@@ -1,0 +1,26 @@
+name: paper checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  text-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: controller names (no internal codes in figures, tables, text)
+        run: python tools/check_names.py
+      - name: equations table (sources, no priority claims)
+        run: python tools/check_equations.py
+      - name: number propagation (manuscript vs RESULTS_P2 / tables)
+        run: python tools/check_propagation.py
+      - name: withdrawn claims, references, Highlights, Abstract
+        run: python tools/check_retracted.py
+      - name: README names table up to date
+        run: python tools/readme_names.py --check
+      - name: result-file list (every file the generators read is in data/SHA256SUMS.txt)
+        run: python tools/data_manifest.py --check

@@ -1,0 +1,36 @@
+# Test 4-Circling (BASELINE: sin + gio hang), steady-state t in [140,200] s
+# r=0.80 m, v=1.26 m/s, w=sigma=1.5750 rad/s, T_orbit=3.99 s
+# payload_amp=1.50 N, wind_amp=1.00 N, nhieu moment: ngoai pham vi
+             Mean (m)   STD (m)    Max (m)   
+  Classical  0.0939     0.0285     0.1448    
+  ESO        0.0587     0.0281     0.0923    
+  DO         0.0732     0.0150     0.0949    
+  MOBADC     0.0228     0.0067     0.0314    
+  MOBADC cai thien vs Classical: mean 75.71% | STD 76.63%
+
+  --- Doi chieu expected_baseline.m (cong hoi quy) ---
+  Classical  0.0939 vs 0.0939 (tol 0.0009)  khop
+  ESO        0.0587 vs 0.0587 (tol 0.0006)  khop
+  DO         0.0732 vs 0.0732 (tol 0.0007)  khop
+  MOBADC     0.0228 vs 0.0228 (tol 0.0002)  khop
+
+  --- Doi chieu Guo et al., CEP 2020, Table 1 (Test 4) ---
+             bai bao    tai lap    ty le     
+  Classical  0.1502     0.0939     x0.62
+  ESO        0.2054     0.0587     x0.29
+  DO         0.0725     0.0732     x1.01
+  MOBADC     0.0350     0.0228     x0.65
+  thu tu bai bao : MOBADC < DO < Classical < ESO
+  thu tu tai lap : MOBADC < ESO < DO < Classical
+  *** THU TU DAO o 2 cap: Classical/ESO, ESO/DO ***
+  Day KHONG phai lech do lon ma lech DINH TINH. Hang DO khop
+  ~1% va la hang duy nhat suy ra duoc tu Appendix; ba hang con
+  lai khong suy ra duoc vi bai bao khong cong bo chieu dai day,
+  bien do lac, hay do lon luc gio.
+  -> Phai khai bao tuong minh trong paper cua ban, khong duoc
+     goi day la "tai lap" ma khong noi ro.
+
+  --- Gioi han cua so xac lap ---
+  Cuc cham nhat cua dong hoc sai so DO la -0.0357 1/s (tau = 28.0 s), nen o
+  T_STAT = 140 s van con ~0.68% qua do chua tat. Cac hieu ung nho hon ~2%
+  chua tach duoc khoi phan du nay. (docs/devlog/AUDIT.md muc D1.)

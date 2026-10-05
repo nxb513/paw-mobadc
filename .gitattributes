@@ -1,0 +1,43 @@
+# Files whose BYTES are the record, not their text.
+#
+# WHY THIS FILE EXISTS
+# ====================
+# docs/SNAPSHOT.md (v1 study, now at tag v1-final) recorded a SHA-256 for the frozen predictor's .json. The file
+# was committed from Windows, where git's core.autocrlf rewrote its CRLF line
+# endings to LF on the way in. The result:
+#
+#     on the author's disk   694 bytes   FE280C38...   <- the recorded hash
+#     in the repository      642 bytes   f4cfec1d...
+#
+# so a reviewer cloning on Linux computes a hash that does not match the table,
+# and a reviewer on Windows with autocrlf gets it back. A fingerprint whose
+# value depends on the reader's platform is not a fingerprint - and it would
+# have failed in exactly the place it matters most, on the one artefact that
+# makes the frozen-predictor claim checkable at all.
+#
+# The .pt escaped only because git auto-detected it as binary from its NUL
+# bytes. That is luck, not a rule, so the rule is written down here.
+#
+# `-text` means: never convert, in either direction, on any platform. The
+# committed bytes are the produced bytes.
+w4_frozen_20hz_t150_train2345_s0.json -text
+w4_frozen_20hz_t150_train2345_s0.pt   -text
+
+# The same protection for every other artefact whose identity is its bytes.
+# These are already detected as binary today; naming them means a future file
+# that happens to start with printable characters cannot slip through.
+*.pt   binary
+*.mat  binary
+*.slx  binary
+*.slxc binary
+
+# Generated text files. MATLAB and Python write them with LF; with core.autocrlf on Windows git then warned "LF will
+# be replaced by CRLF" for each and listed them as modified after every regeneration. eol=lf keeps LF in the working
+# copy on every platform, so a regeneration that changes nothing shows nothing.
+paper/tables/*.md          text eol=lf
+paper/figures/*.labels.txt text eol=lf
+docs/RESULTS_P2.md         text eol=lf
+data/SHA256SUMS.txt        text eol=lf
+*.pdf binary
+*.png binary
+*.fig binary

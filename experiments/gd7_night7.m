@@ -1,0 +1,9 @@
+function gd7_night7()
+%GD7_NIGHT7  Night 7 (REGISTER_P2 sec 13.4, 15.1, 15.3): CỔNG G #4, #5 (circle, K 0.5, segments
+%shared with circle_main reused from N4b-P2-base after a spot check) and #12 (hover, K 0,
+%TauPred 0 = tau*_hover, sec 11.3). tau_w* 0.020 s. At most ~800 column-runs (~5.5 h).
+gd7_batch('night7', { ...
+    'N5-B-Weak',      0.290, 'a051c6fdcf0a6be2'; ...
+    'N5-B-Medium',    0.290, 'dd710794f4786481'; ...
+    'N5-H-StrongRel', 0,     '7b105836187d9f25'});
+end

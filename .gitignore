@@ -12,6 +12,7 @@ __pycache__/
 results/
 dataset/
 wind_conf2/
+wind_conf3/
 wind_e0check/
 wind_expl_*
 wind_conf_*

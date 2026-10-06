@@ -1,0 +1,167 @@
+name: CONFIRM3 (held-out set, run once)
+
+# docs/REGISTER_FINAL.md sec 6 / 6.1. Manual start only:
+#   dev test (plumbing; no 2022 file downloaded, the same chain on 8 dev segments per set, results/gd10_devtest/):
+#     gh workflow run confirm3.yml -f dev_run=<final.yml run id> -f devtest=true
+#   CONFIRM3 (ONCE, only after the APPROVED line of sec 6.1 is committed):
+#     gh workflow run confirm3.yml -f dev_run=<final.yml run id> -f devtest=false
+# dev_run = a final.yml run whose "wind" artifact (the dev export) is used for E0, the D2 row-1 check and the dev pool
+# that p2_segset checks the CONFIRM3 days against. The 2022 files are downloaded only after rerun/confirm3_gate.py
+# passes; every MATLAB step checks the same condition again (rerun/confirm3_gate.m). Steps: rerun/confirm3_steps.m.
+# Incidents: re-run the failed jobs of the same run (each step resumes per segment); never change code in between.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dev_run:
+        description: "final.yml run id whose 'wind' artifact (dev export) is used"
+        required: true
+        type: string
+      devtest:
+        description: "true = plumbing test on dev segments (no 2022 file); false = CONFIRM3, once"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: opening condition (REGISTER_FINAL sec 6.1), before any 2022 file
+        if: ${{ !inputs.devtest }}
+        run: python3 rerun/confirm3_gate.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: python packages
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy scipy
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -c "import numpy, scipy, torch; print('numpy', numpy.__version__, 'scipy', scipy.__version__, 'torch', torch.__version__)"
+      - name: dev export of the final run
+        uses: actions/download-artifact@v4
+        with:
+          name: wind
+          path: .
+          run-id: ${{ inputs.dev_run }}
+          github-token: ${{ github.token }}
+      - name: M5 dev raw files (cache of final.yml)
+        uses: actions/cache/restore@v4
+        with:
+          path: m5/dev
+          key: m5-dev-${{ hashFiles('rerun/m5_dev_urls.txt') }}
+      - name: E0 - the export pipeline reproduces three dev exploration segments bit for bit
+        run: |
+          set -euo pipefail
+          mkdir -p m5/explore wind_e0check
+          tr -d '\r' < rerun/m5_explore_files.txt | while read -r f; do
+            [ -n "$f" ] || continue
+            if [ -s "m5/dev/$f" ]; then cp "m5/dev/$f" "m5/explore/$f"; else
+              u=$(tr -d '\r' < rerun/m5_dev_urls.txt | grep -F "/$f")
+              curl -fsS --retry 5 --retry-delay 10 --max-time 900 -o "m5/explore/$f" "$u"; fi
+          done
+          echo "m5/explore: $(ls m5/explore/*.mat | wc -l) files"
+          python python/export_wind_sim.py --real-dir m5/explore --real-split dev --ckpt w4_frozen_20hz_t150_train2345_s0 \
+            --only-index 0,215,440 --check-against . --out wind_e0check/wind_expl_t150.mat
+          python python/check_export_same.py wind_e0check .
+      - name: download the 232 CONFIRM3 files (2022)
+        if: ${{ !inputs.devtest }}
+        run: |
+          set -euo pipefail
+          python3 rerun/confirm3_gate.py
+          python3 python/make_confirm3_manifest.py
+          mkdir -p m5/conf3
+          tr -d '\r' < rerun/m5_conf3_urls.txt | xargs -P 8 -n 1 sh -c \
+            'f="m5/conf3/$(basename "$0")"; [ -s "$f" ] || curl -fsS --retry 5 --retry-delay 10 --max-time 900 -o "$f.part" "$0" && mv "$f.part" "$f" 2>/dev/null || true'
+          n=$(ls m5/conf3/*.mat | wc -l); echo "m5/conf3 holds $n of 232 files"; [ "$n" -eq 232 ]
+          ls -l m5/conf3 | awk '$5 < 2000000 {print "  short file:", $5, $9}'
+      - name: export CONFIRM3
+        if: ${{ !inputs.devtest }}
+        run: |
+          python python/export_wind_sim.py --real-dir m5/conf3 --real-split heldout --real-max 10000 \
+            --only-days CONFIRM3_MANIFEST.json --ckpt w4_frozen_20hz_t150_train2345_s0 --out wind_conf3/wind_conf3_t150.mat
+          echo "wind_conf3: $(ls wind_conf3/wind_conf3_t150_i*.mat | wc -l) segments"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !inputs.devtest }}
+        with:
+          name: wind3
+          retention-days: 90
+          compression-level: 1
+          path: wind_conf3/
+
+  open:
+    needs: export
+    uses: ./.github/workflows/final-step.yml
+    with:
+      id: ${{ inputs.devtest && 'C3dev-open' || 'C3-open' }}
+      wind_run: ${{ inputs.dev_run }}
+      wind3: ${{ !inputs.devtest }}
+
+  runs:
+    needs: open
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        id: ['D2#1/8', 'D2#2/8', 'D2#3/8', 'D2#4/8', 'D2#5/8', 'D2#6/8', 'D2#7/8', 'D2#8/8',
+             'hover#1/8', 'hover#2/8', 'hover#3/8', 'hover#4/8', 'hover#5/8', 'hover#6/8', 'hover#7/8', 'hover#8/8',
+             'hhover']
+    uses: ./.github/workflows/final-step.yml
+    with:
+      id: ${{ format('{0}-{1}', inputs.devtest && 'C3dev' || 'C3', matrix.id) }}
+      wind_run: ${{ inputs.dev_run }}
+      wind3: ${{ !inputs.devtest }}
+
+  circle:
+    needs: [open, runs]
+    if: ${{ always() && needs.open.result == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        id: ['circle#1/4', 'circle#2/4', 'circle#3/4', 'circle#4/4']
+    uses: ./.github/workflows/final-step.yml
+    with:
+      id: ${{ format('{0}-{1}', inputs.devtest && 'C3dev' || 'C3', matrix.id) }}
+      wind_run: ${{ inputs.dev_run }}
+      wind3: ${{ !inputs.devtest }}
+
+  claims:
+    needs: [open, circle]
+    if: ${{ always() && needs.open.result == 'success' }}
+    uses: ./.github/workflows/final-step.yml
+    with:
+      id: ${{ inputs.devtest && 'C3dev-claims' || 'C3-claims' }}
+      wind_run: ${{ inputs.dev_run }}
+      wind3: ${{ !inputs.devtest }}
+
+  bundle:
+    needs: claims
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: results-*
+          path: results
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: log-*
+          path: logs
+          merge-multiple: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: confirm3-results
+          retention-days: 90
+          path: |
+            results/
+            logs/

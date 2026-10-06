@@ -6,6 +6,9 @@ name: final run step (reusable)
 # when it fails or hits the time limit; re-running the failed job resumes where it stopped (runners save per
 # segment). MATLAB on GitHub-hosted runners: free for public repositories.
 # Resume: inputs from_run (earlier run whose results-* are downloaded first) and skip (part ids whose job is skipped).
+# CONFIRM3 (confirm3.yml, REGISTER_FINAL sec 6): wind_run = the final.yml run whose "wind" artifact (dev export) is
+# used; wind3 = also the "wind3" artifact of this run (the CONFIRM3 export) into wind_conf3/. Full git history is
+# checked out (the CONFIRM3 opening condition checks an ancestor commit).
 # Memory / disk are sampled every minute (logs/sysmon_<part>.txt); swap is off and MATLAB is the OOM killer's first
 # choice, so a run-away process ends the step (its saved segments are uploaded) instead of starving the runner.
 
@@ -23,6 +26,14 @@ on:
         required: false
         default: ""
         type: string
+      wind_run:
+        required: false
+        default: ""
+        type: string
+      wind3:
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   run:
@@ -32,6 +43,8 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: artifact name
         id: nm
@@ -44,10 +57,27 @@ jobs:
           cache: true
 
       - name: wind segments
+        if: inputs.wind_run == ''
         uses: actions/download-artifact@v4
         with:
           name: wind
           path: .
+
+      - name: wind segments (dev export of another run)
+        if: inputs.wind_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: wind
+          path: .
+          run-id: ${{ inputs.wind_run }}
+          github-token: ${{ github.token }}
+
+      - name: CONFIRM3 segments
+        if: inputs.wind3
+        uses: actions/download-artifact@v4
+        with:
+          name: wind3
+          path: wind_conf3
 
       - name: results of the earlier run (resume)
         if: inputs.from_run != ''

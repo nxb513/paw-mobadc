@@ -11,6 +11,9 @@ function S = p2_segset(name, varargin)
 %   S = p2_segset('circle_main', 'CapPerDay', 4, 'Confirm2', 'wind_conf2')
 %                                           % sec 60.2 / 60.8 (GD10 ONLY): the same rule on the CONFIRM2
 %                                           % export in that directory (never read otherwise)
+%   S = p2_segset('circle_main', 'CapPerDay', 4, 'Confirm2', 'wind_conf3')
+%                                           % REGISTER_FINAL sec 6: the same on the CONFIRM3 export
+%                                           % (core/confirm_set.m tells the two apart by the batch file)
 %
 %  REGISTER_P2 sec 6 (GĐ5 protocol). The P2 dev set is
 %     field_grid_K050.mat's 30 segments (T.file, wind_real_t150_i*.mat)
@@ -207,10 +210,13 @@ function D = conf2_pool(opt)
 %CONF2_POOL  REGISTER_P2 sec 60.1 / 60.8: the CONFIRM2 export in directory opt.Confirm2, after checking
 %  the manifest (file SHA-256 on its committed bytes, CR removed; sha256_days; 16 days), every segment's
 %  day in the manifest, every file named wind_conf2_t150_i*.mat, and no manifest day in the dev pool.
-FILE_SHA = '86f58ae95cdbb833ae1f42bf2a36fb5786a92a716843d9da8e50df265629ed23';
-DAYS_SHA = '79ea95decaf9a07699b567ecfd4d8de3295db58fb7edfc3ab148faccc55d6bc2';
+%  REGISTER_FINAL sec 6: the same checks on a CONFIRM3 export (58 days, wind_conf3_t150_i*.mat, its own
+%  registered SHA-256), chosen by core/confirm_set.m.
+cs = confirm_set(opt.Confirm2);
+FILE_SHA = cs.file_sha;
+DAYS_SHA = cs.days_sha;
 mf = opt.Manifest2;
-if isempty(mf), mf = fullfile(repo_root(), 'CONFIRM2_MANIFEST.json'); end
+if isempty(mf), mf = fullfile(repo_root(), cs.manifest); end
 fid = fopen(mf, 'r');
 assert(fid > 0, 'p2_segset Confirm2: %s not found.', mf);
 b = fread(fid, Inf, 'uint8=>char').';
@@ -221,18 +227,19 @@ assert(strcmp(fs, FILE_SHA), 'p2_segset Confirm2: manifest SHA-256 %s, registere
 man = jsondecode(b);
 days = man.days(:);
 if ~iscell(days), days = cellstr(days); end
-assert(numel(days) == 16 && man.n_days == 16, 'p2_segset Confirm2: the manifest does not list 16 days.');
+assert(numel(days) == cs.n_days && man.n_days == cs.n_days, 'p2_segset Confirm2: the manifest does not list %d days.', ...
+    cs.n_days);
 ds = sha256(strjoin(days.', newline));
 assert(strcmp(ds, DAYS_SHA) && strcmp(man.sha256_days, DAYS_SHA), ...
     'p2_segset Confirm2: sha256_days %s, registered %s - STOP.', ds, DAYS_SHA);
 dir2 = opt.Confirm2;
-bj = fullfile(dir2, 'wind_conf2_t150_batch.json');
+bj = fullfile(dir2, cs.batch);
 assert(exist(bj, 'file') == 2, 'p2_segset Confirm2: %s not found - export first (REGISTER_P2 sec 60.6).', bj);
 bm = jsondecode(fileread(bj));
 file = bm.files(:);
 if ~iscell(file), file = cellstr(file); end
-assert(~isempty(file) && all(strncmp(file, 'wind_conf2_t150_i', 17)), ...
-    'p2_segset Confirm2: the batch lists a file outside the CONFIRM2 export.');
+assert(~isempty(file) && all(strncmp(file, cs.prefix, numel(cs.prefix))), ...
+    'p2_segset Confirm2: the batch lists a file outside the %s export.', cs.name);
 n = numel(file);
 U = nan(n, 1);  day = cell(n, 1);
 for i = 1:n
@@ -247,7 +254,7 @@ end
 assert(all(ismember(day, days)), 'p2_segset Confirm2: a segment''s day is not in the manifest - STOP.');
 if isempty(opt.Pool), Dd = dev_pool(opt); else, Dd = opt.Pool; end   % Pool: tests only
 assert(isempty(intersect(days, Dd.day)), 'p2_segset Confirm2: a manifest day is in the dev pool - STOP.');
-D = struct('file', {file}, 'U', U, 'day', {day}, 'src', {repmat({'confirm2'}, n, 1)}, ...
+D = struct('file', {file}, 'U', U, 'day', {day}, 'src', {repmat({lower(cs.name)}, n, 1)}, ...
     'n_conf2', n, 'n_days_found', numel(unique(day)), 'manifest_sha', fs, 'dir', dir2);
 end
 

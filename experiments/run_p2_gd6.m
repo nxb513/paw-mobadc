@@ -563,8 +563,9 @@ assert(~(~isempty(opt.Conf2) && opt.DevTest), 'run_p2_gd6 D2: Conf2 and DevTest 
 sarg = {'CapPerDay', opt.CapPerDay, 'Quiet', true};
 if ~isempty(opt.Conf2), sarg = [sarg, {'Confirm2', opt.Conf2}]; end
 S = p2_segset('circle_main', sarg{:});
+cn = '';  if ~isempty(opt.Conf2), cs = confirm_set(opt.Conf2); cn = [' (' cs.name ')']; end
 fprintf('  set circle_main%s, cap %d/day: %d segments, %d days, sha256 %s\n', ...
-    tern(isempty(opt.Conf2), '', ' (CONFIRM2)'), opt.CapPerDay, S.n_seg, S.n_days, S.sha256);
+    cn, opt.CapPerDay, S.n_seg, S.n_days, S.sha256);
 if ~opt.DryRun && ~opt.DevTest
     sh = lower(strtrim(opt.Sha));                    % the full SHA-256 or its registered 16-hex prefix
     assert(numel(sh) >= 16 && strncmp(S.sha256, sh, numel(sh)), ['run_p2_gd6 D2: the set''s SHA-256 ' ...
@@ -578,7 +579,8 @@ outf = fullfile(repo_root(), 'results', 'gd6', 'd2_p2.mat');
 key = struct('sha', S.sha256, 'TauPred', opt.TauPred, 'TauPrev', opt.TauPrev);
 rows = struct('file', {}, 'day', {}, 'E', {}, 'F', {}, 'p2', {});
 if cm                                                % sec 60.8 (absent on the dev key and rows)
-    outf = fullfile(repo_root(), 'results', tern(opt.DevTest, 'gd10_devtest', 'gd10'), 'D2.mat');
+    outf = fullfile(repo_root(), 'results', 'gd10_devtest', 'D2.mat');
+    if ~opt.DevTest, outf = fullfile(repo_root(), 'results', cs.outdir, 'D2.mat'); end   % gd10 / gd12 (CONFIRM3)
     if opt.DevTest, key.DevTest = opt.NDev; else, key.Conf2 = opt.Conf2; end
     rows = struct('file', {}, 'day', {}, 'E', {}, 'F', {}, 'p2', {}, 'Q', {});
 end

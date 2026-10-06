@@ -77,7 +77,11 @@ cm = ~isempty(opt.Conf2) || opt.DevTest;                % sec 60.8: CONFIRM2 (or
 assert(g.c2 == cm && ~(~isempty(opt.Conf2) && opt.DevTest), ['run_p2_gd7: the C2-* groups run only with ' ...
     'Conf2 or DevTest, and Conf2 / DevTest only with them (REGISTER_P2 sec 60.8).']);
 outd = fullfile(repo_root(), 'results', 'gd7');
-if ~isempty(opt.Conf2), outd = fullfile(repo_root(), 'results', 'gd10'); end
+cn = '';
+if ~isempty(opt.Conf2)                                  % gd10 (CONFIRM2) / gd12 (CONFIRM3, REGISTER_FINAL sec 6)
+    cs = confirm_set(opt.Conf2);  cn = [' (' cs.name ')'];
+    outd = fullfile(repo_root(), 'results', cs.outdir);
+end
 if opt.DevTest, outd = fullfile(repo_root(), 'results', 'gd10_devtest'); end
 outf = fullfile(outd, [g.name '.mat']);
 fprintf('\nrun_p2_gd7 %s | git %s%s\n', g.name, git, tern(opt.DryRun, ' | DRY RUN - nothing saved', ''));
@@ -102,7 +106,7 @@ sarg = {'CapPerDay', opt.CapPerDay, 'Quiet', true};
 if ~isempty(opt.Conf2), sarg = [sarg, {'Confirm2', opt.Conf2}]; end
 S = p2_segset(g.set, sarg{:});
 fprintf('  group %s: set %s%s, cap %d/day: %d segments, %d days, sha256 %s\n', g.name, g.set, ...
-    tern(isempty(opt.Conf2), '', ' (CONFIRM2)'), opt.CapPerDay, S.n_seg, S.n_days, S.sha256);
+    cn, opt.CapPerDay, S.n_seg, S.n_days, S.sha256);
 if ~opt.DryRun && ~opt.DevTest
     sh = lower(strtrim(opt.Sha));
     assert(numel(sh) >= 16 && strncmp(S.sha256, sh, numel(sh)), ['run_p2_gd7: the set''s SHA-256 (%s) ' ...

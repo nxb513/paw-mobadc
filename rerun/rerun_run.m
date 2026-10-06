@@ -26,7 +26,7 @@ end
 diary(fullfile(ldir, sprintf('rerun_%s_%s.txt', tag, datestr(now, 'yyyymmdd_HHMMSS'))));
 fprintf('rerun_run %s | MATLAB %s | %s\n', strjoin(ids, ' '), version, datestr(now));
 rerun_merge();
-T = rerun_steps();
+T = [rerun_steps(); confirm3_steps()];                   % confirm3_steps: REGISTER_FINAL sec 6
 nfail = 0;
 for k = 1:numel(ids)
     id = ids{k};  sh = [];                              % 'id' or 'id#k/n' (no optional regexp groups:

@@ -81,6 +81,15 @@ as sec 50.1), N6 and F-hover (sources of later steps), the twelve C3 groups. Des
   sorted file names `d1632369ebf029ebe038316434bae11d2cc054a6b815749e8d713cf94566f797`, of the sorted days
   `b992cc090383b0ef433b7dc8a45b8eff680d4abee17283b55b461cb5057b654e`. Every day is on the heldout side of
   `split_of`; none is a characterisation day.
+- **Tooling, written 2026-10-06 before any 2022 file is downloaded** (no claim, threshold or configuration chosen
+  by it): `CONFIRM3_MANIFEST.json` (`python/make_confirm3_manifest.py`; checks both SHA-256 above; manifest file
+  SHA-256 `26c6985a…98dc6`); `core/confirm_set.m` + `core/p2_segset.m` option `Confirm2` on `wind_conf3/` (the
+  CONFIRM2 checks for the CONFIRM3 manifest, 58 days); the dev runners' option `Conf2` write CONFIRM3 results to
+  `results/gd12/` (CONFIRM2's sets reproduce their registered SHA-256 after the change); `rerun/confirm3_steps.m`
+  (steps, frozen configuration to be filled from sec 6.1), `rerun/confirm3_gate.m` / `.py` (opening condition:
+  an APPROVED line in sec 6.1 with the runner commit, code unchanged since; checked before the download and by every
+  step), `.github/workflows/confirm3.yml` (gate -> E0 -> download -> export -> sets -> runs -> claims) with a dev
+  test on dev segments.
 
 ## 7. Report
 

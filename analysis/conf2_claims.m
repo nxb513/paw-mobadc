@@ -3,6 +3,8 @@ function C = conf2_claims(Z, varargin)
 %
 %   C = conf2_claims(Z)                     % Z.D2, Z.circle, Z.hover, Z.hhover: struct('rows', .., 'key', ..)
 %   C = conf2_claims(Z, 'Dir', 'wind_conf2')   % directory of the segment files (U, spike count of listed ones)
+%   C = conf2_claims(Z, 'Dir', 'wind_conf3', 'Title', 'CONFIRM3 CLAIMS (REGISTER_FINAL sec 6.1)')
+%                                           % the same claims on CONFIRM3 (rerun/confirm3_steps.m)
 %
 %  Z.D2     results/gd10/D2.mat           (columns L0 L2 L3 V)
 %  Z.circle results/gd10/C2-circle.mat    (L3 L3_iii0 H3)          -> H-static-circle (L3, L3_iii0)
@@ -23,13 +25,13 @@ function C = conf2_claims(Z, varargin)
 %   H-hover         one set (finite in L3 P O O0), unsaturated subset (tilt_sat_frac < 1 % in EVERY
 %                   column, sec 26.3); h = 1 - O/L3; CONFIRMED <=> by-day median >= 10 % AND h - 1.65 SE > 0;
 %                   beside: c, h_sensor, h_pred, (L3 - P)/L3, h on the full one set
-opt = struct('Dir', '');
+opt = struct('Dir', '', 'Title', 'CONFIRM2 CLAIMS (REGISTER_P2 sec 60.3)');
 for i = 1:2:numel(varargin)
     assert(isfield(opt, varargin{i}), 'conf2_claims: unknown option ''%s''.', varargin{i});
     opt.(varargin{i}) = varargin{i+1};
 end
 C = struct();
-fprintf('\n%s\n  CONFIRM2 CLAIMS (REGISTER_P2 sec 60.3)\n%s\n', repmat('=', 1, 80), repmat('=', 1, 80));
+fprintf('\n%s\n  %s\n%s\n', repmat('=', 1, 80), opt.Title, repmat('=', 1, 80));
 C.D2 = claim_d2(getz(Z, 'D2'));
 C.H_static = claim_static(getz(Z, 'hover'), '2. H-static (hover set)', opt);
 C.H_static_circle = claim_static(getz(Z, 'circle'), '3. H-static-circle (circle set, D22 post hoc)', opt);

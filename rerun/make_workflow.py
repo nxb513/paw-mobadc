@@ -8,8 +8,8 @@ Waves A..F run one after another (each needs the previous one; `if: always()` so
 independent steps of later waves - a step whose source is missing stops on its own assert). Within a wave every
 part is its own job (GitHub: at most 20 at a time, max-parallel holds the rest back).
 
-Resume (inputs of the manual start): `from_run` = an earlier run of this workflow whose `results-*` artifacts are
-downloaded before this run's own; `skip` = comma-separated part ids (as in the matrix, e.g. `D2#1/4,N0W`) whose
+Resume (inputs of the manual start): `from_run` = earlier runs of this workflow (comma-separated) whose `results-*`
+artifacts are downloaded, in that order, before this run's own; `skip` = comma-separated part ids (as in the matrix, e.g. `D2#1/4,N0W`) whose
 job is skipped because `from_run` already holds their files.
 """
 import pathlib
@@ -33,7 +33,7 @@ on:
   workflow_dispatch:
     inputs:
       from_run:
-        description: "earlier run id whose results-* artifacts are downloaded first (empty = none)"
+        description: "earlier run ids (comma-separated) whose results-* artifacts are downloaded first (empty = none)"
         required: false
         default: ""
         type: string
@@ -129,25 +129,12 @@ TAIL = """
           release: R2022b
           products: Simulink
           cache: true
-      - name: results of the earlier run (resume)
-        if: inputs.from_run != ''
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ inputs.from_run }}
-          github-token: ${{ github.token }}
-          pattern: results-*
-          path: results
-          merge-multiple: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: results-*
-          path: results
-          merge-multiple: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: log-*
-          path: logs
-          merge-multiple: true
+      - name: results and logs of the earlier runs (resume) and of this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash rerun/fetch_results.sh results-* results "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh log-* logs "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
       - name: merge the parts
         uses: matlab-actions/run-command@v2
         with:

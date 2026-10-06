@@ -112,7 +112,14 @@ files deposited (Zenodo) with their SHA-256 (`data/SHA256SUMS.txt` regenerated).
   - Horizons of sec 3 from this run (procedure value, none edge-unresolved): circle 290, hover 0, T3b 340, square
     120, T5 170, circle L 1.5 260, L 0.5 330 ms; preview circle 180, T3b 210, square 120 ms; tau_w 20, tau_6 280,
     tau_m square 60 ms (the INDI cut-off: run 2).
-- **Run 2** (resume, same steps and parameters): `final.yml` with `from_run` = 37343938016 (its `results-*` are
-  downloaded first) and `skip` = the 61 complete parts; the other 50 parts run. Added for it, in the workflow only:
+- **Run 2** (resume, same steps and parameters): `final.yml` with `from_run` = 37343938016 (its `results-*` to be
+  downloaded first) and `skip` = the 61 complete parts; the other 50 parts to run. Added for it, in the workflow only:
   the resume inputs, `max-parallel: 20`, and a per-job memory / disk sampler (swap off, MATLAB first for the OOM
   killer) so that a run-away process ends its step with the saved segments instead of the runner.
+  Run 37481942029 (85bab93, 2026-10-06 14:47-16:10 UTC): N0H3 complete - argmin 32 Hz at the grid edge after the one
+  extension (EDGE-UNRESOLVED; pooled 0.0624 / 0.0485 / 0.0420 / 0.0389 / 0.0374 / 0.0367 m at 1-32 Hz), so the
+  INDI cut-off is the best value tried, **32 Hz** (sec 3 rule; = D21); GUOTRIM#2/2 complete. Every other part stopped
+  at its start: `actions/download-artifact` with `run-id` lists only the first 100 artifacts of a run (run 1 has
+  169), so the results of waves A-B were not downloaded. Cancelled; nothing simulated by it is lost.
+- **Run 3** (resume, same steps and parameters): artifacts fetched with `gh run download` (paginated,
+  `rerun/fetch_results.sh`) from run 1, run 2 and the run itself; `skip` = the 63 complete parts of runs 1-2.

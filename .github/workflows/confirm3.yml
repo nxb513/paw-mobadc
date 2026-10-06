@@ -48,12 +48,9 @@ jobs:
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           python -c "import numpy, scipy, torch; print('numpy', numpy.__version__, 'scipy', scipy.__version__, 'torch', torch.__version__)"
       - name: dev export of the final run
-        uses: actions/download-artifact@v4
-        with:
-          name: wind
-          path: .
-          run-id: ${{ inputs.dev_run }}
-          github-token: ${{ github.token }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "${{ inputs.dev_run }}" -R "$GITHUB_REPOSITORY" -n wind -D .
       - name: M5 dev raw files (cache of final.yml)
         uses: actions/cache/restore@v4
         with:
@@ -148,16 +145,13 @@ jobs:
     if: always()
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: results-*
-          path: results
-          merge-multiple: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: log-*
-          path: logs
-          merge-multiple: true
+      - uses: actions/checkout@v4
+      - name: results and logs of every step
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash rerun/fetch_results.sh results-* results "" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh log-* logs "" "$GITHUB_RUN_ID"
       - uses: actions/upload-artifact@v4
         with:
           name: confirm3-results

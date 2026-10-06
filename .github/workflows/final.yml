@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       from_run:
-        description: "earlier run id whose results-* artifacts are downloaded first (empty = none)"
+        description: "earlier run ids (comma-separated) whose results-* artifacts are downloaded first (empty = none)"
         required: false
         default: ""
         type: string
@@ -173,25 +173,12 @@ jobs:
           release: R2022b
           products: Simulink
           cache: true
-      - name: results of the earlier run (resume)
-        if: inputs.from_run != ''
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${ inputs.from_run }
-          github-token: ${ github.token }
-          pattern: results-*
-          path: results
-          merge-multiple: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: results-*
-          path: results
-          merge-multiple: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: log-*
-          path: logs
-          merge-multiple: true
+      - name: results and logs of the earlier runs (resume) and of this run
+        env:
+          GH_TOKEN: ${ github.token }
+        run: |
+          bash rerun/fetch_results.sh results-* results "${ inputs.from_run }" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh log-* logs "${ inputs.from_run }" "$GITHUB_RUN_ID"
       - name: merge the parts
         uses: matlab-actions/run-command@v2
         with:

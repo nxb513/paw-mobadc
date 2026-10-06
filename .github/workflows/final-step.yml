@@ -5,7 +5,9 @@ name: final run step (reusable)
 # the "results-*" artifacts (rerun_run merges their parts first). The part's results/ and log are uploaded even
 # when it fails or hits the time limit; re-running the failed job resumes where it stopped (runners save per
 # segment). MATLAB on GitHub-hosted runners: free for public repositories.
-# Resume: inputs from_run (earlier run whose results-* are downloaded first) and skip (part ids whose job is skipped).
+# Resume: inputs from_run (earlier runs, comma-separated, whose results-* are downloaded first) and skip (part ids
+# whose job is skipped). Artifacts are fetched with `gh run download` (paginated; download-artifact with run-id lists
+# only the first 100 artifacts of a run - run 37481942029 lost waves A-B that way).
 # CONFIRM3 (confirm3.yml, REGISTER_FINAL sec 6): wind_run = the final.yml run whose "wind" artifact (dev export) is
 # used; wind3 = also the "wind3" artifact of this run (the CONFIRM3 export) into wind_conf3/. Full git history is
 # checked out (the CONFIRM3 opening condition checks an ancestor commit).
@@ -65,12 +67,9 @@ jobs:
 
       - name: wind segments (dev export of another run)
         if: inputs.wind_run != ''
-        uses: actions/download-artifact@v4
-        with:
-          name: wind
-          path: .
-          run-id: ${{ inputs.wind_run }}
-          github-token: ${{ github.token }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "${{ inputs.wind_run }}" -R "$GITHUB_REPOSITORY" -n wind -D .
 
       - name: CONFIRM3 segments
         if: inputs.wind3
@@ -79,23 +78,10 @@ jobs:
           name: wind3
           path: wind_conf3
 
-      - name: results of the earlier run (resume)
-        if: inputs.from_run != ''
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ inputs.from_run }}
-          github-token: ${{ github.token }}
-          pattern: results-*
-          path: results
-          merge-multiple: true
-
-      - name: results of earlier waves
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          pattern: results-*
-          path: results
-          merge-multiple: true
+      - name: results of the earlier runs (resume) and of earlier waves
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash rerun/fetch_results.sh results-* results "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
 
       - name: snapshot of the downloaded results
         run: |

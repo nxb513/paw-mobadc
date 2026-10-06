@@ -92,3 +92,18 @@ files deposited (Zenodo) with their SHA-256 (`data/SHA256SUMS.txt` regenerated).
 
 - Pilot (not used for any number): workflow `rerun.yml`, run 37340688346 (2026-10-05), the stored-parameter steps,
   to check MATLAB R2022b / Simulink on the Linux runners and the time per segment.
+- **Run 1**: `final.yml` at 9b5d42c, run 37343938016, 2026-10-05 16:50-21:31 UTC. 61 of the 111 step parts complete
+  (prep; wave A except N0H3; all of wave B; 16 parts of wave C). Not complete, for reasons outside the results:
+  - N0H3: simulated, then could not save (`run_grid` does not create `results/gd6`, and a wave-A job starts with no
+    `results/`) -> the INDI cut-off was missing, so six-circle-h3 and H3-circle (parts that started) stopped on
+    their assert. Fix: `rerun_run` creates `results/gd6`, `results/gd7` first. No runner changed.
+  - 25 wave-C parts cancelled by GitHub before starting ("job was not acquired by Runner ... after multiple
+    attempts", 19:47-19:52 UTC); 2 parts (N6#3/4, static-hover-spk#2/3) lost their runner mid-run ("hosted runner
+    lost communication"), no log or file kept. Waves D-F then stopped on missing sources.
+  - Horizons of sec 3 from this run (procedure value, none edge-unresolved): circle 290, hover 0, T3b 340, square
+    120, T5 170, circle L 1.5 260, L 0.5 330 ms; preview circle 180, T3b 210, square 120 ms; tau_w 20, tau_6 280,
+    tau_m square 60 ms (the INDI cut-off: run 2).
+- **Run 2** (resume, same steps and parameters): `final.yml` with `from_run` = 37343938016 (its `results-*` are
+  downloaded first) and `skip` = the 61 complete parts; the other 50 parts run. Added for it, in the workflow only:
+  the resume inputs, `max-parallel: 20`, and a per-job memory / disk sampler (swap off, MATLAB first for the OOM
+  killer) so that a run-away process ends its step with the saved segments instead of the runner.

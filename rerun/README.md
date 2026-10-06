@@ -25,3 +25,5 @@ D2 row 1 (`wind_real_t150_i0000`) to the printed digit: 0.0414 / 0.0334 / 0.0140
 Start: GitHub -> Actions -> "final run (MATLAB, parallel)" -> Run workflow (`gh workflow run final.yml`). Waves A..F
 need each other (`if: always()`); a part that fails or hits the 6-h limit uploads what it ran; "Re-run failed jobs"
 resumes it. Results: artifact `final-results` of the report job. `rerun.yml` was the pilot (not used for numbers).
+After a code fix, resume in a new run: `gh workflow run final.yml -f from_run=<run id> -f skip=<complete part ids,
+comma-separated>` (the earlier run's `results-*` are downloaded first; the listed parts are skipped).

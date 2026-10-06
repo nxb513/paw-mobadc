@@ -5,9 +5,25 @@ name: final run (MATLAB, parallel)
 # rerun_steps on GitHub-hosted runners (MATLAB R2022b + Simulink, Ubuntu 22.04), one job per step part, then a
 # report job that merges every part and uploads all result files (artifact "final-results").
 # Manual start: GitHub -> Actions -> "final run (MATLAB, parallel)" -> Run workflow, or `gh workflow run final.yml`.
+# Resume: `gh workflow run final.yml -f from_run=<earlier run id> -f skip=<part ids done there, comma-separated>`.
 
 on:
   workflow_dispatch:
+    inputs:
+      from_run:
+        description: "earlier run id whose results-* artifacts are downloaded first (empty = none)"
+        required: false
+        default: ""
+        type: string
+      skip:
+        description: "comma-separated part ids already complete in from_run (their jobs are skipped)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  actions: read
+  contents: read
 
 jobs:
   prep:
@@ -67,66 +83,84 @@ jobs:
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
         id: ['N0P-circle', 'N0P-hover', 'N0P-T3b', 'N0P-square', 'N0P-T5', 'N0P-circle_L15', 'N0P-circle_L05', 'N0V-circle', 'N0V-T3b', 'N0V-square', 'N0H3']
     uses: ./.github/workflows/final-step.yml
     with:
       id: ${{ matrix.id }}
+      from_run: ${{ inputs.from_run }}
+      skip: ${{ inputs.skip }}
 
   wave-B:
     needs: wave-A
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
         id: ['N0W', 'N0W6', 'N0M-square', 'D2#1/4', 'D2#2/4', 'D2#3/4', 'D2#4/4', 'GUO#1/4', 'GUO#2/4', 'GUO#3/4', 'GUO#4/4', 'TAB-T3b#1/5', 'TAB-T3b#2/5', 'TAB-T3b#3/5', 'TAB-T3b#4/5', 'TAB-T3b#5/5', 'TAB-circle#1/2', 'TAB-circle#2/2', 'TAB-mp025#1/2', 'TAB-mp025#2/2', 'TAB-mp065#1/2', 'TAB-mp065#2/2', 'TAB-L150#1/2', 'TAB-L150#2/2', 'TAB-L050#1/2', 'TAB-L050#2/2', 'TAB-mp025-L050#1/2', 'TAB-mp025-L050#2/2', 'TAB-mp025-L150#1/2', 'TAB-mp025-L150#2/2', 'TAB-mp065-L050#1/2', 'TAB-mp065-L050#2/2', 'TAB-mp065-L150#1/2', 'TAB-mp065-L150#2/2']
     uses: ./.github/workflows/final-step.yml
     with:
       id: ${{ matrix.id }}
+      from_run: ${{ inputs.from_run }}
+      skip: ${{ inputs.skip }}
 
   wave-C:
     needs: wave-B
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
         id: ['six-circle-h3#1/3', 'six-circle-h3#2/3', 'six-circle-h3#3/3', 'H3-circle#1/3', 'H3-circle#2/3', 'H3-circle#3/3', 'static-circle', 'iii-circle', 'static-circle-sn', 'static-circle-spk#1/3', 'static-circle-spk#2/3', 'static-circle-spk#3/3', 'N6#1/4', 'N6#2/4', 'N6#3/4', 'N6#4/4', 'static-hover-sn', 'static-hover-spk#1/3', 'static-hover-spk#2/3', 'static-hover-spk#3/3', 'TAB-square#1/6', 'TAB-square#2/6', 'TAB-square#3/6', 'TAB-square#4/6', 'TAB-square#5/6', 'TAB-square#6/6', 'GUOTRIM#1/2', 'GUOTRIM#2/2', 'N4b-P2-base#1/4', 'N4b-P2-base#2/4', 'N4b-P2-base#3/4', 'N4b-P2-base#4/4', 'N4b-P2-L15#1/4', 'N4b-P2-L15#2/4', 'N4b-P2-L15#3/4', 'N4b-P2-L15#4/4', 'N4b-P2-K10#1/4', 'N4b-P2-K10#2/4', 'N4b-P2-K10#3/4', 'N4b-P2-K10#4/4', 'N5-A-Weak#1/3', 'N5-A-Weak#2/3', 'N5-A-Weak#3/3', 'N5-A-Medium#1/2', 'N5-A-Medium#2/2', 'N5-A-StrongRel', 'N5-H-StrongRel']
     uses: ./.github/workflows/final-step.yml
     with:
       id: ${{ matrix.id }}
+      from_run: ${{ inputs.from_run }}
+      skip: ${{ inputs.skip }}
 
   wave-D:
     needs: wave-C
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
         id: ['H3-hover#1/2', 'H3-hover#2/2', 'F-hover#1/3', 'F-hover#2/3', 'F-hover#3/3', 'static-circle-k', 'N4b-P2-d200#1/3', 'N4b-P2-d200#2/3', 'N4b-P2-d200#3/3', 'N5-B-Weak', 'N5-B-Medium']
     uses: ./.github/workflows/final-step.yml
     with:
       id: ${{ matrix.id }}
+      from_run: ${{ inputs.from_run }}
+      skip: ${{ inputs.skip }}
 
   wave-E:
     needs: wave-D
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
         id: ['static-hover#1/2', 'static-hover#2/2', 'iii-hover#1/3', 'iii-hover#2/3', 'iii-hover#3/3']
     uses: ./.github/workflows/final-step.yml
     with:
       id: ${{ matrix.id }}
+      from_run: ${{ inputs.from_run }}
+      skip: ${{ inputs.skip }}
 
   wave-F:
     needs: wave-E
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
         id: ['static-hover-k#1/2', 'static-hover-k#2/2', 'static-indi-bias']
     uses: ./.github/workflows/final-step.yml
     with:
       id: ${{ matrix.id }}
+      from_run: ${{ inputs.from_run }}
+      skip: ${{ inputs.skip }}
 
   report:
     needs: wave-F
@@ -139,6 +173,15 @@ jobs:
           release: R2022b
           products: Simulink
           cache: true
+      - name: results of the earlier run (resume)
+        if: inputs.from_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${ inputs.from_run }
+          github-token: ${ github.token }
+          pattern: results-*
+          path: results
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
           pattern: results-*

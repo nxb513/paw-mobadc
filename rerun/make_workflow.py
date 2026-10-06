@@ -6,7 +6,11 @@
 
 Waves A..F run one after another (each needs the previous one; `if: always()` so a failed part does not stop the
 independent steps of later waves - a step whose source is missing stops on its own assert). Within a wave every
-part is its own job (GitHub: at most 20 at a time, the rest queue).
+part is its own job (GitHub: at most 20 at a time, max-parallel holds the rest back).
+
+Resume (inputs of the manual start): `from_run` = an earlier run of this workflow whose `results-*` artifacts are
+downloaded before this run's own; `skip` = comma-separated part ids (as in the matrix, e.g. `D2#1/4,N0W`) whose
+job is skipped because `from_run` already holds their files.
 """
 import pathlib
 import re
@@ -23,9 +27,25 @@ HEAD = """name: final run (MATLAB, parallel)
 # rerun_steps on GitHub-hosted runners (MATLAB R2022b + Simulink, Ubuntu 22.04), one job per step part, then a
 # report job that merges every part and uploads all result files (artifact "final-results").
 # Manual start: GitHub -> Actions -> "final run (MATLAB, parallel)" -> Run workflow, or `gh workflow run final.yml`.
+# Resume: `gh workflow run final.yml -f from_run=<earlier run id> -f skip=<part ids done there, comma-separated>`.
 
 on:
   workflow_dispatch:
+    inputs:
+      from_run:
+        description: "earlier run id whose results-* artifacts are downloaded first (empty = none)"
+        required: false
+        default: ""
+        type: string
+      skip:
+        description: "comma-separated part ids already complete in from_run (their jobs are skipped)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  actions: read
+  contents: read
 
 jobs:
   prep:
@@ -87,11 +107,14 @@ WAVE = """
     if: always()
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
         id: [{ids}]
     uses: ./.github/workflows/final-step.yml
     with:
       id: ${{{{ matrix.id }}}}
+      from_run: ${{{{ inputs.from_run }}}}
+      skip: ${{{{ inputs.skip }}}}
 """
 
 TAIL = """
@@ -106,6 +129,15 @@ TAIL = """
           release: R2022b
           products: Simulink
           cache: true
+      - name: results of the earlier run (resume)
+        if: inputs.from_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.from_run }}
+          github-token: ${{ github.token }}
+          pattern: results-*
+          path: results
+          merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
           pattern: results-*

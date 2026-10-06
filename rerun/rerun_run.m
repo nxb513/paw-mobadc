@@ -19,6 +19,10 @@ if ~exist(cdir, 'dir'), mkdir(cdir); end
 Simulink.fileGenControl('set', 'CacheFolder', cdir, 'CodeGenFolder', cdir, 'createDir', true);
 ldir = fullfile(here, 'logs');
 if ~exist(ldir, 'dir'), mkdir(ldir); end
+for d = {'gd6', 'gd7'}                                  % run_grid (N0H3) saves without creating its folder;
+    rdir = fullfile(here, 'results', d{1});             %  a first-wave job has no results/ at all
+    if ~exist(rdir, 'dir'), mkdir(rdir); end
+end
 diary(fullfile(ldir, sprintf('rerun_%s_%s.txt', tag, datestr(now, 'yyyymmdd_HHMMSS'))));
 fprintf('rerun_run %s | MATLAB %s | %s\n', strjoin(ids, ' '), version, datestr(now));
 rerun_merge();

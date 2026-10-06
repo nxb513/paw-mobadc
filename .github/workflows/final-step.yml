@@ -5,6 +5,9 @@ name: final run step (reusable)
 # the "results-*" artifacts (rerun_run merges their parts first). The part's results/ and log are uploaded even
 # when it fails or hits the time limit; re-running the failed job resumes where it stopped (runners save per
 # segment). MATLAB on GitHub-hosted runners: free for public repositories.
+# Resume: inputs from_run (earlier run whose results-* are downloaded first) and skip (part ids whose job is skipped).
+# Memory / disk are sampled every minute (logs/sysmon_<part>.txt); swap is off and MATLAB is the OOM killer's first
+# choice, so a run-away process ends the step (its saved segments are uploaded) instead of starving the runner.
 
 on:
   workflow_call:
@@ -12,10 +15,19 @@ on:
       id:
         required: true
         type: string
+      from_run:
+        required: false
+        default: ""
+        type: string
+      skip:
+        required: false
+        default: ""
+        type: string
 
 jobs:
   run:
     name: ${{ inputs.id }}
+    if: ${{ !contains(format(',{0},', inputs.skip), format(',{0},', inputs.id)) }}
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     steps:
@@ -37,6 +49,16 @@ jobs:
           name: wind
           path: .
 
+      - name: results of the earlier run (resume)
+        if: inputs.from_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.from_run }}
+          github-token: ${{ github.token }}
+          pattern: results-*
+          path: results
+          merge-multiple: true
+
       - name: results of earlier waves
         uses: actions/download-artifact@v4
         continue-on-error: true
@@ -49,6 +71,17 @@ jobs:
         run: |
           mkdir -p results
           find results -type f -print0 | xargs -0 -r sha1sum | sort > "$RUNNER_TEMP/before.sha"
+
+      - name: machine; memory and disk sampler
+        run: |
+          nproc; free -m; df -h / | cat
+          sudo swapoff -a || true
+          mkdir -p logs
+          f="logs/sysmon_${{ steps.nm.outputs.safe }}.txt"
+          nohup bash -c 'while true; do
+              for p in $(pgrep -x MATLAB); do echo 1000 | sudo tee /proc/$p/oom_score_adj > /dev/null 2>&1; done
+              echo "$(date -u +%H:%M:%S) mem_used_MB $(free -m | awk "/Mem:/{print \$3}") avail_MB $(free -m | awk "/Mem:/{print \$7}") disk_avail_MB $(df -m --output=avail / | tail -1)"
+              sleep 60; done' > "$f" 2>&1 &
 
       - name: run ${{ inputs.id }}
         uses: matlab-actions/run-command@v2
@@ -64,6 +97,8 @@ jobs:
             mkdir -p "out/$(dirname "$f")" && cp "$f" "out/$f"; done
           mkdir -p out/results
           echo "files written by this job:"; (cd out && find results -type f | sort)
+          echo "memory / disk (first and last samples):"; f="logs/sysmon_${{ steps.nm.outputs.safe }}.txt"
+          if [ -f "$f" ]; then head -n 2 "$f"; echo ...; tail -n 3 "$f"; sort -k3 -n "$f" | tail -n 1 | sed 's/^/peak: /'; fi
 
       - name: upload results
         if: always()

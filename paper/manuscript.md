@@ -678,10 +678,10 @@ open circles in (b): segments on which PA-MOBADC reaches its tilt clamp.
 **Fig. 7** (`ijdc_sensitivity`). What the payload-drag term depends on, development sets: (a) pooled error against the
 drag ratio assumed by the controller (PA-MOBADC does not use it); (b) error reduction by C2 per trajectory, added to
 PA-MOBADC or to MOBADC-W + preview; (c) error reduction by C2 per payload mass and cable length on the circle; (d)
-error reduction by C2 with and without wind-sensor noise. Whiskers: $\pm$1.65 SE.
+error reduction by C2 with and without wind-sensor noise. Whiskers: ±1.65 SE.
 
 **Fig. 8** (`ijdc_oracle`). Error reduction from perfect advance knowledge of the wind, $h$ = 1 − oracle / PA-MOBADC,
-in the registered wind groups, with $\pm$1.65 SE; dashed: the registered threshold; right: $h$, segments and days.
+in the registered wind groups, with ±1.65 SE; dashed: the registered threshold; right: $h$, segments and days.
 *: post-hoc group. The group with strong wind on the circle at $K = 0$ contained no segment.
 
 **Fig. 9** (`ijdc_measure`). Hover: pooled error of INDI-DE with a horizontal accelerometer bias, against PA-MOBADC and

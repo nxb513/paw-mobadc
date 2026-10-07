@@ -1,0 +1,60 @@
+% Cover letter of the IJDC submission (not anonymised; for the editor only). Same text as cover_letter.txt.
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm]{geometry}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8\baselineskip}
+\pagestyle{empty}
+\begin{document}
+
+\begin{flushright}
+Hanoi, 8 October 2026
+\end{flushright}
+
+The Editor\\
+International Journal of Dynamics and Control\\
+Springer Nature
+
+\textbf{Submission of a Research Article:} \emph{Prediction-augmented, payload-wind-aware multiple-observer control of
+a quadrotor with a slung load in measured wind}
+
+Dear Editor,
+
+We submit the manuscript ``Prediction-augmented, payload-wind-aware multiple-observer control of a quadrotor with a
+slung load in measured wind'' for consideration as a Research Article in the International Journal of Dynamics and
+Control.
+
+The manuscript addresses position control of a quadrotor that carries a cable-suspended load in wind. It argues that,
+once the wind is measured, the error that remains under an observer-based anti-disturbance controller is set by two
+gaps in the controller's model: the loop delay acts on a payload force that is periodic along a planned trajectory,
+and the wind feed-forward omits the drag on the load. Both gaps are closed with information the controller already
+holds. The disturbance-observer estimate is propagated over the loop delay through the observer's own exosystem, and
+the measured-wind feed-forward is scaled by the load's share of the wind force given by the force balance of the
+coupled system. A boundedness argument shows that neither addition can destabilise a baseline that is input-to-state
+stable with respect to its compensation error.
+
+The evaluation is a simulation study of a quadrotor coupled to a spherical pendulum in wind measured at a
+meteorological tower. Every claim was registered before its data were opened and was tested on fourteen held-out
+days: the delay compensation lowers the error of the measured-wind baseline by 58\,\%, and the payload-drag term
+lowers it by a further 63\,\% in hover and 37\,\% on a circle. The work concerns the dynamics and control of a
+nonlinear, underactuated system under measured disturbances, which we believe fits the scope of the journal.
+
+The manuscript is prepared for double-anonymous review; the author names, affiliations and declarations are given in
+the submission system. The work has not been published and is not under consideration elsewhere, and all authors have
+approved the submission. No funding was received, and the authors have no competing interests to declare.
+AI-assisted tools were used to help write the simulation and analysis code and to edit the manuscript, as described
+in Section~5.5.
+
+Sincerely,
+
+\vspace{1.5\baselineskip}
+Xuan Bach Nguyen (corresponding author), on behalf of all authors\\
+School of Electrical and Electronic Engineering, Hanoi University of Science and Technology, Hanoi, Viet Nam\\
+\href{mailto:nguyenxuanbach513@gmail.com}{nguyenxuanbach513@gmail.com}\\
+ORCID: \url{https://orcid.org/0009-0003-5194-8790}
+
+\end{document}

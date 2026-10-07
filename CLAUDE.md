@@ -77,7 +77,7 @@ Mọi lệnh MATLAB chạy từ gốc repo, sau `setup_path`. Claude chạy MATL
 | kiểm văn bản (không cần MATLAB) | `python tools/check_names.py`, `check_equations.py`, `check_propagation.py`, `check_retracted.py`, `readme_names.py --check` |
 | khối Simulink ↔ nguồn | `python tools/extract_eml.py baseline1.slx --check simulink_blocks` |
 | render bản thảo | `pandoc paper/manuscript.md --citeproc -o out.docx` (bib + csl khai báo trong YAML) |
-| bản nộp IJDC | `python paper/ijdc/build_tex.py` → `paper/ijdc/manuscript.tex`; PDF: CI `.github/workflows/ijdc.yml`, artifact `ijdc-pdf` |
+| bản nộp IJDC | `python paper/ijdc/build_tex.py` → `paper/ijdc/manuscript.tex`; PDF: CI `.github/workflows/ijdc.yml`, artifact `ijdc-pdf`; zip nộp (phẳng, kiểm ẩn danh): `python paper/ijdc/make_bundle.py`, artifact `ijdc-latex-zip` (CI biên dịch thử zip trong thư mục trống) |
 
 CI GitHub (`.github/workflows/checks.yml`) chạy các bước kiểm văn bản mỗi lần push. Sau mỗi thay đổi: chạy các
 bước kiểm liên quan, rồi mới commit/push.
@@ -105,5 +105,6 @@ Sửa mã Simulink: không sửa tay trong `baseline1.slx` rồi bỏ đó - ngu
   28 log vào `logs/`, 169 file cache xoá; journal `E:\windataset_archive\tidy_journal.tsv` (`--undo` trả lại).
 - Trước khi nộp: số trang bản IEEE của Sreenath (1 dòng CẦN KIỂM trong EQUATIONS_TABLE); người dùng tick các dòng
   EQUATIONS_TABLE; vẽ lại hình 3-9 theo kiểu IJDC từ 39 file kết quả gốc (máy mới chưa có `results/` gốc); đưa
-  `results/` lên Zenodo. `check_reading.py --final` đã PASS (2026-10-07): mọi bài được trích đã đọc toàn văn. Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
+  `results/` lên Zenodo. `check_reading.py --final` đã PASS (2026-10-07): mọi bài được trích đã đọc toàn văn.
+  Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
 - Bước 6 dọn repo (fast-forward `main`, đổi nhánh mặc định): CHƯA làm, chờ người dùng cho phép rõ ràng.

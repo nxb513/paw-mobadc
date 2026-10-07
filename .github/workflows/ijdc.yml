@@ -1,7 +1,9 @@
 name: IJDC manuscript (LaTeX)
 
 # Regenerates paper/ijdc/manuscript.tex from paper/manuscript.md (paper/ijdc/build_tex.py), fails if the committed
-# file differs, and compiles the anonymised manuscript and the title page to PDF (artifact "ijdc-pdf").
+# file differs, and compiles the anonymised manuscript and the title page to PDF (artifact "ijdc-pdf"). The submission
+# zip (paper/ijdc/make_bundle.py, artifact "ijdc-latex-zip") is then compiled on its own in an empty folder, as the
+# journal will compile it.
 
 on:
   push:
@@ -41,6 +43,28 @@ jobs:
           cd paper/ijdc
           grep -E "undefined|Overfull|Citation .* undefined|multiply defined" manuscript.log title_page.log || echo "none"
           if grep -E "Reference .* undefined|Citation .* undefined" manuscript.log; then exit 1; fi
+      - name: submission zip (flat, anonymity checked against the title page)
+        run: |
+          python paper/ijdc/make_bundle.py
+          mkdir bundle_test
+          cd bundle_test && unzip -q ../paper/ijdc/ijdc_latex.zip && ls -la
+      - name: the zip compiles on its own
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: bundle_test
+          root_file: manuscript.tex
+          latexmk_use_lualatex: false
+      - name: no undefined references in the zip build
+        run: |
+          if grep -E "Reference .* undefined|Citation .* undefined|File .* not found" bundle_test/manuscript.log; then exit 1; fi
+          a=$(grep -o "Output written on manuscript.pdf ([0-9]* pages" paper/ijdc/manuscript.log)
+          b=$(grep -o "Output written on manuscript.pdf ([0-9]* pages" bundle_test/manuscript.log)
+          echo "main build: $a"; echo "zip build:  $b"
+          [ -n "$b" ] && [ "$a" = "$b" ]
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ijdc-latex-zip
+          path: paper/ijdc/ijdc_latex.zip
       - uses: actions/upload-artifact@v4
         if: always()
         with:

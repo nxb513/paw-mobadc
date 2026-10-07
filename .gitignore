@@ -56,3 +56,5 @@ paper/ijdc/*.out
 paper/ijdc/*.fls
 paper/ijdc/*.fdb_latexmk
 paper/ijdc/*.pdf
+paper/ijdc/*.zip
+bundle_test/

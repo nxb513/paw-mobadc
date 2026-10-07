@@ -13,7 +13,7 @@ them by section.
 | `P2_SPEC_AUDIT.md` | the specification checked line by line against the running code (`file:line`) |
 | `GD2B_DESIGN.md` | how plant P2 was wired into `baseline1.slx` (stage 2b) |
 | `COMPETITORS_DESIGN.md` | the design of the competitors H3 (INDI-DE) and H4 (frequency-adaptive DOB; H4 later dropped, REGISTER_P2 sec 50) |
-| `ADVISOR_NOTES.md` | single author, no advisor or lab: the decisions this implies for scope and checking |
+| `ADVISOR_NOTES.md` | authorship and scope: single author with no advisor or lab until 2026-10-07, three authors for the IJDC submission from then on; the scope decisions (published parameters, simulation only) |
 
 ## Files named in comments that are not in this branch
 

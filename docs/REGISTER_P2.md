@@ -4450,3 +4450,11 @@ is still to be completed.
 
 `gd7/N6` (written 2026-09-27 23:18, git `b936501`) -> model `b936501` (the N6 build itself), `61529E3D…`,
 `5ac8ad70…`. Table 66.2 now covers all 39 result files of the paper; nothing is left CẦN KIỂM there.
+
+## 67. Authorship (amendment, 2026-10-07) - facts
+
+The header, §0.5 and §0.7 describe decisions as taken by the user as "sole author". That was
+the authorship when they were written. From 2026-10-07 the IJDC submission has three authors - Huy Hoang Tran, Xuan
+Bach Nguyen (corresponding author) and Xuan Hai Le (supervision); `paper/ijdc/title_page.tex`,
+`docs/devlog/ADVISOR_NOTES.md` (entry 2026-10-07). Nothing registered changes: every claim, threshold and decision
+above stands as written and dated.

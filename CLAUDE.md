@@ -7,7 +7,10 @@ Claude Code tự đọc file này khi mở repo. Đọc hết trước khi làm 
 
 Bài báo **PAW-MOBADC**: tái hiện và mở rộng MOBADC (Guo et al. 2020, *Control Engineering Practice* 102, 104560)
 trên plant **P2** = quadrotor ghép con lắc cầu 3D (tải treo), gió đo thật NREL M5. Chỉ mô phỏng Simulink, không bay
-thật. Tác giả duy nhất (không thầy/lab, `docs/devlog/ADVISOR_NOTES.md`).
+thật. Không có lab: mọi thông số lấy từ tài liệu công bố (`docs/devlog/ADVISOR_NOTES.md`).
+- **Tác giả** (từ 2026-10-07, bản nộp IJDC): Huy Hoang Tran (tác giả thứ nhất), Xuan Bach Nguyen (tác giả liên hệ),
+  Xuan Hai Le (giám sát) - `paper/ijdc/title_page.tex`. Trước đó các tài liệu ghi "tác giả duy nhất" (đến 2026-10-07).
+- **Tạp chí đích:** International Journal of Dynamics and Control (Springer, phản biện ẩn danh hai chiều).
 
 - **C1** - bù trễ vòng: dự báo nhiễu tải qua trễ, B·e^{Aτ}·ξ̂ (= Bobtsov & Pyrkin 2012 (52)-(54) với L_u = 1, φ_u = 0) → PA-MOBADC.
 - **C2** - lực cản gió của tải trong feed-forward gió đo: (1+K̂)·F̂_wQ, suy ra từ cân bằng lực của hệ ghép → PAW-MOBADC.
@@ -15,8 +18,10 @@ thật. Tác giả duy nhất (không thầy/lab, `docs/devlog/ADVISOR_NOTES.md`
 - Tên bộ điều khiển: bản đồ DUY NHẤT ở `analysis/p2_names.m` (PID = Classical, DO, ESO, MOBADC = L0, MOBADC-DC = L1,
   MOBADC-W = L2, MOBADC-W + preview = V, PA-MOBADC = L3, **PAW-MOBADC = L3_iii0 (đề xuất)**, INDI-DE = H3, MBP = L3_iii,
   oracle = O). Không tự đặt tên khác.
-- Trạng thái: kết quả P2 và CONFIRM2 (14 ngày giữ lại, dùng ĐÚNG MỘT LẦN) đã xong. Bản thảo `paper/manuscript.md` đã
-  qua các vòng sửa (Highlights/Abstract/Conclusion r2 người dùng đã duyệt).
+- Trạng thái: kết quả P2 và CONFIRM2 (14 ngày giữ lại, dùng ĐÚNG MỘT LẦN) đã xong. Lần chạy final trên GitHub
+  (`docs/REGISTER_FINAL.md`, `docs/RESULTS_FINAL.md`) tái lập 39/39 số dev; CONFIRM3 không chạy (quyết định người dùng).
+  Bản thảo `paper/manuscript.md` viết lại cho IJDC (lập luận, có phân tích bị chặn §4.5); bản LaTeX ẩn danh
+  `paper/ijdc/manuscript.tex` sinh từ đó, trang tiêu đề `paper/ijdc/title_page.tex`.
 
 ## 2. Giao tiếp
 
@@ -39,10 +44,12 @@ thật. Tác giả duy nhất (không thầy/lab, `docs/devlog/ADVISOR_NOTES.md`
    - Gomiero [40] và Li & Zhu [41] chỉ trích từ abstract. Nhãn [a] chỉ để trong EQUATIONS_TABLE; bản thảo KHÔNG
      ghi "full text not accessible" / "cited from abstract".
    - Sách giáo khoa trích theo chương (`[@key, chap. n]`).
-4. **Số trong bản thảo phải lấy từ `docs/RESULTS_P2.md`** (`tools/check_propagation.py` kiểm; làm tròn half-up được
-   chấp nhận ở Highlights/Abstract/Introduction/Results/Conclusion).
-5. **File sinh tự động - không sửa tay:** `docs/RESULTS_P2.md` (`make_results_p2`), `paper/tables/tables_p2.md`
-   (`make_p2_tables`), `paper/figures/*` (`make_p2_figures`), bảng tên trong README (`python tools/readme_names.py --write`),
+4. **Số trong bản thảo phải lấy từ `docs/RESULTS_P2.md`, `paper/tables/tables_p2.md` hoặc `docs/RESULTS_FINAL.md`**
+   (`tools/check_propagation.py` kiểm; làm tròn half-up được chấp nhận ở Highlights/Abstract/Introduction/Results/
+   Conclusion). Trích dẫn chỉ khi đã đọc toàn văn (`docs/READING_LOG.md`, `tools/check_reading.py --final`).
+5. **File sinh tự động - không sửa tay:** `docs/RESULTS_P2.md` (`make_results_p2`), `docs/RESULTS_FINAL.md`
+   (`make_results_final`), `paper/tables/tables_p2.md` (`make_p2_tables`), `paper/figures/*` (`make_p2_figures`),
+   `paper/ijdc/manuscript.tex` (`python paper/ijdc/build_tex.py`), bảng tên trong README (`python tools/readme_names.py --write`),
    `data/SHA256SUMS.txt` (`python tools/data_manifest.py --write`).
 6. **Không commit:** PDF trong `refs/` (bản quyền), dữ liệu gió, mọi `.mat` (trừ `field_grid_K050.mat`), `results/`,
    `.pt` (trừ cặp đóng băng). Xem `.gitignore`.
@@ -70,6 +77,7 @@ Mọi lệnh MATLAB chạy từ gốc repo, sau `setup_path`. Claude chạy MATL
 | kiểm văn bản (không cần MATLAB) | `python tools/check_names.py`, `check_equations.py`, `check_propagation.py`, `check_retracted.py`, `readme_names.py --check` |
 | khối Simulink ↔ nguồn | `python tools/extract_eml.py baseline1.slx --check simulink_blocks` |
 | render bản thảo | `pandoc paper/manuscript.md --citeproc -o out.docx` (bib + csl khai báo trong YAML) |
+| bản nộp IJDC | `python paper/ijdc/build_tex.py` → `paper/ijdc/manuscript.tex`; PDF: CI `.github/workflows/ijdc.yml`, artifact `ijdc-pdf` |
 
 CI GitHub (`.github/workflows/checks.yml`) chạy các bước kiểm văn bản mỗi lần push. Sau mỗi thay đổi: chạy các
 bước kiểm liên quan, rồi mới commit/push.
@@ -95,6 +103,8 @@ Sửa mã Simulink: không sửa tay trong `baseline1.slx` rồi bỏ đó - ngu
   README.
 - Đã dọn file không theo dõi trên máy cũ (`tools/local_tidy.py --apply`): 2357 file sang `E:\windataset_archive\`,
   28 log vào `logs/`, 169 file cache xoá; journal `E:\windataset_archive\tidy_journal.tsv` (`--undo` trả lại).
-- Trước khi nộp: số trang bản IEEE của Sreenath (1 dòng CẦN KIỂM trong EQUATIONS_TABLE); người dùng tick 35 dòng
-  EQUATIONS_TABLE; chọn tạp chí; phân tích ổn định; đưa `results/` lên Zenodo.
+- Trước khi nộp: số trang bản IEEE của Sreenath (1 dòng CẦN KIỂM trong EQUATIONS_TABLE); người dùng tick các dòng
+  EQUATIONS_TABLE; đọc toàn văn các bài còn TO GET trong `docs/READING_LOG.md` (`check_reading.py --final` phải
+  PASS); vẽ lại hình 3-9 theo kiểu IJDC từ 39 file kết quả gốc (máy mới chưa có `results/` gốc); đưa `results/`
+  lên Zenodo. Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
 - Bước 6 dọn repo (fast-forward `main`, đổi nhánh mặc định): CHƯA làm, chờ người dùng cho phép rõ ràng.

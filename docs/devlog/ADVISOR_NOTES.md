@@ -2,6 +2,8 @@
 
 > Ghi theo lời user. Các file kế hoạch (`MASTER_PLAN.md`, `KE_HOACH_THUC_HIEN.md`, brief, `TEST_PLAN_v2.md`) tham
 > chiếu file này thay cho mọi bước "hỏi thầy / gặp thầy / lab".
+>
+> **Cập nhật 2026-10-07:** bài nộp có 3 tác giả - xem mục cuối file. Mục 2026-09-25 bên dưới giữ nguyên như đã ghi.
 
 ---
 
@@ -40,3 +42,12 @@ Thứ bậc cho P2 từ nay: **`docs/REGISTER_P2.md` > `CLAUDE_CODE_BRIEF.md` > 
    2·m_p·a·sin²θ (bậc θ²); kênh thẳng đứng bỏ hẳn số hạng này. Phát hiện bởi V2b (GĐ2a); chi tiết:
    `docs/REGISTER_ROBUST.md` §27. Code v1 **không sửa** (đóng băng ở `v1-final`).
 
+## 2026-10-07 — tác giả của bản nộp IJDC (theo lời user)
+
+1. **Ba tác giả**, theo thứ tự trong hệ thống nộp bài: Huy Hoang Tran (VNU International School), Xuan Bach Nguyen
+   (Hanoi University of Science and Technology; Foreign Trade University; **tác giả liên hệ**), Xuan Hai Le (VNU
+   International School; **giám sát**). Thông tin đầy đủ, đóng góp (CRediT), tài trợ (không), xung đột lợi ích (không):
+   `paper/ijdc/title_page.tex`. Mục 1 của 2026-09-25 ("tác giả duy nhất") thôi áp dụng từ ngày này.
+2. **Phạm vi không đổi:** không có lab cung cấp thông số hay thiết bị; mục 2, 4, 5 của 2026-09-25 vẫn giữ (thông số
+   từ tài liệu công bố, chỉ mô phỏng Simulink, một máy). Các quyết định đã đăng ký trong `docs/REGISTER_P2.md` không
+   đổi.

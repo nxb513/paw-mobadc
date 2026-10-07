@@ -58,6 +58,9 @@ MAN = ROOT / "paper" / "manuscript.md"
 # (RESULTS.md, SUPPLEMENTARY.md) belong to the archived v1 manuscript (docs/devlog/archive/) and are not read.
 RES = ROOT / "docs" / "RESULTS_P2.md"
 TAB = ROOT / "paper" / "tables" / "tables_p2.md"
+# 2026-10-07: the final run (docs/REGISTER_FINAL.md) adds a third generated source - analysis/make_results_final.m ->
+# RESULTS_FINAL.md (the reproduction of every dev number of RESULTS_P2, and the checks E1-E6).
+RES2 = ROOT / "docs" / "RESULTS_FINAL.md"
 
 # Sections that are NOT results. Matched on the heading-line prefix.
 SKIP = (
@@ -139,6 +142,8 @@ def main():
     res = strip_code(RES.read_text(encoding="utf-8"))
     if TAB.exists():
         res = res + "\n" + strip_code(TAB.read_text(encoding="utf-8"))
+    if RES2.exists():
+        res = res + "\n" + strip_code(RES2.read_text(encoding="utf-8"))
     man_raw = MAN.read_text(encoding="utf-8")
 
     nums = re.findall(r"\d+(?:\.\d+)?", res)

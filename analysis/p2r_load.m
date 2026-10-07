@@ -8,5 +8,7 @@ Z = load(p, 'rows', 'key');
 if isfield(Z.key, 'cols'), cols = Z.key.cols;
 elseif isfield(Z.key, 'ctrl'), cols = Z.key.ctrl;
 else, cols = {'L0', 'L2', 'L3', 'V'};
+    if isfield(Z.key, 'TauN6'), cols{end + 1} = 'L3_6'; end            % run_p2_gd6 TAB with the N6 term (square)
+    if isfield(Z.key, 'Paw') && Z.key.Paw, cols = [cols, {'L3_iii0', 'V_iii0'}]; end   % TAB 'Paw' (rerun/)
 end
 end

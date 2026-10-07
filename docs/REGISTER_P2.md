@@ -4511,3 +4511,26 @@ Generator: `figures/p2/make_ijdc_figures.m`.
 - **oracle** - C3 headroom per registered group (as sec 62.1 (8)), with the 10 % threshold.
 - **Discussion, measure** - hover: pooled error of INDI-DE with accelerometer bias 0 / 0.086 / 0.17 m/s^2 against
   PA-MOBADC and PAW-MOBADC, held-out one set (RESULTS_P2) and dev S40hover (`gd7/static-indi-bias.mat`).
+
+### 68.2 Amendment to 68.1 - the forms of the figures (user, 2026-10-07) - and the facts of the re-runs
+
+The user asked for the figure forms of the control literature instead of statistical forest plots and deviation
+clouds. Same data and segments as sec 68.1, other forms (`make_ijdc_figures`):
+- **compare** replaces *steps*: bars of the pooled error of MOBADC, MOBADC-W, PA-MOBADC, PAW-MOBADC and INDI-DE (circle,
+  development one set 133 / held-out 56; INDI-DE from Table 5 and the held-out C2-circle block) and of PA-MOBADC,
+  PAW-MOBADC in hover on the registered scoring set (124 / 52). The registered claims are not drawn; they are Table 4.
+- **response** replaces *flight*: the same two segments (circle `wind_expl_t150_i0385`, hover `wind_expl_t150_i0086`)
+  as time responses over t >= 140 s - wind speed; circle: tracking error along the path and outward; hover: east and
+  north.
+- **sensitivity** replaces *robust*: pooled error of PA-MOBADC and PAW-MOBADC against K-hat x 0.7 / 1 / 1.3 (one set of
+  `gd7/static-circle-k.mat`, 39, and `gd7/static-hover-k.mat`, 42); bars of h with +-1.65 SE per trajectory (with the
+  prediction / with the preview), per payload mass and cable length, and with / without sensor noise (RESULTS_FINAL
+  E1, E4).
+- **oracle**: bars instead of points.
+
+Facts of the re-runs (MATLAB R2024a, the user's new machine, against the stored final-run rows):
+- `make_p2_figures('Only', 9, 'Root', 'results/final', 'Tol', 5e-5)`: six columns on `wind_expl_t150_i0385`, max |d|
+  1.16e-16 (PAW-MOBADC), the other five 0.
+- `make_ijdc_figures` 'flight' / 'response' segments: circle MOBADC-W 0, PA-MOBADC 3.12e-17, PAW-MOBADC 1.16e-16,
+  INDI-DE 0; hover (the rule of 68.1: 124 candidates, median U 4.752 m/s) PA-MOBADC 0, PAW-MOBADC 0. The new machine
+  reproduces the final run to rounding; the looser `Tol` of sec 68 was not needed.

@@ -20,12 +20,13 @@ function C = conf2_claims(Z, varargin)
 %                   CONFIRMED <=> Delta <= -15 % AND Delta + 1.65 SE < 0
 %   H-static(-circle) F = every row; n_unsafe (on F) = L3_iii0 not finite while L3 finite; A = L3 and
 %                   L3_iii0 finite AND tilt_sat_frac < 1 % in the L3 column only; h = 1 - L3_iii0/L3 on A;
-%                   CONFIRMED <=> by-day median >= 10 % AND h - 1.65 SE > 0 AND n_unsafe <= 1;
+%                   CONFIRMED <=> by-day median >= 10 % AND h - 1.65 SE > 0 AND n_unsafe <= 1
+%                   (option 'UnsafeFrac', f: n_unsafe <= max(1, floor(f |F|)) - REGISTER_FINAL sec 6.1 point 4);
 %                   beside: the same on the full one set, the L3-saturated segments listed
 %   H-hover         one set (finite in L3 P O O0), unsaturated subset (tilt_sat_frac < 1 % in EVERY
 %                   column, sec 26.3); h = 1 - O/L3; CONFIRMED <=> by-day median >= 10 % AND h - 1.65 SE > 0;
 %                   beside: c, h_sensor, h_pred, (L3 - P)/L3, h on the full one set
-opt = struct('Dir', '', 'Title', 'CONFIRM2 CLAIMS (REGISTER_P2 sec 60.3)');
+opt = struct('Dir', '', 'Title', 'CONFIRM2 CLAIMS (REGISTER_P2 sec 60.3)', 'UnsafeFrac', []);
 for i = 1:2:numel(varargin)
     assert(isfield(opt, varargin{i}), 'conf2_claims: unknown option ''%s''.', varargin{i});
     opt.(varargin{i}) = varargin{i+1};
@@ -137,9 +138,12 @@ end
 if ~verdict_suff(R.n, R.n_days)
     R.verdict = 'NOT CONFIRMABLE';
 else
-    t1 = s.day_median >= 0.10;  t2 = s.val - 1.65 * s.se > 0;  t3 = R.n_unsafe <= 1;
-    fprintf('     by-day median >= 10 %%: %s;  h - 1.65 SE = %+.2f %% > 0: %s;  n_unsafe <= 1: %s\n', yn(t1), ...
-        100 * (s.val - 1.65 * s.se), yn(t2), yn(t3));
+    nmax = 1;                                           % REGISTER_P2 sec 60.3
+    if ~isempty(opt.UnsafeFrac), nmax = max(1, floor(opt.UnsafeFrac * nF)); end   % REGISTER_FINAL sec 6.1 point 4
+    t1 = s.day_median >= 0.10;  t2 = s.val - 1.65 * s.se > 0;  t3 = R.n_unsafe <= nmax;
+    fprintf('     by-day median >= 10 %%: %s;  h - 1.65 SE = %+.2f %% > 0: %s;  n_unsafe <= %d: %s\n', yn(t1), ...
+        100 * (s.val - 1.65 * s.se), yn(t2), nmax, yn(t3));
+    R.n_unsafe_max = nmax;
     R.verdict = tern(t1 && t2 && t3, 'CONFIRMED', 'NOT CONFIRMED');
 end
 fprintf('     -> %s: %s\n', label, R.verdict);

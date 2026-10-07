@@ -91,6 +91,54 @@ as sec 50.1), N6 and F-hover (sources of later steps), the twelve C3 groups. Des
   step), `.github/workflows/confirm3.yml` (gate -> E0 -> download -> export -> sets -> runs -> claims) with a dev
   test on dev segments.
 
+### 6.1 CONFIRM3 - claims, thresholds, frozen configuration (DRAFT 2026-10-07, after the dev results of sec 9, before any 2022 file; awaiting the user's approval)
+
+Binding when the user adds, in this section, a line starting with `APPROVED` that holds the date (yyyy-mm-dd) and
+`runner commit <hash>` (checked by `rerun/confirm3_gate.py` before the download and by every step). Until then no
+2022 file is downloaded, exported or opened. After approval it changes only by a dated amendment committed before
+the run (and the runner commit must then be approved again).
+
+1. **Sets (sec 6):** the `circle_main`, `N6_hover` and `N5-H-StrongRel` rules on the 58 CONFIRM3 days, cap 4 per
+   day, `p2_segset(<rule>, 'CapPerDay', 4, 'Confirm2', 'wind_conf3')` (every check of REGISTER_P2 sec 60.8 against
+   `CONFIRM3_MANIFEST.json`); SHA-256 of each list printed first and saved (`results/gd12/sets.mat`).
+2. **Frozen configuration** = the dev values of the final run (sec 3, sec 8, sec 9), the constants `FZ` of
+   `rerun/confirm3_steps.m` at the runner commit; nothing is chosen on CONFIRM3:
+   payload tau circle **290 ms** (L3, L3_iii0, H3 on the circle), tau_prev **180 ms** (V), hover **0 ms**; tau_6
+   **280 ms** (TauW of the C2 groups; read only by O columns, which they do not have); H-hover tau_w* **20 ms**;
+   INDI omega_f **32 Hz**; K-hat 0.5, body factor 1.5; envelope A2; wind sensor sigma 0, delay 50 ms; **spike filter
+   off** (sec 9, E2); accelerometer bias columns 0.086 / 0.17 m/s^2 as dev; P2 nominal, Guo's gains. Export: the dev
+   pipeline, `--real-split heldout --real-max 10000 --only-days CONFIRM3_MANIFEST.json`, after E0 (three dev
+   exploration segments re-exported bit for bit, `python/check_export_same.py`) and the D2 row-1 check on dev data.
+3. **Claims** (each run once; CONFIRMED / NOT CONFIRMED / NOT CONFIRMABLE, all reported), definitions and tests of
+   REGISTER_P2 sec 60.3 unchanged, computed by `analysis/conf2_claims.m`:
+   - **D2** (circle set, full one set): Delta = pooled(L3)/pooled(L2) - 1; CONFIRMED <=> Delta <= -15 % AND
+     Delta + 1.65 SE < 0.
+   - **H-static** (hover set): F = every segment; n_unsafe on F; A = L3 and L3_iii0 finite AND tilt_sat_frac < 1 % in
+     the L3 column; h = 1 - pooled_A(L3_iii0)/pooled_A(L3); CONFIRMED <=> A sufficient AND by-day median >= 10 % AND
+     h - 1.65 SE > 0 AND the safety bound of point 4.
+   - **H-static-circle** (circle set): the same, L3 reused from D2 after its spot check.
+   - **H-hover** (H-hover set, REGISTER_P2 sec 26.3): CONFIRMED <=> sufficient AND by-day median >= 10 % AND
+     h - 1.65 SE > 0.
+   - Data sufficiency of the scored set: >= 15 segments AND >= 6 days, else NOT CONFIRMABLE (numbers printed).
+4. **Safety bound of H-static / H-static-circle - DECISION OF THE USER** (the only point not copied from
+   REGISTER_P2 sec 60.3). CONFIRM2's bound "n_unsafe <= 1" was set for sets of at most 64 segments. On CONFIRM3 a set
+   holds up to 232. On dev, PAW-MOBADC stopped while PA-MOBADC ran on 1 of 134 circle_main and 1 of 139 N6_hover
+   segments (sec 9); at that rate about 1.7 such segments are expected among 232, and "<= 1" fails with probability
+   about 0.5 (Poisson) with no change in behaviour.
+   - (a) n_unsafe <= 1, as CONFIRM2.
+   - (b) **n_unsafe <= max(1, floor(0.02 |F|))** (the tolerance of CONFIRM2's bound as a rate, 1 of 56 = 1.8 %;
+     never stricter than (a)); at 232 segments <= 4, failing at the dev rate with probability about 0.03.
+   Proposed: (b). Set at the runner commit: `FZ.UnsafeFrac` = 0.02 for (b), [] for (a)
+   (`conf2_claims(..., 'UnsafeFrac', f)`; without the option the CONFIRM2 rule is unchanged).
+5. **Descriptive, no claim:** the columns and indices of REGISTER_P2 sec 60.4; the fair headline PAW-MOBADC vs
+   MOBADC-W on the circle set, pooled(L3_iii0)/pooled(L2) - 1 on the segments finite in both (with SE, LOO, by-day
+   median); every removed segment listed with its flags, U and spike count.
+6. **Incidents:** REGISTER_P2 sec 60.7 unchanged - a stop is only resumed (re-run the failed jobs of the same run);
+   an error found after opening is not fixed and re-run, it is reported (DEVIATIONS) with the result under this
+   rule.
+7. **Order:** dev test `confirm3.yml devtest=true` (C3dev-*, 8 dev segments per set, no 2022 file) at the runner
+   commit -> the user's APPROVED line -> `confirm3.yml devtest=false`, once (about 2-3 h on 20 runners).
+
 ## 7. Report
 
 `rerun_merge` + `rerun_summary` (job `report`); then `make_results_p2`, `make_p2_tables`, `make_p2_figures` adapted to
@@ -128,3 +176,40 @@ files deposited (Zenodo) with their SHA-256 (`data/SHA256SUMS.txt` regenerated).
   `${{ inputs.from_run }}` / `${{ github.token }}` in the report template (bash "bad substitution"); fixed, and
   `make_workflow.py` now refuses a workflow with a halved expression. Every one of the 111 parts is complete.
 - **Report run** (no simulation): `final.yml` with `from_run` = runs 1-3 and `skip` = all 111 parts -> prep + report.
+  Run 37565806130 (d1ea4aa, 2026-10-07): every part merged (no part missing or incomplete), 58 result files;
+  artifact `final-results` (90 days). The INDI cut-off read by the later steps: 32 Hz (best tried).
+
+## 9. Results on the development set (facts, from the report run; descriptive unless a registered test is named)
+
+Same numbers as the stored results of REGISTER_P2 wherever both exist (D2 -50.33 %, static-hover +20.27 % / +65.68 %,
+static-circle +43.67 %, static-indi-bias, F-hover, N6 and the C3 groups to the printed digit): the record is reproduced
+on R2022b / Linux from the rebuilt export.
+- **D2 (C1)**, circle_main 134 / 42 days: L0 0.04502, L2 0.03628, L3 0.01802, V 0.01671; Delta = L3/L2 - 1 =
+  -50.3 % (SE 8.3, LOO [-57.3, -50.2] %, by-day -62.2 %) -> PASS (sec 0.5).
+- **C2**: static-circle (S40) h = +43.67 % (SE 2.16); static-hover (N6_hover) +20.27 % full one set (SE 42.39) /
+  +65.68 % L3-unsaturated (SE 1.59); S40hover (static-hover-k) +67.51 % (SE 2.80). H-static eligibility of
+  REGISTER_P2 sec 54.3: ELIGIBLE. n_unsafe on dev: circle_main 1 of 134 (`wind_expl_t150_i0290`, L3_iii0 crash),
+  N6_hover 1 of 139 (`wind_expl_t150_i0326`).
+- **E1** (sensor noise 0.1 m/s): circle (S40) h = +42.98 % (SE 2.24) vs +43.67 % at sigma 0; hover (S40hover) +65.36 %
+  (SE 3.15) vs +67.51 %. C2 is insensitive to this noise.
+- **E2** (spike filter): it does **not** remove the stops at no cost. circle_main: i0290 runs, but the filtered L3
+  column itself diverges on `wind_expl_t150_i0190` and `i0293` (finite in every D2 column without the filter); h
+  +33.52 % one set 132 (vs +33.64 % on the unfiltered six-circle set 133). N6_hover: i0326 still stops, i0190 stops in
+  both columns, i0293 diverges; h +20.17 % / +65.65 % unsaturated (vs +20.27 % / +65.68 %). Consequence: no spike
+  filter in the method or in CONFIRM3 (sec 6.1); the spike sensitivity stays a limitation (LIMITATIONS G15).
+- **E3** (K-hat x 0.7 / 1.3): circle h +34.76 % / +46.70 % (nominal +43.67 %); hover (S40hover) +55.81 % / +59.00 %
+  (nominal +67.51 %). Every variant HOLDS.
+- **E4-E6** (PAW columns of the TAB tables; one set of each table; 1 - L3_iii0/L3, L3_iii0/L2 - 1):
+  circle S40 +43.67 % / -75.23 %; T3b (131 / 42 days) +56.37 % / -76.47 %; square (132 / 41) +15.03 % (SE 3.72,
+  by-day +8.19 %) / -36.59 %; L 0.5 +52.33 % / -80.32 %; L 1.5 +36.43 % / -70.28 %; m_p 0.25 (L 0.5 / 1.0 / 1.5)
+  +28.10 / +24.74 / +21.68 % (before the U <= 7.38 m/s re-pool of REGISTER_P2 sec 50.1); m_p 0.65 +31.91 / +32.61 /
+  +29.34 %. With the preview (E5, 1 - V_iii0/V): circle +28.80 %, T3b +49.73 %, square +15.25 %, the 8 levels
+  +14.62 ... +31.49 %.
+- **INDI-DE (H3, 32 Hz)**: circle H3/L3 - 1 = +112.9 % (SE 47.9); six-circle: L3_iii0/H3 - 1 = -68.8 %. Hover
+  (N6_hover, unsaturated 124): H3/L3 - 1 = -79.1 %, L3_iii0/H3 - 1 = +64.5 % (INDI-DE better than PAW-MOBADC in hover
+  without accelerometer bias); with bias 0.086 / 0.17 m/s^2 (S40hover): H3_b086/L3_iii0 - 1 = +116.7 %,
+  H3_b170/L3_iii0 - 1 = +316.3 %.
+- **MBP (iii)**: circle +222 % worse than L3 (WORSE ON THE CIRCLE); hover 0 of 9 acceptance variants HOLD on the one
+  set - negative, as REGISTER_P2.
+- **C3** (oracle wind prediction): no group has headroom (h = 1 - O/L3 between +0.15 % and +5.83 %; N6 h_6 +2.87 %;
+  N5-H-StrongRel +3.77 %) - "group counts for CONG G: NO" in all twelve.

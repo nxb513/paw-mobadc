@@ -12,7 +12,8 @@ function T = confirm3_steps()
 %    J  C3-claims  the claims of REGISTER_FINAL sec 6.1 (analysis/conf2_claims.m) -> results/gd12/claims.mat
 %  Frozen configuration (REGISTER_FINAL sec 6.1; read from the final run's sweeps, nothing tuned on CONFIRM3):
 FZ = struct('TauCircle', 0.290, 'TauPrev', 0.180, 'TauHover', 0, 'TauW6', 0.280, 'TauWHH', 0.020, ...
-    'H3Hz', NaN, 'Cap', 4, 'Dir', 'wind_conf3', 'SpikeHold', 0, 'NDev', 8);
+    'H3Hz', 32, 'Cap', 4, 'Dir', 'wind_conf3', 'SpikeHold', 0, 'UnsafeFrac', 0.02, 'NDev', 8);
+%  UnsafeFrac: safety bound of H-static(-circle), n_unsafe <= max(1, floor(UnsafeFrac |F|)); [] = CONFIRM2's <= 1.
 c = {
  'C3-open',       'G', 1, @(sh) c3_open(FZ, false)
  'C3-D2',         'H', 8, @(sh) c3_run(FZ, false, 'D2', sh)
@@ -104,7 +105,8 @@ for k = 1:size(src, 1)
     Z.(src{k, 1}) = [];
     if exist(f, 'file') == 2, Z.(src{k, 1}) = load(f, 'rows', 'key'); end
 end
-C = conf2_claims(Z, 'Dir', tern(dev, '', FZ.Dir), 'Title', 'CONFIRM3 CLAIMS (REGISTER_FINAL sec 6.1)');
+C = conf2_claims(Z, 'Dir', tern(dev, '', FZ.Dir), 'Title', 'CONFIRM3 CLAIMS (REGISTER_FINAL sec 6.1)', ...
+    'UnsafeFrac', FZ.UnsafeFrac);
 Sets = load(fullfile(od, 'sets.mat'), 'Sets');  Sets = Sets.Sets; %#ok<NASGU>
 git = git_head(); %#ok<NASGU>
 save(fullfile(od, 'claims.mat'), 'C', 'Sets', 'git', 'FZ');
@@ -127,8 +129,9 @@ end
 function check_frozen(FZ)
 assert(isfinite(FZ.H3Hz), 'CONFIRM3: the INDI cut-off of REGISTER_FINAL sec 6.1 is not filled in (H3Hz NaN).');
 fprintf(['  frozen (REGISTER_FINAL sec 6.1): tau circle %g s, tau_prev %g s, tau hover %g s, tau_w %g s (C2 groups), ' ...
-    '%g s (H-hover), omega_f %g Hz, cap %d/day, spike hold %g m/s\n'], FZ.TauCircle, FZ.TauPrev, FZ.TauHover, ...
-    FZ.TauW6, FZ.TauWHH, FZ.H3Hz, FZ.Cap, FZ.SpikeHold);
+    '%g s (H-hover), omega_f %g Hz, cap %d/day, spike hold %g m/s, n_unsafe bound %s\n'], FZ.TauCircle, ...
+    FZ.TauPrev, FZ.TauHover, FZ.TauW6, FZ.TauWHH, FZ.H3Hz, FZ.Cap, FZ.SpikeHold, ...
+    tern(isempty(FZ.UnsafeFrac), '<= 1', sprintf('<= max(1, floor(%g |F|))', FZ.UnsafeFrac)));
 end
 
 function check_spike(FZ)

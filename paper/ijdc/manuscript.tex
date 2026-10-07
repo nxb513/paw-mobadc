@@ -12,6 +12,7 @@
 \usepackage{manyfoot}%
 \usepackage{booktabs}%
 \usepackage{bm}%
+\usepackage{array}%
 \graphicspath{{../figures/}{figures/}}
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \theoremstyle{thmstyleone}%
@@ -100,9 +101,8 @@ The plant used in every result, P2, couples a rigid quadrotor to a three-dimensi
 
 \begin{table}[!htbp]
 \caption{Parameters of plant P2 and of the controllers.}\label{tab:param}
-\centering\footnotesize
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}lll@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.33\linewidth}>{\raggedright\arraybackslash}p{0.39\linewidth}>{\raggedright\arraybackslash}p{0.2\linewidth}@{}}
 \toprule
 quantity & value & source \\
 \midrule
@@ -128,8 +128,8 @@ payload-prediction horizon $\tau$ & 290 ms circle, 0 hover & measured, developme
 reference-preview horizon $\tau_{prev}$ & 180 ms & measured, development set \\
 PAW-MOBADC feed-forward factor $1+\hat K$ & 1.5 ($\hat K = K = 0.5$) & this work \\
 INDI-DE filter cut-off $\omega_f$ & 32 Hz & this work \\
-\bottomrule
-\end{tabular}}
+\botrule
+\end{tabular}
 \end{table}
 
 \subsection{Quadrotor and spherical pendulum}\label{sec:quadrotor-and-spherical-pendulum}
@@ -492,9 +492,8 @@ Table~\ref{tab:main} ranks eight controllers on the 133-segment development circ
 
 \begin{table}[!htbp]
 \caption{Eight controllers on the development circle (133 segments, 42 days; one segment left out because PAW-MOBADC stopped on it). Mean = pooled mean position-error norm with day-jackknife SE and by-day median; STD = within-segment standard deviation of the error norm, pooled; $\theta$ RMS = payload cable angle, mostly the steady cone angle on the circle (15.0\textdegree{} without wind). ``+ trim'' = known payload weight added to the force command.}\label{tab:main}
-\centering\footnotesize
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}lccccc@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}>{\raggedright\arraybackslash}p{0.26\linewidth}>{\raggedright\arraybackslash}p{0.12\linewidth}>{\raggedright\arraybackslash}p{0.1\linewidth}>{\raggedright\arraybackslash}p{0.12\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}@{}}
 \toprule
 controller & mean [m] (SE; by-day median) & median of segment means [m] & STD [m] & median of segment STDs [m] & $\theta$ RMS [\textdegree] \\
 \midrule
@@ -506,16 +505,15 @@ ESO & 0.07577 (0.00276; 0.07131) & 0.07024 & 0.03608 & 0.01699 & 17.36 \\
 MOBADC & 0.04510 (0.00466; 0.03646) & 0.03578 & 0.03321 & 0.01143 & 17.08 \\
 INDI-DE & 0.03838 (0.00152; 0.03688) & 0.03685 & 0.02762 & 0.00436 & 17.29 \\
 PAW-MOBADC (proposed) & 0.01199 (0.00374; 0.00777) & 0.00764 & 0.02631 & 0.00335 & 16.70 \\
-\bottomrule
-\end{tabular}}
+\botrule
+\end{tabular}
 \end{table}
 
 
-\begin{table}[!htbp]
+\begin{sidewaystable}
 \caption{Ablation MOBADC-W $\rightarrow$ PA-MOBADC (C1) $\rightarrow$ PAW-MOBADC (C2): pooled error of each stage on the block's common set of segments and the step changes (SE; leave-one-out range; by-day median). ``unsat.'' = segments on which PA-MOBADC is below its tilt clamp. MOBADC-W was not run in hover.}\label{tab:ablation}
-\centering\footnotesize
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}lccccccc@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}@{}}
 \toprule
 block & segments (days) & MOBADC-W [m] & PA-MOBADC [m] & PAW-MOBADC [m] & C1: PA-MOBADC / MOBADC-W $-$ 1 & C2: PAW-MOBADC / PA-MOBADC $-$ 1 & total: PAW-MOBADC / MOBADC-W $-$ 1 \\
 \midrule
@@ -524,9 +522,9 @@ circle, held-out & 56 (14) & 0.03434 & 0.01432 & 0.00873 & $-$58.30 \% (4.57; [$
 hover, development & 137 (43) & -- & 0.02461 & 0.01962 & -- & $-$20.27 \% (42.39; [$-$63.56, $-$19.75]; $-$62.92) & -- \\
 hover, development, PA-MOBADC unsat. & 124 (41) & -- & 0.00892 & 0.00306 & -- & $-$65.68 \% (1.59; [$-$65.95, $-$64.50]; $-$62.92) & -- \\
 hover, held-out & 56 (14) & -- & 0.01057 & 0.00385 & -- & $-$63.55 \% (1.75; [$-$65.74, $-$62.49]; $-$61.30) & -- \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\botrule
+\end{tabular}
+\end{sidewaystable}
 
 \subsection{C1 - compensation of the loop delay}\label{sec:c1-compensation-of-the-loop-delay}
 
@@ -548,11 +546,10 @@ The registered development gate D2 passed: PA-MOBADC lowered the pooled error of
 \end{figure}
 
 
-\begin{table}[!htbp]
+\begin{sidewaystable}
 \caption{The claims on the development set and on the held-out days (Section~\ref{sec:registration-and-held-out-confirmation}): value, day-jackknife SE, leave-one-segment-out range, by-day median, and the verdict of the registered test. ``unsat.'' = scored on the segments on which PA-MOBADC is below its tilt clamp; ``1/day'' = one segment per day.}\label{tab:claims}
-\centering\footnotesize
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}lllcccccl@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.21\linewidth}>{\raggedright\arraybackslash}p{0.13\linewidth}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.05\linewidth}>{\raggedright\arraybackslash}p{0.12\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.08\linewidth}@{}}
 \toprule
 claim & set & role & value & SE & leave-one-out range & by-day median & segments (days) & verdict \\
 \midrule
@@ -565,19 +562,18 @@ H-static-circle: 1 $-$ PAW-MOBADC / PA-MOBADC & dev., circle, 1/day & post hoc &
 H-static-circle (unsat.) & held-out, circle & registered claim & +37.18 \% & 3.04 & [+36.19, +37.40] & +35.07 \% & 53 (14) & confirmed \\
 H-hover: 1 $-$ oracle / PA-MOBADC (unsat.) & dev., hover, strong wind & post hoc & +41.52 \% & 0.15 & [+41.44, +41.63] & +41.47 \% & 10 (5) & -- \\
 H-hover: 1 $-$ oracle / PA-MOBADC (unsat.) & held-out, hover, strong wind & registered claim & +41.92 \% & -- & [+41.92, +41.92] & +41.92 \% & 1 (1) & not scorable \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\botrule
+\end{tabular}
+\end{sidewaystable}
 
 
 The gain holds on the other planned trajectories, \textminus{}45.41 \% on the figure-eight and \textminus{}24.80 \% on the square, and across every payload mass, cable length and their combinations, between \textminus{}58.9 \% and \textminus{}34.9 \% (Table~\ref{tab:sens}). It is smallest where the payload is light and the cable long, that is, where the periodic payload force is smallest relative to the wind. The reference preview (MOBADC-W + preview) compensates the same delay along the planned trajectory and gives a comparable gain, \textminus{}62.40 \% on the held-out days; Section~\ref{sec:two-realisations-of-delay-compensation} compares the two realisations.
 
 
-\begin{table}[!htbp]
+\begin{sidewaystable}
 \caption{C1 across payload mass $m_p$ [kg] and cable length $L$ [m] on the development circle, one segment per day: horizon, segments used, pooled errors and the changes against MOBADC-W (SE; leave-one-out range; by-day median). The light-payload rows are pooled on the segments inside their wind envelope $U \le U_{\max}$.}\label{tab:sens}
-\centering\footnotesize
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.09\linewidth}>{\raggedright\arraybackslash}p{0.05\linewidth}>{\raggedright\arraybackslash}p{0.1\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}@{}}
 \toprule
 ($m_p$, $L$) & $\tau$ [ms] & segments & MOBADC [m] & MOBADC-W [m] & PA-MOBADC [m] & MOBADC-W + preview [m] & PA-MOBADC / MOBADC-W $-$ 1 & (MOBADC-W + preview) / MOBADC-W $-$ 1 \\
 \midrule
@@ -590,9 +586,9 @@ The gain holds on the other planned trajectories, \textminus{}45.41 \% on the fi
 (0.25, 1.5) & 260 & 37/40 (2 above $U_{\max}$) & 0.03688 & 0.02966 & 0.01930 & 0.01406 & $-$34.93 \% (1.58; [$-$35.87, $-$34.67]; $-$38.84) & $-$52.62 \% (2.35; [$-$53.92, $-$52.32]; $-$59.23) \\
 (0.65, 0.5) & 330 & 40/40 & 0.04457 & 0.03603 & 0.01613 & 0.01288 & $-$55.24 \% (2.54; [$-$57.32, $-$55.00]; $-$62.35) & $-$64.27 \% (3.32; [$-$67.10, $-$64.02]; $-$72.44) \\
 (0.65, 1.5) & 260 & 40/40 & 0.04792 & 0.04008 & 0.01878 & 0.01388 & $-$53.15 \% (2.04; [$-$54.69, $-$52.91]; $-$59.27) & $-$65.36 \% (3.95; [$-$68.90, $-$65.09]; $-$73.38) \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\botrule
+\end{tabular}
+\end{sidewaystable}
 
 \subsection{C2 - payload drag in the wind feed-forward}\label{sec:c2-payload-drag-in-the-wind-feed-forward}
 
@@ -612,9 +608,8 @@ The gain holds on the other planned trajectories, \textminus{}45.41 \% on the fi
 
 \begin{table}[!htbp]
 \caption{What the payload-drag term depends on (development set, descriptive). $h = 1 -$ PAW-MOBADC / PA-MOBADC; in the preview rows the term is added to MOBADC-W + preview and $h = 1 -$ (PAW-MOBADC + preview) / (MOBADC-W + preview). ``1/day'' = one segment per day; ``unsat.'' = segments on which PA-MOBADC is below its tilt clamp.}\label{tab:c2}
-\centering\footnotesize
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}llcc@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.34\linewidth}>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}@{}}
 \toprule
 condition & development set & gain $h$ of the payload-drag term (SE) & complete controller / MOBADC-W $-$ 1 (SE) \\
 \midrule
@@ -639,8 +634,8 @@ circle, $m_p$ = 0.65 kg & circle, 1/day & +32.61 \% (3.59) & $-$69.50 \% (0.23) 
 circle, added to the preview & circle, 1/day & +28.80 \% (5.37) & $-$72.26 \% (0.39) \\
 figure-eight, added to the preview & figure-eight & +49.73 \% (3.07) & $-$74.77 \% (0.57) \\
 square, added to the preview & square & +15.25 \% (3.93) & $-$42.76 \% (0.42) \\
-\bottomrule
-\end{tabular}}
+\botrule
+\end{tabular}
 \end{table}
 
 

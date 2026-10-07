@@ -175,11 +175,17 @@ def result_rows(*paths):
     return out
 
 
-def table_env(head, body, spec, caption, label):
-    return (f"\\begin{{table}}[!htbp]\n\\caption{{{caption}}}\\label{{{label}}}\n\\centering\\footnotesize\n"
-            f"\\resizebox{{\\textwidth}}{{!}}{{%\n\\begin{{tabular}}{{@{{}}{spec}@{{}}}}\n\\toprule\n"
+def table_env(head, body, widths, caption, label, sideways=False):
+    """A numbered table in the class's own float (sn-jnl wraps it in threeparttable, which cannot sit inside a
+    \\resizebox): ragged-right p-columns as fractions of the line width, so long cells wrap instead of being
+    scaled; the widest tables are set sideways (\\linewidth is then the text height)."""
+    spec = "@{}" + "".join(f">{{\\raggedright\\arraybackslash}}p{{{w}\\linewidth}}" for w in widths) + "@{}"
+    env = "sidewaystable" if sideways else "table"
+    pos = "" if sideways else "[!htbp]"
+    return (f"\\begin{{{env}}}{pos}\n\\caption{{{caption}}}\\label{{{label}}}\n\\setlength{{\\tabcolsep}}{{3pt}}\n"
+            f"\\begin{{tabular}}{{{spec}}}\n\\toprule\n"
             + " & ".join(head) + " \\\\\n\\midrule\n" + "\n".join(" & ".join(r) + r" \\" for r in body)
-            + "\n\\bottomrule\n\\end{tabular}}\n\\end{table}\n")   # sn-jnl's \botrule breaks inside \resizebox
+            + f"\n\\botrule\n\\end{{tabular}}\n\\end{{{env}}}\n")
 
 
 def paper_tables():
@@ -188,13 +194,13 @@ def paper_tables():
     t = {}
     # Table 1 - parameters (tables_p2 Table 1)
     rows = [[lookup(T1_LABEL, r[0], "Table 1 quantity"), t1_value(r[1]), t1_source(r[2])] for r in T[1][1:]]
-    t[1] = table_env(["quantity", "value", "source"], rows, "lll",
+    t[1] = table_env(["quantity", "value", "source"], rows, [0.33, 0.39, 0.20],
                      "Parameters of plant P2 and of the controllers.", TABLABEL[1])
     # Table 2 - main comparison (tables_p2 Table 5)
     head = ["controller", "mean [m] (SE; by-day median)", "median of segment means [m]", "STD [m]",
             "median of segment STDs [m]", "$\\theta$ RMS [\\textdegree]"]
     assert len(T[5][0]) == len(head)
-    t[2] = table_env(head, [[esc(x) for x in r] for r in T[5][1:]], "lccccc",
+    t[2] = table_env(head, [[esc(x) for x in r] for r in T[5][1:]], [0.19, 0.26, 0.12, 0.10, 0.12, 0.09],
                      "Eight controllers on the development circle (133 segments, 42 days; one segment left out "
                      "because PAW-MOBADC stopped on it). Mean = pooled mean position-error norm with day-jackknife "
                      "SE and by-day median; STD = within-segment standard deviation of the error norm, pooled; "
@@ -205,31 +211,31 @@ def paper_tables():
             "C1: PA-MOBADC / MOBADC-W $-$ 1", "C2: PAW-MOBADC / PA-MOBADC $-$ 1", "total: PAW-MOBADC / MOBADC-W $-$ 1"]
     assert len(T[6][0]) == len(head)
     rows = [[lookup(ABL_BLOCK, r[0], "Table 3 block")] + [esc(x) for x in r[1:]] for r in T[6][1:]]
-    t[3] = table_env(head, rows, "lccccccc",
+    t[3] = table_env(head, rows, [0.14, 0.07, 0.075, 0.075, 0.075, 0.155, 0.155, 0.155],
                      "Ablation MOBADC-W $\\rightarrow$ PA-MOBADC (C1) $\\rightarrow$ PAW-MOBADC (C2): pooled error of "
                      "each stage on the block's common set of segments and the step changes (SE; leave-one-out range; "
                      "by-day median). ``unsat.'' = segments on which PA-MOBADC is below its tilt clamp. MOBADC-W was "
-                     "not run in hover.", TABLABEL[3])
+                     "not run in hover.", TABLABEL[3], sideways=True)
     # Table 4 - registered claims (tables_p2 Table 3, first nine columns)
     head = ["claim", "set", "role", "value", "SE", "leave-one-out range", "by-day median", "segments (days)",
             "verdict"]
     rows = [[cl_claim(r[0]), lookup(CL_SET, r[1], "Table 4 set"), lookup(CL_ROLE, r[2], "Table 4 role")]
             + [esc(x) for x in r[3:8]] + [lookup(CL_VERDICT, r[8], "Table 4 verdict")] for r in T[3][1:]]
-    t[4] = table_env(head, rows, "lllcccccl",
+    t[4] = table_env(head, rows, [0.21, 0.13, 0.09, 0.07, 0.05, 0.12, 0.07, 0.07, 0.08],
                      "The claims on the development set and on the held-out days (Section~\\ref{sec:registration-and-"
                      "held-out-confirmation}): value, day-jackknife SE, leave-one-segment-out range, by-day median, "
                      "and the verdict of the registered test. ``unsat.'' = scored on the segments on which PA-MOBADC "
-                     "is below its tilt clamp; ``1/day'' = one segment per day.", TABLABEL[4])
+                     "is below its tilt clamp; ``1/day'' = one segment per day.", TABLABEL[4], sideways=True)
     # Table 5 - C1 across payload mass and cable length (tables_p2 Table 4)
     head = ["($m_p$, $L$)", "$\\tau$ [ms]", "segments", "MOBADC [m]", "MOBADC-W [m]", "PA-MOBADC [m]",
             "MOBADC-W + preview [m]", "PA-MOBADC / MOBADC-W $-$ 1", "(MOBADC-W + preview) / MOBADC-W $-$ 1"]
     assert len(T[4][0]) == len(head)
     rows = [[esc(x).replace("U\\_max", "$U_{\\max}$") for x in r] for r in T[4][1:]]
-    t[5] = table_env(head, rows, "lcccccccc",
+    t[5] = table_env(head, rows, [0.09, 0.05, 0.10, 0.07, 0.07, 0.07, 0.07, 0.18, 0.18],
                      "C1 across payload mass $m_p$ [kg] and cable length $L$ [m] on the development circle, one segment "
                      "per day: horizon, segments used, pooled errors and the changes against MOBADC-W (SE; "
                      "leave-one-out range; by-day median). The light-payload rows are pooled on the segments inside "
-                     "their wind envelope $U \\le U_{\\max}$.", TABLABEL[5])
+                     "their wind envelope $U \\le U_{\\max}$.", TABLABEL[5], sideways=True)
     # Table 6 - what the payload-drag term depends on (RESULTS_FINAL / RESULTS_P2 ids)
     spec = [("circle, nominal $\\hat K$", "circle, 1/day", "E3-c", "E4-circle-fair"),
             ("circle, $\\hat K\\times0.7$", "circle, 1/day", "E3-c070", None),
@@ -259,7 +265,7 @@ def paper_tables():
                 raise SystemExit(f"build_tex: result id {k} not in RESULTS_FINAL / RESULTS_P2")
         rows.append([cond, st, esc(f"{R[a][0]} ({R[a][1]})"), esc(f"{R[b][0]} ({R[b][1]})") if b else "--"])
     t[6] = table_env(["condition", "development set", "gain $h$ of the payload-drag term (SE)",
-                      "complete controller / MOBADC-W $-$ 1 (SE)"], rows, "llcc",
+                      "complete controller / MOBADC-W $-$ 1 (SE)"], rows, [0.34, 0.20, 0.18, 0.18],
                      "What the payload-drag term depends on (development set, descriptive). $h = 1 -$ PAW-MOBADC / "
                      "PA-MOBADC; in the preview rows the term is added to MOBADC-W + preview and $h = 1 -$ "
                      "(PAW-MOBADC + preview) / (MOBADC-W + preview). ``1/day'' = one segment per day; ``unsat.'' = "
@@ -376,6 +382,7 @@ PREAMBLE = r"""% GENERATED by paper/ijdc/build_tex.py from paper/manuscript.md -
 \usepackage{manyfoot}%
 \usepackage{booktabs}%
 \usepackage{bm}%
+\usepackage{array}%
 \graphicspath{{../figures/}{figures/}}
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \theoremstyle{thmstyleone}%

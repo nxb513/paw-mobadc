@@ -626,30 +626,40 @@ Flight tests, wind measured near the ground, and swing damping are the next step
 
 ## Figure captions
 
-**Fig. 1** (`p2_fig1_system`). Plant P2 (quadrotor coupled to a three-dimensional spherical pendulum, both under
-quadratic drag) and the controller with the compared estimates.
+**Fig. 1** (`p2_fig1_system`). (a) Plant P2 in side view: quadrotor (mass $m_Q$) and payload ($m_L$) on a cable of
+length $L$ along $\boldsymbol q$, thrust $\boldsymbol F$, cable tension $T$, wind $\boldsymbol w(t)$ and the wind
+forces $\boldsymbol F_{wQ}$ and $\boldsymbol F_{wL}$ on the two bodies. (b) Controller: the position law of Guo et
+al., the disturbance observer with the prediction of C1, and the measured-wind feed-forward with the payload-drag
+factor of C2; in the comparison, INDI-DE replaces the observer's estimate.
 
-**Fig. 2** (`p2_fig2_wind`). Wind data: mean wind speed and turbulence intensity per segment, development pool and
-held-out days, with the operating envelopes.
+**Fig. 2** (`p2_fig2_wind`). Wind per segment, development pool and held-out days: (a) mean wind speed, (b) turbulence
+intensity, (c) both. Dotted lines: the wind envelopes of the circle and hover sets.
 
-**Fig. 3** (`p2_fig9_traj`). The six controllers of Table 2 on one development circle segment (chosen by a registered
-rule).
+**Fig. 3** (`p2_fig9_traj`). Flown (solid) and desired (dashed) paths of the six controllers of Table 2 on one
+development circle segment chosen by a registered rule; each panel gives the mean position error on the segment.
 
-**Fig. 4** (`p2_fig3_series`). One held-out circle segment (chosen by a registered rule): position error and payload
-angle of MOBADC-W, PA-MOBADC, PAW-MOBADC and INDI-DE.
+**Fig. 4** (`p2_fig3_series`). One held-out circle segment chosen by a registered rule: (a) position error and (b)
+cable angle of MOBADC-W, PA-MOBADC, PAW-MOBADC and INDI-DE; the legend gives the mean error on the segment.
 
-**Fig. 5** (`p2_fig4_c1`). C1: PA-MOBADC / MOBADC-W − 1 and the reference preview, per trajectory, development set and
-held-out days; per-segment comparison.
+**Fig. 5** (`p2_fig4_c1`). C1: (a) PA-MOBADC / MOBADC-W − 1 and (MOBADC-W + preview) / MOBADC-W − 1 with ±1.65 SE per
+trajectory, on the development set and on the held-out days ($n$: segments); (b) error of PA-MOBADC against MOBADC-W
+per circle segment, with the identity line.
 
-**Fig. 6** (`p2_fig5_tau`). Pooled error against the prediction horizon, development segments; the chosen horizon is
-marked.
+**Fig. 6** (`p2_fig5_tau`). Pooled error of PA-MOBADC against the prediction horizon $\tau$ on the development
+segments, per trajectory: coarse grid, fine grid and the chosen horizon $\tau^*$.
 
-**Fig. 7** (`p2_fig6_c2`). C2: gain of PAW-MOBADC over PA-MOBADC with ±1.65 SE, development (post hoc) and held-out
-(registered); control effort and payload angle.
+**Fig. 7** (`p2_fig6_c2`). C2: (a) gain $h$ = 1 − PAW-MOBADC / PA-MOBADC with ±1.65 SE on the development set (post
+hoc) and on the held-out days (registered, scored on the segments where PA-MOBADC is below its tilt clamp); (b)
+control effort, (c) RMS and (d) maximum cable angle. Bars: quadratic mean over the held-out segments (maximum:
+median); dots: segments; diamonds: development set (cable angle only; the effort is stored for the held-out days
+only).
 
-**Fig. 8** (`p2_fig7_fast`). PA-MOBADC, PAW-MOBADC and INDI-DE on the circle and in hover.
+**Fig. 8** (`p2_fig7_fast`). Measurement against prediction: (a) pooled error of PA-MOBADC, PAW-MOBADC and INDI-DE
+per set ($n$: segments); (b) INDI-DE / PA-MOBADC − 1 and PAW-MOBADC / INDI-DE − 1 with ±1.65 SE.
 
-**Fig. 9** (`p2_fig8_c3`). C3: headroom of perfect advance wind knowledge in the twelve registered wind groups.
+**Fig. 9** (`p2_fig8_c3`). C3: headroom $h$ = 1 − oracle / PA-MOBADC with ±1.65 SE in the twelve registered wind groups
+(in the hover group with the wind-to-payload term, both controllers carry that term); dashed: the registered
+threshold; right: segments, days and the verdict of the headroom rule.
 
 ## Data and code availability
 

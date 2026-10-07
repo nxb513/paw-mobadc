@@ -39,11 +39,11 @@ def pandoc_bin():
 
 
 def pandoc(md):
-    r = subprocess.run([pandoc_bin(), "-f", "markdown-implicit_figures", "-t", "latex", "--natbib", "--wrap=none"],
+    r = subprocess.run([pandoc_bin(), "-f", "markdown-implicit_figures-fancy_lists", "-t", "latex", "--natbib", "--wrap=none"],
                        input=md.encode("utf-8"), capture_output=True)
     if r.returncode != 0:
         raise SystemExit(r.stderr.decode("utf-8", "replace"))
-    return r.stdout.decode("utf-8")
+    return r.stdout.decode("utf-8").replace("\r\n", "\n")   # pandoc on Windows writes CRLF
 
 
 UNI = {"−": r"\textminus{}", "°": r"\textdegree{}", "±": r"$\pm$", "²": r"$^2$", "×": r"$\times$", "≤": r"$\le$",

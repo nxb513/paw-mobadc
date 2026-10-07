@@ -94,7 +94,7 @@ The plant used in every result, P2, couples a rigid quadrotor to a three-dimensi
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig1_system.pdf}
-\caption{Plant P2 (quadrotor coupled to a three-dimensional spherical pendulum, both under quadratic drag) and the controller with the compared estimates.}\label{fig:1}
+\caption{(a) Plant P2 in side view: quadrotor (mass \(m_Q\)) and payload (\(m_L\)) on a cable of length \(L\) along \(\boldsymbol q\), thrust \(\boldsymbol F\), cable tension \(T\), wind \(\boldsymbol w(t)\) and the wind forces \(\boldsymbol F_{wQ}\) and \(\boldsymbol F_{wL}\) on the two bodies. (b) Controller: the position law of Guo et al., the disturbance observer with the prediction of C1, and the measured-wind feed-forward with the payload-drag factor of C2; in the comparison, INDI-DE replaces the observer's estimate.}\label{fig:1}
 \end{figure}
 
 
@@ -385,6 +385,14 @@ an upper bound on what any wind predictor could add through the controller's for
 
 Measured wind comes from the sonic anemometers of the M5 tower at the National Wind Technology Center of NREL, at heights of 61 and 74 m, sampled at 20 Hz \cite{hamilton2019}. Each run lasts 200 s; statistics use \(t \ge 140\) s. A segment enters a trajectory's set only if the vehicle can hold the trajectory against the static wind force at the segment's mean wind speed with tilt and thrust within 80 \% of their limits; on the circle (radius 0.8 m, angular rate 1.575 rad/s) this admits mean winds up to 8.02 m/s (Fig.~\ref{fig:2}).
 
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{p2_fig2_wind.pdf}
+\caption{Wind per segment, development pool and held-out days: (a) mean wind speed, (b) turbulence intensity, (c) both. Dotted lines: the wind envelopes of the circle and hover sets.}\label{fig:2}
+\end{figure}
+
+
 \begin{itemize}
 \tightlist
 \item
@@ -392,14 +400,6 @@ Measured wind comes from the sonic anemometers of the M5 tower at the National W
 \item
   \textbf{Held-out set:} 14 days chosen by a hash rule before download and opened once, after every claim, threshold and runner had been frozen. Two further days of the manifest had been inspected segment by segment while the wind pipeline was built and were excluded before any controller run; the remaining days had contributed only to pooled wind statistics of that earlier stage \cite{nosek2018}.
 \end{itemize}
-
-
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{p2_fig2_wind.pdf}
-\caption{Wind data: mean wind speed and turbulence intensity per segment, development pool and held-out days, with the operating envelopes.}\label{fig:2}
-\end{figure}
 
 \subsection{Metric and statistics}\label{sec:metric-and-statistics}
 
@@ -478,7 +478,7 @@ Table~\ref{tab:main} ranks eight controllers on the 133-segment development circ
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig9_traj.pdf}
-\caption{The six controllers of Table~\ref{tab:main} on one development circle segment (chosen by a registered rule).}\label{fig:3}
+\caption{Flown (solid) and desired (dashed) paths of the six controllers of Table~\ref{tab:main} on one development circle segment chosen by a registered rule; each panel gives the mean position error on the segment.}\label{fig:3}
 \end{figure}
 
 
@@ -486,7 +486,7 @@ Table~\ref{tab:main} ranks eight controllers on the 133-segment development circ
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig3_series.pdf}
-\caption{One held-out circle segment (chosen by a registered rule): position error and payload angle of MOBADC-W, PA-MOBADC, PAW-MOBADC and INDI-DE.}\label{fig:4}
+\caption{One held-out circle segment chosen by a registered rule: (a) position error and (b) cable angle of MOBADC-W, PA-MOBADC, PAW-MOBADC and INDI-DE; the legend gives the mean error on the segment.}\label{fig:4}
 \end{figure}
 
 
@@ -532,14 +532,11 @@ hover, held-out & 56 (14) & -- & 0.01057 & 0.00385 & -- & $-$63.55 \% (1.75; [$-
 
 The registered development gate D2 passed: PA-MOBADC lowered the pooled error of MOBADC-W by 50.33 \% (SE 8.28, by-day median \textminus{}62.23 \%), from 0.0363 m to 0.0180 m. \textbf{On the held-out days D2 was confirmed: \textminus{}58.30 \% (SE 4.57, leave-one-out range {[}\textminus{}60.66, \textminus{}58.12{]}, by-day median \textminus{}63.88 \%), from 0.0343 m to 0.0143 m} (Table~\ref{tab:claims}, Fig.~\ref{fig:5}). The size of the gain agrees with the argument of Section~\ref{sec:c1-compensation-of-the-loop-delay-pa-mobadc}: a 290 ms delay leaves 0.45 of a harmonic payload force uncancelled, and prediction removes most of it. The horizon itself comes from the registered sweep of Fig.~\ref{fig:6}: on the circle the pooled error has its minimum at 290 ms, in hover at the lower edge of the grid, \(\tau = 0\).
 
-The gain holds on the other planned trajectories, \textminus{}45.41 \% on the figure-eight and \textminus{}24.80 \% on the square, and across every payload mass, cable length and their combinations, between \textminus{}58.9 \% and \textminus{}34.9 \% (Table~\ref{tab:sens}). It is smallest where the payload is light and the cable long, that is, where the periodic payload force is smallest relative to the wind. The reference preview (MOBADC-W + preview) compensates the same delay along the planned trajectory and gives a comparable gain, \textminus{}62.40 \% on the held-out days; Section~\ref{sec:two-realisations-of-delay-compensation} compares the two realisations.
-
-
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig4_c1.pdf}
-\caption{C1: PA-MOBADC / MOBADC-W \textminus{} 1 and the reference preview, per trajectory, development set and held-out days; per-segment comparison.}\label{fig:5}
+\caption{C1: (a) PA-MOBADC / MOBADC-W \textminus{} 1 and (MOBADC-W + preview) / MOBADC-W \textminus{} 1 with $\pm$1.65 SE per trajectory, on the development set and on the held-out days (\(n\): segments); (b) error of PA-MOBADC against MOBADC-W per circle segment, with the identity line.}\label{fig:5}
 \end{figure}
 
 
@@ -547,7 +544,7 @@ The gain holds on the other planned trajectories, \textminus{}45.41 \% on the fi
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig5_tau.pdf}
-\caption{Pooled error against the prediction horizon, development segments; the chosen horizon is marked.}\label{fig:6}
+\caption{Pooled error of PA-MOBADC against the prediction horizon \(\tau\) on the development segments, per trajectory: coarse grid, fine grid and the chosen horizon \(\tau^*\).}\label{fig:6}
 \end{figure}
 
 
@@ -571,6 +568,9 @@ H-hover: 1 $-$ oracle / PA-MOBADC (unsat.) & held-out, hover, strong wind & regi
 \botrule
 \end{tabular}}
 \end{table}
+
+
+The gain holds on the other planned trajectories, \textminus{}45.41 \% on the figure-eight and \textminus{}24.80 \% on the square, and across every payload mass, cable length and their combinations, between \textminus{}58.9 \% and \textminus{}34.9 \% (Table~\ref{tab:sens}). It is smallest where the payload is light and the cable long, that is, where the periodic payload force is smallest relative to the wind. The reference preview (MOBADC-W + preview) compensates the same delay along the planned trajectory and gives a comparable gain, \textminus{}62.40 \% on the held-out days; Section~\ref{sec:two-realisations-of-delay-compensation} compares the two realisations.
 
 
 \begin{table}[!htbp]
@@ -600,30 +600,15 @@ H-hover: 1 $-$ oracle / PA-MOBADC (unsat.) & held-out, hover, strong wind & regi
 
 \textbf{Registered and confirmed on the held-out days.} Both claims were registered from these numbers before the held-out days were opened. H-static (hover) was confirmed with \(h\) = +63.00 \% (SE 1.37, 52 segments on 14 days, no failure), H-static-circle with +37.18 \% (SE 3.04, 53 segments, no failure). On the full held-out sets the error falls from 0.0143 m to 0.00873 m on the circle and from 0.0106 m to 0.00385 m in hover (Fig.~\ref{fig:7}). Table~\ref{tab:ablation} separates the steps: on the held-out circle C1 gives \textminus{}58.30 \% against MOBADC-W and C2 a further \textminus{}39.00 \%. In hover the registered horizon is \(\tau = 0\), so PA-MOBADC equals MOBADC-W there and the whole gain over MOBADC-W is C2's.
 
-\textbf{What the static term depends on.} Proposition 2 names two sources of residual, the assumed ratio and the swing; Table~\ref{tab:c2} collects the checks that probe them.
-
-\begin{itemize}
-\tightlist
-\item
-  \emph{Assumed ratio.} With \(\hat K\) scaled by 0.7 and 1.3 the gain stays at 55.81 \% and 59.00 \% in hover (against 67.51 \% at the nominal ratio), and at 34.76 \% and 46.70 \% on the circle (against 43.67 \%). Underestimating the load's drag costs more than overestimating it, and neither removes most of the gain.
-\item
-  \emph{Swing and trajectory.} With the payload drag in the feed-forward the error falls by 56.37 \% on the figure-eight and by 15.03 \% on the square (development sets, PAW-MOBADC against PA-MOBADC). The square, whose corners excite the largest swing, is where the term helps least, as the swing-rate bound of Proposition 2 predicts.
-\item
-  \emph{Payload mass and cable length.} Across the eight sensitivity levels on the circle the gain lies between 21.64 \% (light payload, long cable) and 52.33 \% (short cable), and PAW-MOBADC lowers the error of MOBADC-W by 48.91 \% to 80.32 \%; the light-payload levels are pooled on the segments inside their wind envelope, as in Table~\ref{tab:sens}. The gain grows with the share of the load's drag in the wind force the vehicle has to balance.
-\item
-  \emph{Wind-sensor noise.} With 0.1 m/s noise on the wind sensor the gain is 42.98 \% on the circle and 65.36 \% in hover, against 43.67 \% and 67.51 \% without noise.
-\item
-  \emph{Reference preview.} Added to the preview instead of to the prediction, the payload-drag term lowers the error by 28.80 \% on the circle, 49.73 \% on the figure-eight and 15.25 \% on the square: C2 is independent of how the delay is compensated.
-\end{itemize}
-
-
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig6_c2.pdf}
-\caption{C2: gain of PAW-MOBADC over PA-MOBADC with $\pm$1.65 SE, development (post hoc) and held-out (registered); control effort and payload angle.}\label{fig:7}
+\caption{C2: (a) gain \(h\) = 1 \textminus{} PAW-MOBADC / PA-MOBADC with $\pm$1.65 SE on the development set (post hoc) and on the held-out days (registered, scored on the segments where PA-MOBADC is below its tilt clamp); (b) control effort, (c) RMS and (d) maximum cable angle. Bars: quadratic mean over the held-out segments (maximum: median); dots: segments; diamonds: development set (cable angle only; the effort is stored for the held-out days only).}\label{fig:7}
 \end{figure}
 
+
+\textbf{What the static term depends on.} Proposition 2 names two sources of residual, the assumed ratio and the swing; Table~\ref{tab:c2} collects the checks that probe them.
 
 \begin{table}[!htbp]
 \caption{What the payload-drag term depends on (development set, descriptive). $h = 1 -$ PAW-MOBADC / PA-MOBADC; in the preview rows the term is added to MOBADC-W + preview and $h = 1 -$ (PAW-MOBADC + preview) / (MOBADC-W + preview). ``1/day'' = one segment per day; ``unsat.'' = segments on which PA-MOBADC is below its tilt clamp.}\label{tab:c2}
@@ -658,6 +643,21 @@ square, added to the preview & square & +15.25 \% (3.93) & $-$42.76 \% (0.42) \\
 \end{tabular}}
 \end{table}
 
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Assumed ratio.} With \(\hat K\) scaled by 0.7 and 1.3 the gain stays at 55.81 \% and 59.00 \% in hover (against 67.51 \% at the nominal ratio), and at 34.76 \% and 46.70 \% on the circle (against 43.67 \%). Underestimating the load's drag costs more than overestimating it, and neither removes most of the gain.
+\item
+  \emph{Swing and trajectory.} With the payload drag in the feed-forward the error falls by 56.37 \% on the figure-eight and by 15.03 \% on the square (development sets, PAW-MOBADC against PA-MOBADC). The square, whose corners excite the largest swing, is where the term helps least, as the swing-rate bound of Proposition 2 predicts.
+\item
+  \emph{Payload mass and cable length.} Across the eight sensitivity levels on the circle the gain lies between 21.64 \% (light payload, long cable) and 52.33 \% (short cable), and PAW-MOBADC lowers the error of MOBADC-W by 48.91 \% to 80.32 \%; the light-payload levels are pooled on the segments inside their wind envelope, as in Table~\ref{tab:sens}. The gain grows with the share of the load's drag in the wind force the vehicle has to balance.
+\item
+  \emph{Wind-sensor noise.} With 0.1 m/s noise on the wind sensor the gain is 42.98 \% on the circle and 65.36 \% in hover, against 43.67 \% and 67.51 \% without noise.
+\item
+  \emph{Reference preview.} Added to the preview instead of to the prediction, the payload-drag term lowers the error by 28.80 \% on the circle, 49.73 \% on the figure-eight and 15.25 \% on the square: C2 is independent of how the delay is compensated.
+\end{itemize}
+
 \subsection{Measurement versus prediction: INDI-DE}\label{sec:measurement-versus-prediction-indi-de}
 
 The two kinds of disturbance separate the methods. \textbf{On the circle}, where the payload force is periodic and fast compared with the loop delay, prediction wins: on the held-out days INDI-DE's pooled error is 37.2 mm, against 14.3 mm for PA-MOBADC and 8.73 mm for PAW-MOBADC (INDI-DE is 159.54 \% above PA-MOBADC; 112.93 \% on the development set; Fig.~\ref{fig:8}). INDI-DE's error is nearly the same on every circle segment whatever the wind, which identifies its source: it measures the trajectory-driven payload force correctly and one loop delay late, the lag term of \eqref{eq:lag-err}. \textbf{In hover}, where the disturbance is slow, fast measurement is enough: INDI-DE reaches 2.60 mm, against 3.85 mm for PAW-MOBADC and 10.6 mm for PA-MOBADC. This advantage depends on the idealised accelerometer of Section~\ref{sec:actuators-and-sensors}. A horizontal accelerometer bias of 0.086 m/s$^2$ or 0.17 m/s$^2$, the gravity leakage of an attitude error of 0.50\textdegree{} or 0.99\textdegree{}, raises INDI-DE's error to 7.66 mm and 14.5 mm, above PAW-MOBADC, in agreement with the bias sensitivity of outer-loop INDI \cite{smeur2018}.
@@ -667,7 +667,7 @@ The two kinds of disturbance separate the methods. \textbf{On the circle}, where
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig7_fast.pdf}
-\caption{PA-MOBADC, PAW-MOBADC and INDI-DE on the circle and in hover.}\label{fig:8}
+\caption{Measurement against prediction: (a) pooled error of PA-MOBADC, PAW-MOBADC and INDI-DE per set (\(n\): segments); (b) INDI-DE / PA-MOBADC \textminus{} 1 and PAW-MOBADC / INDI-DE \textminus{} 1 with $\pm$1.65 SE.}\label{fig:8}
 \end{figure}
 
 \subsection{Advance knowledge of the wind (C3)}\label{sec:advance-knowledge-of-the-wind-c3}
@@ -679,7 +679,7 @@ Knowing the true future wind adds almost nothing once the wind is measured. In t
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig8_c3.pdf}
-\caption{C3: headroom of perfect advance wind knowledge in the twelve registered wind groups.}\label{fig:9}
+\caption{C3: headroom \(h\) = 1 \textminus{} oracle / PA-MOBADC with $\pm$1.65 SE in the twelve registered wind groups (in the hover group with the wind-to-payload term, both controllers carry that term); dashed: the registered threshold; right: segments, days and the verdict of the headroom rule.}\label{fig:9}
 \end{figure}
 
 \subsection{Model-based payload prediction (MBP)}\label{sec:model-based-payload-prediction-mbp}
@@ -725,7 +725,6 @@ On a quadrotor with a slung load in measured wind, the error that remains under 
 For practitioners:
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
   Compensate the loop delay for a periodic payload force: predict the observer's estimate through its exosystem, or preview the planned reference (\textminus{}58 \% and \textminus{}62 \% on the held-out days).

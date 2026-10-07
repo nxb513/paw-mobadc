@@ -464,8 +464,8 @@ def main():
     out.extend(body)
     out.append("\\backmatter\n\n\\bmhead{Data availability}\n" + data + "\n\n")
     out.append("\\bmhead{Statements and Declarations}\nCompeting interests, funding and the authors' contributions are "
-               "given on the separate title page and in the submission system (double-anonymous review); the use of "
-               "AI-assisted tools is described in Section~\\ref{sec:use-of-ai-assisted-tools}.\n\n")
+               "declared in the submission system (double-anonymous review); the use of AI-assisted tools is "
+               "described in Section~\\ref{sec:use-of-ai-assisted-tools}.\n\n")
     if appendix:
         out.append("\\begin{appendices}\n\n" + "\n".join(appendix) + "\\end{appendices}\n\n")
     out.append("\\bibliographystyle{sn-nature}\n\\bibliography{references}\n\n\\end{document}\n")

@@ -34,11 +34,12 @@ AUTHORS (in this order)
 3. Xuan Hai Le - Faculty of Engineering and Technology, VNU International School, Hanoi, Viet Nam -
    hailx@vnuis.edu.vn
 
-AUTHOR CONTRIBUTIONS (CRediT)
-Huy Hoang Tran: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation,
-Visualization, Writing - original draft. Xuan Bach Nguyen: Conceptualization, Methodology, Software, Validation,
-Formal analysis, Writing - original draft, Writing - review and editing. Xuan Hai Le: Supervision, Conceptualization,
-Project administration, Writing - review and editing. All authors read and approved the final manuscript.
+AUTHOR CONTRIBUTIONS STATEMENT (initials, as the system asks; not in any file of the submission)
+H.H.T. and X.B.N. conceived the study and designed the methods. H.H.T. and X.B.N. wrote the simulation and analysis
+code and validated the results; H.H.T. carried out the simulations, curated the data and prepared the figures. H.H.T.
+and X.B.N. performed the formal analysis and wrote the main manuscript text, and X.B.N. and X.H.L. reviewed and edited
+it. X.H.L. supervised the work, contributed to its conception and administered the project. All authors reviewed and
+approved the manuscript.
 
 FUNDING
 No funding was received for conducting this study.

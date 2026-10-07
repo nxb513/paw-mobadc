@@ -8,16 +8,16 @@ link-citations: true
 
 ## Abstract
 
-A quadrotor carrying a load on a cable in wind is disturbed by the cable force of the swinging load and by the wind
-on the airframe and on the load. Observer-based anti-disturbance controllers estimate both and cancel the estimates.
+A quadrotor carrying a slung load in wind is disturbed by the cable force of the swinging load and by the wind on
+both bodies. Observer-based anti-disturbance controllers estimate both and cancel the estimates.
 This paper argues that, once the wind is measured, the remaining error is set by two gaps in the controller's model
 rather than by the quality of the estimates: the loop delay acts on a payload force that is periodic along a planned
 trajectory, and the wind feed-forward omits the drag on the load. Both gaps are closed with knowledge the controller
 already holds: the payload estimate is propagated over the loop delay through the observer's own exosystem, and the
-measured-wind feed-forward is scaled by the share of the wind force that the force balance of the coupled system
-assigns to the load. The resulting controller, PAW-MOBADC, is evaluated in simulation on a quadrotor coupled to a
-spherical pendulum in wind measured at the NREL M5 tower, against the multiple-observer controller (MOBADC) of Guo et
-al., with every claim registered before its data were opened. On fourteen held-out days the delay compensation lowers
+measured-wind feed-forward is scaled by the load's share of the wind force given by the force balance of the coupled
+system. The resulting controller, PAW-MOBADC, is evaluated in simulation on a quadrotor coupled to a spherical
+pendulum in wind measured at a meteorological tower, against the multiple-observer anti-disturbance controller
+(MOBADC) of Guo et al., with every claim registered before its data were opened. On fourteen held-out days the delay compensation lowers
 the error of MOBADC with measured-wind feed-forward by 58 %, the payload-drag term lowers it by a further 63 % in
 hover and 37 % on a circle, and the complete controller lowers the error of MOBADC on the circle by 78 %. An
 acceleration-based estimate does not close the first gap, and perfect advance knowledge of the wind adds at most 6 %.

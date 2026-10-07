@@ -21,7 +21,7 @@
 \begin{document}
 \title[Prediction-augmented, payload-wind-aware multiple-observer control]{Prediction-augmented, payload-wind-aware multiple-observer control of a quadrotor with a slung load in measured wind}
 
-\abstract{A quadrotor carrying a load on a cable in wind is disturbed by the cable force of the swinging load and by the wind on the airframe and on the load. Observer-based anti-disturbance controllers estimate both and cancel the estimates. This paper argues that, once the wind is measured, the remaining error is set by two gaps in the controller's model rather than by the quality of the estimates: the loop delay acts on a payload force that is periodic along a planned trajectory, and the wind feed-forward omits the drag on the load. Both gaps are closed with knowledge the controller already holds: the payload estimate is propagated over the loop delay through the observer's own exosystem, and the measured-wind feed-forward is scaled by the share of the wind force that the force balance of the coupled system assigns to the load. The resulting controller, PAW-MOBADC, is evaluated in simulation on a quadrotor coupled to a spherical pendulum in wind measured at the NREL M5 tower, against the multiple-observer controller (MOBADC) of Guo et al., with every claim registered before its data were opened. On fourteen held-out days the delay compensation lowers the error of MOBADC with measured-wind feed-forward by 58 \%, the payload-drag term lowers it by a further 63 \% in hover and 37 \% on a circle, and the complete controller lowers the error of MOBADC on the circle by 78 \%. An acceleration-based estimate does not close the first gap, and perfect advance knowledge of the wind adds at most 6 \%.}
+\abstract{A quadrotor carrying a slung load in wind is disturbed by the cable force of the swinging load and by the wind on both bodies. Observer-based anti-disturbance controllers estimate both and cancel the estimates. This paper argues that, once the wind is measured, the remaining error is set by two gaps in the controller's model rather than by the quality of the estimates: the loop delay acts on a payload force that is periodic along a planned trajectory, and the wind feed-forward omits the drag on the load. Both gaps are closed with knowledge the controller already holds: the payload estimate is propagated over the loop delay through the observer's own exosystem, and the measured-wind feed-forward is scaled by the load's share of the wind force given by the force balance of the coupled system. The resulting controller, PAW-MOBADC, is evaluated in simulation on a quadrotor coupled to a spherical pendulum in wind measured at a meteorological tower, against the multiple-observer anti-disturbance controller (MOBADC) of Guo et al., with every claim registered before its data were opened. On fourteen held-out days the delay compensation lowers the error of MOBADC with measured-wind feed-forward by 58 \%, the payload-drag term lowers it by a further 63 \% in hover and 37 \% on a circle, and the complete controller lowers the error of MOBADC on the circle by 78 \%. An acceleration-based estimate does not close the first gap, and perfect advance knowledge of the wind adds at most 6 \%.}
 
 \keywords{quadrotor, slung load, disturbance observer, delay compensation, wind feed-forward, preregistration}
 
@@ -95,7 +95,7 @@ The plant used in every result, P2, couples a rigid quadrotor to a three-dimensi
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{p2_fig1_system.pdf}
-\caption{(a) Plant P2 in side view: quadrotor (mass \(m_Q\)) and payload (\(m_L\)) on a cable of length \(L\) along \(\boldsymbol q\), thrust \(\boldsymbol F\), cable tension \(T\), wind \(\boldsymbol w(t)\) and the wind forces \(\boldsymbol F_{wQ}\) and \(\boldsymbol F_{wL}\) on the two bodies. (b) Controller: the position law of Guo et al., the disturbance observer with the prediction of C1, and the measured-wind feed-forward with the payload-drag factor of C2; in the comparison, INDI-DE replaces the observer's estimate.}\label{fig:1}
+\caption{(a) Plant P2 in side view: quadrotor (mass \(m_Q\)) and payload (\(m_L\)) on a cable of length \(L\) along \(\boldsymbol q\), thrust \(\boldsymbol F\), cable tension \(T\), wind \(\boldsymbol w(t)\) and the wind forces \(\boldsymbol F_{wQ}\) and \(\boldsymbol F_{wL}\) on the two bodies. (b) Controller: the position law of Guo et al., the disturbance observer with the prediction of C1, and the measured-wind feed-forward with the payload-drag factor of C2; in the comparison, INDI-DE replaces the observer's estimate}\label{fig:1}
 \end{figure}
 
 
@@ -285,7 +285,7 @@ The bracket does not vanish when the observer is exact. For one harmonic of ampl
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_horizon.pdf}
-\caption{Why the loop delay matters. (a) Fraction of a harmonic payload force of frequency \(\sigma\) that a cancellation late by the loop delay \(\tau_d\) leaves uncancelled, \(2|\sin(\sigma\tau_d/2)|\), at the frequency of the circle; in the shaded range a late cancellation adds error. (b) Pooled error of PA-MOBADC against the prediction horizon \(\tau\) in the registered sweeps on the development segments, relative to its value at \(\tau = 0\); dots: the chosen horizon \(\tau^*\).}\label{fig:2}
+\caption{Why the loop delay matters. (a) Fraction of a harmonic payload force of frequency \(\sigma\) that a cancellation late by the loop delay \(\tau_d\) leaves uncancelled, \(2|\sin(\sigma\tau_d/2)|\), at the frequency of the circle; in the shaded range a late cancellation adds error. (b) Pooled error of PA-MOBADC against the prediction horizon \(\tau\) in the registered sweeps on the development segments, relative to its value at \(\tau = 0\); dots: the chosen horizon \(\tau^*\)}\label{fig:2}
 \end{figure}
 
 
@@ -387,7 +387,7 @@ Measured wind comes from the sonic anemometers of the M5 tower at the National W
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_wind.pdf}
-\caption{Measured wind of the development pool and of the held-out days: (a) distribution of the mean wind speed \(U\) per segment, (b) turbulence intensity against \(U\). Dotted: the largest mean wind at which the vehicle can hold the circle and the hover point (Section~\ref{sec:wind-data-and-segments}).}\label{fig:3}
+\caption{Measured wind of the development pool and of the held-out days: (a) distribution of the mean wind speed \(U\) per segment, (b) turbulence intensity against \(U\). Dotted: the largest mean wind at which the vehicle can hold the circle and the hover point (Section~\ref{sec:wind-data-and-segments})}\label{fig:3}
 \end{figure}
 
 
@@ -471,7 +471,7 @@ AI-assisted tools were used to help write the simulation and analysis code and t
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_compare.pdf}
-\caption{Pooled position error of each controller on the development set and on the held-out days: (a) circle; (b) hover, on the segments where PA-MOBADC is below its tilt clamp (the registered scoring set; with \(\tau = 0\) PA-MOBADC equals MOBADC-W). \(n\): segments.}\label{fig:4}
+\caption{Pooled position error of each controller on the development set and on the held-out days: (a) circle; (b) hover, on the segments where PA-MOBADC is below its tilt clamp (the registered scoring set; with \(\tau = 0\) PA-MOBADC equals MOBADC-W). \(n\): segments}\label{fig:4}
 \end{figure}
 
 
@@ -518,7 +518,7 @@ PAW-MOBADC (proposed) & 0.01199 (0.00374; 0.00777) & 0.00764 & 0.02631 & 0.00335
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_response.pdf}
-\caption{Time responses on one development circle segment (left) and one development hover segment (right), each chosen by a registered rule: (a, b) horizontal wind speed; (c, e) tracking error of the vehicle along the path and outward from the centre of the circle; (d, f) tracking error east and north.}\label{fig:5}
+\caption{Time responses on one development circle segment (left) and one development hover segment (right), each chosen by a registered rule: (a, b) horizontal wind speed; (c, e) tracking error of the vehicle along the path and outward from the centre of the circle; (d, f) tracking error east and north}\label{fig:5}
 \end{figure}
 
 
@@ -529,7 +529,7 @@ PAW-MOBADC (proposed) & 0.01199 (0.00374; 0.00777) & 0.00764 & 0.02631 & 0.00335
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_windspeed.pdf}
-\caption{Mean position error per segment against the mean wind speed of the segment, development sets: (a) circle, (b) hover. Dots: segments; lines: medians of eight bins with equal numbers of segments; open circles in (b): segments on which PA-MOBADC reaches its tilt clamp.}\label{fig:6}
+\caption{Mean position error per segment against the mean wind speed of the segment, development sets: (a) circle, (b) hover. Dots: segments; lines: medians of eight bins with equal numbers of segments; open circles in (b): segments on which PA-MOBADC reaches its tilt clamp}\label{fig:6}
 \end{figure}
 
 \subsection{C1 - compensation of the loop delay}\label{sec:c1-compensation-of-the-loop-delay}
@@ -592,7 +592,7 @@ The gain holds on the other planned trajectories, \textminus{}45.41 \% on the fi
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_sensitivity.pdf}
-\caption{What the payload-drag term depends on, development sets: (a) pooled error against the drag ratio assumed by the controller (PA-MOBADC does not use it); (b) error reduction by C2 per trajectory, added to PA-MOBADC or to MOBADC-W + preview; (c) error reduction by C2 per payload mass and cable length on the circle; (d) error reduction by C2 with and without wind-sensor noise. Whiskers: $\pm$1.65 SE.}\label{fig:7}
+\caption{What the payload-drag term depends on, development sets: (a) pooled error against the drag ratio assumed by the controller (PA-MOBADC does not use it); (b) error reduction by C2 per trajectory, added to PA-MOBADC or to MOBADC-W + preview; (c) error reduction by C2 per payload mass and cable length on the circle; (d) error reduction by C2 with and without wind-sensor noise. Whiskers: $\pm$1.65 SE}\label{fig:7}
 \end{figure}
 
 
@@ -656,7 +656,7 @@ Knowing the true future wind adds almost nothing once the wind is measured. In t
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_oracle.pdf}
-\caption{Error reduction from perfect advance knowledge of the wind, \(h\) = 1 \textminus{} oracle / PA-MOBADC, in the registered wind groups, with $\pm$1.65 SE; dashed: the registered threshold; right: \(h\), segments and days. *: post-hoc group. The group with strong wind on the circle at \(K = 0\) contained no segment.}\label{fig:8}
+\caption{Error reduction from perfect advance knowledge of the wind, \(h\) = 1 \textminus{} oracle / PA-MOBADC, in the registered wind groups, with $\pm$1.65 SE; dashed: the registered threshold; right: \(h\), segments and days. *: post-hoc group. The group with strong wind on the circle at \(K = 0\) contained no segment}\label{fig:8}
 \end{figure}
 
 \section{Discussion}\label{sec:discussion}
@@ -671,7 +671,7 @@ On the circle prediction wins (Section~\ref{sec:measurement-versus-prediction-on
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{ijdc_measure.pdf}
-\caption{Hover: pooled error of INDI-DE with a horizontal accelerometer bias, against PA-MOBADC and PAW-MOBADC, on the held-out days (solid) and on the development set with one segment per day (dashed). In brackets: the attitude error whose gravity leakage equals the bias.}\label{fig:9}
+\caption{Hover: pooled error of INDI-DE with a horizontal accelerometer bias, against PA-MOBADC and PAW-MOBADC, on the held-out days (solid) and on the development set with one segment per day (dashed). In brackets: the attitude error whose gravity leakage equals the bias}\label{fig:9}
 \end{figure}
 
 
@@ -730,8 +730,8 @@ Flight tests, wind measured near the ground, and swing damping are the next step
 \bmhead{Data availability}
 The wind records are public data of the M5 tower of the NREL National Wind Technology Center (https://wind.nlr.gov/MetData/135mData/M5Twr/). The simulation and analysis code will be made publicly available on GitHub upon acceptance; the registers and the result files will be made available upon acceptance.
 
-\bmhead{Declarations}
-Competing interests, funding and the authors' contributions are stated on the separate title page (double-anonymous review); the use of AI-assisted tools is described in Section~\ref{sec:use-of-ai-assisted-tools}.
+\bmhead{Statements and Declarations}
+Competing interests, funding and the authors' contributions are given on the separate title page and in the submission system (double-anonymous review); the use of AI-assisted tools is described in Section~\ref{sec:use-of-ai-assisted-tools}.
 
 \begin{appendices}
 

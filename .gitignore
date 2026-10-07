@@ -58,3 +58,4 @@ paper/ijdc/*.fdb_latexmk
 paper/ijdc/*.pdf
 paper/ijdc/*.zip
 bundle_test/
+paper/ijdc/submission/

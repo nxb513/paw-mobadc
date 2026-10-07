@@ -4,6 +4,7 @@ The journal compiles the LaTeX source itself, so the zip holds everything manusc
 manuscript.tex, the class and bibliography style, references.bib, manuscript.bbl (written by the LaTeX run; the CI
 workflow builds the zip after compiling) and every figure that manuscript.tex includes. Files sit in the zip root,
 because submission systems flatten folders; graphicx finds figures in the current directory before \\graphicspath.
+Figures are renamed Fig<n>.pdf in the zip (and in its manuscript.tex), as the journal asks.
 
 Before writing, the text files are checked for anything that identifies the authors: names, e-mail addresses,
 organisations and the ORCID iD, all read from title_page.tex (which is uploaded separately and is not bundled).
@@ -36,13 +37,14 @@ def identifiers(title_page):
 
 
 def figures_of(tex):
-    names = re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}", tex)
+    """(source file, name in the bundle) per figure: Fig<n>.pdf, n = the figure's number (IJDC: "Name your figure
+    files with 'Fig' and the figure number")."""
     out = []
-    for n in names:
-        p = FIGURES / n
+    for m in re.finditer(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}.*?\\label\{fig:(\d+)\}", tex, flags=re.S):
+        p = FIGURES / m.group(1)
         if not p.suffix:
             p = p.with_suffix(".pdf")
-        out.append(p)
+        out.append((p, f"Fig{m.group(2)}{p.suffix}", m.group(1)))
     return out
 
 
@@ -57,44 +59,55 @@ def main():
     bst = re.search(r"\\bibliographystyle\{([^}]*)\}", tex).group(1) + ".bst"
     bib = re.search(r"\\bibliography\{([^}]*)\}", tex).group(1) + ".bib"
 
-    files = [tex_path, HERE / cls, HERE / bst, HERE / bib]
+    figs = figures_of(tex)
+    for src, dst, ref in figs:                           # the bundled manuscript.tex names the figures Fig<n>
+        tex = tex.replace("{" + ref + "}", "{" + dst + "}")
+    # (source path or None, name in the zip, text for a rewritten file)
+    items = [(None, "manuscript.tex", tex), (HERE / cls, cls, None), (HERE / bst, bst, None), (HERE / bib, bib, None)]
     bbl = HERE / "manuscript.bbl"
     if bbl.exists():
-        files.append(bbl)
+        items.append((bbl, "manuscript.bbl", None))
     else:
         print("  note: no manuscript.bbl (written by the LaTeX run; the CI workflow bundles after compiling)")
-    files += figures_of(tex)
+    items += [(src, dst, None) for src, dst, _ in figs]
 
     problems = []
-    for f in files:
-        if not f.exists():
-            problems.append(f"missing: {f.relative_to(HERE.parent.parent)}")
-    names = [f.name for f in files]
+    for src, name, _ in items:
+        if src is not None and not src.exists():
+            problems.append(f"missing: {src.relative_to(HERE.parent.parent)}")
+    names = [name for _, name, _ in items]
     dup = {n for n in names if names.count(n) > 1}
     if dup:
         problems.append(f"two files with the same name in a flat zip: {sorted(dup)}")
+    left = re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}", tex)
+    if any(not re.fullmatch(r"Fig\d+\.pdf", n) for n in left):
+        problems.append(f"figures not renamed: {left}")
 
     ids = identifiers(HERE / "title_page.tex")
-    for f in files:
-        if f.exists() and f.suffix in (".tex", ".bib", ".bbl"):
-            text = f.read_text(encoding="utf-8", errors="replace").lower()
-            for s in ids:
-                if s.lower() in text:
-                    problems.append(f"{f.name} contains an author identifier: {s!r}")
+    for src, name, text in items:
+        if name.endswith((".tex", ".bib", ".bbl")):
+            t = (text if text is not None else src.read_text(encoding="utf-8", errors="replace")).lower()
+            for s_ in ids:
+                if s_.lower() in t:
+                    problems.append(f"{name} contains an author identifier: {s_!r}")
 
-    for f in files:
-        size = f.stat().st_size if f.exists() else 0
-        print(f"  {f.name:28s} {size:>10,d} B")
+    for src, name, text in items:
+        size = len(text.encode("utf-8")) if text is not None else (src.stat().st_size if src.exists() else 0)
+        origin = f"  <- {src.name}" if src is not None and src.name != name else ""
+        print(f"  {name:20s} {size:>10,d} B{origin}")
     print(f"  anonymity: {len(ids)} identifiers from title_page.tex checked in the .tex/.bib/.bbl files")
     if problems:
-        for p in problems:
-            print("  FAIL:", p)
+        for p_ in problems:
+            print("  FAIL:", p_)
         sys.exit(1)
     if not args.check:
         with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
-            for f in files:
-                z.write(f, arcname=f.name)
-        print(f"  wrote {OUT.relative_to(HERE.parent.parent)} ({OUT.stat().st_size:,d} B, {len(files)} files)")
+            for src, name, text in items:
+                if text is not None:
+                    z.writestr(name, text)
+                else:
+                    z.write(src, arcname=name)
+        print(f"  wrote {OUT.relative_to(HERE.parent.parent)} ({OUT.stat().st_size:,d} B, {len(items)} files)")
     print("  PASS")
 
 

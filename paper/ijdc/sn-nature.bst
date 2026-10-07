@@ -669,9 +669,14 @@ FUNCTION {format.eprint}
     }
   if$
 }
+%% PATCHED 2026-10-07: without a url field the DOI is printed as a full link (IJDC: "include DOIs as full DOI links")
 FUNCTION {format.url}
 { url empty$
-    { "" }
+    { doi empty$
+        { "" }
+        { "\url{https://doi.org/" doi * "}" * }
+      if$
+    }
     { "\urlprefix\url{" url * "}" * }
   if$
 }

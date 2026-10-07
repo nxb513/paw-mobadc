@@ -179,7 +179,7 @@ def table_env(head, body, spec, caption, label):
     return (f"\\begin{{table}}[!htbp]\n\\caption{{{caption}}}\\label{{{label}}}\n\\centering\\footnotesize\n"
             f"\\resizebox{{\\textwidth}}{{!}}{{%\n\\begin{{tabular}}{{@{{}}{spec}@{{}}}}\n\\toprule\n"
             + " & ".join(head) + " \\\\\n\\midrule\n" + "\n".join(" & ".join(r) + r" \\" for r in body)
-            + "\n\\botrule\n\\end{tabular}}\n\\end{table}\n")
+            + "\n\\bottomrule\n\\end{tabular}}\n\\end{table}\n")   # sn-jnl's \botrule breaks inside \resizebox
 
 
 def paper_tables():

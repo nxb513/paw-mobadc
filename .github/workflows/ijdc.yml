@@ -65,6 +65,34 @@ jobs:
         with:
           name: ijdc-latex-zip
           path: paper/ijdc/ijdc_latex.zip
+      - name: submission folder (figures as PDF, EPS with embedded fonts and 600 dpi TIFF; tables as standalone LaTeX)
+        run: |
+          sudo apt-get install -y -qq ghostscript > /dev/null
+          python paper/ijdc/make_bundle.py --package submission
+          cp paper/ijdc/ijdc_latex.zip paper/ijdc/manuscript.pdf paper/ijdc/title_page.pdf \
+             paper/ijdc/cover_letter.txt paper/ijdc/submission_form.txt submission/
+          cd submission/figures
+          for f in Fig*.pdf; do
+            gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=eps2write -dEmbedAllFonts=true -sOutputFile="${f%.pdf}.eps" "$f"
+            gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=tiff24nc -sCompression=lzw -r600 -sOutputFile="${f%.pdf}.tif" "$f"
+          done
+          ls -la
+      - name: the tables compile on their own
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: submission/tables
+          root_file: Table*.tex
+          latexmk_use_lualatex: false
+      - name: tidy the tables folder
+        run: |
+          cd submission/tables
+          if grep -E "Reference .* undefined|Citation .* undefined" Table*.log; then exit 1; fi
+          rm -f *.aux *.log *.fls *.fdb_latexmk *.out sn-jnl.cls
+          ls -la
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ijdc-submission
+          path: submission/
       - uses: actions/upload-artifact@v4
         if: always()
         with:

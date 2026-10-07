@@ -123,3 +123,8 @@ files deposited (Zenodo) with their SHA-256 (`data/SHA256SUMS.txt` regenerated).
   169), so the results of waves A-B were not downloaded. Cancelled; nothing simulated by it is lost.
 - **Run 3** (resume, same steps and parameters): artifacts fetched with `gh run download` (paginated,
   `rerun/fetch_results.sh`) from run 1, run 2 and the run itself; `skip` = the 63 complete parts of runs 1-2.
+  Run 37494235578 (31153e1, 2026-10-06 16:15-20:00 UTC): **all 48 remaining parts complete** (waves C-F, no part
+  failed, no runner lost). Its report job failed before MATLAB: the generator's `str.format` halved the braces of
+  `${{ inputs.from_run }}` / `${{ github.token }}` in the report template (bash "bad substitution"); fixed, and
+  `make_workflow.py` now refuses a workflow with a halved expression. Every one of the 111 parts is complete.
+- **Report run** (no simulation): `final.yml` with `from_run` = runs 1-3 and `skip` = all 111 parts -> prep + report.

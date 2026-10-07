@@ -150,8 +150,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash rerun/fetch_results.sh results-* results "" "$GITHUB_RUN_ID"
-          bash rerun/fetch_results.sh log-* logs "" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh 'results-*' results "" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh 'log-*' logs "" "$GITHUB_RUN_ID"
       - uses: actions/upload-artifact@v4
         with:
           name: confirm3-results

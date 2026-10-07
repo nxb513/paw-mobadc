@@ -131,10 +131,10 @@ TAIL = """
           cache: true
       - name: results and logs of the earlier runs (resume) and of this run
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{{{ github.token }}}}
         run: |
-          bash rerun/fetch_results.sh results-* results "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
-          bash rerun/fetch_results.sh log-* logs "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh 'results-*' results "${{{{ inputs.from_run }}}}" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh 'log-*' logs "${{{{ inputs.from_run }}}}" "$GITHUB_RUN_ID"
       - name: merge the parts
         uses: matlab-actions/run-command@v2
         with:
@@ -170,6 +170,9 @@ def build():
         out += WAVE.format(w=w, needs=prev, ids=", ".join(f"'{x}'" for x in ids))
         prev = f"wave-{w}"
     out += TAIL.format(last=waves[-1])
+    # str.format halves braces: an expression written ${{ x }} in a formatted template comes out as ${ x }
+    # (the report job of run 37494235578 failed on it) - refuse to write such a workflow
+    assert "${ " not in out, "make_workflow: an expression lost its braces (write ${{{{ x }}}} in WAVE / TAIL)"
     return out, S
 
 

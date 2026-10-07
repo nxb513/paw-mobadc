@@ -81,7 +81,7 @@ jobs:
       - name: results of the earlier runs (resume) and of earlier waves
         env:
           GH_TOKEN: ${{ github.token }}
-        run: bash rerun/fetch_results.sh results-* results "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
+        run: bash rerun/fetch_results.sh 'results-*' results "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
 
       - name: snapshot of the downloaded results
         run: |

@@ -175,10 +175,10 @@ jobs:
           cache: true
       - name: results and logs of the earlier runs (resume) and of this run
         env:
-          GH_TOKEN: ${ github.token }
+          GH_TOKEN: ${{ github.token }}
         run: |
-          bash rerun/fetch_results.sh results-* results "${ inputs.from_run }" "$GITHUB_RUN_ID"
-          bash rerun/fetch_results.sh log-* logs "${ inputs.from_run }" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh 'results-*' results "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
+          bash rerun/fetch_results.sh 'log-*' logs "${{ inputs.from_run }}" "$GITHUB_RUN_ID"
       - name: merge the parts
         uses: matlab-actions/run-command@v2
         with:

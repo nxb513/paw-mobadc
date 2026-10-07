@@ -41,8 +41,8 @@ thật. Không có lab: mọi thông số lấy từ tài liệu công bố (`do
      (ghi nguồn + thay đổi), [C] lựa chọn thiết kế/định nghĩa của mình ("we choose / we define"). Không dán nhãn
      "của mình" cho thứ đã có trong tài liệu; không dùng công thức không có cơ sở khoa học.
    - **Không claim "novel", "for the first time", "the first to"...** (`tools/check_equations.py` bắt lỗi này).
-   - Gomiero [40] và Li & Zhu [41] chỉ trích từ abstract. Nhãn [a] chỉ để trong EQUATIONS_TABLE; bản thảo KHÔNG
-     ghi "full text not accessible" / "cited from abstract".
+   - Mọi bài được trích đã đọc toàn văn (`docs/READING_LOG.md`; Gomiero 2026 và Li & Zhu 2023 trước chỉ có tóm tắt,
+     đã đọc toàn văn 2026-10-07). Bản thảo KHÔNG ghi "full text not accessible" / "cited from abstract".
    - Sách giáo khoa trích theo chương (`[@key, chap. n]`).
 4. **Số trong bản thảo phải lấy từ `docs/RESULTS_P2.md`, `paper/tables/tables_p2.md` hoặc `docs/RESULTS_FINAL.md`**
    (`tools/check_propagation.py` kiểm; làm tròn half-up được chấp nhận ở Highlights/Abstract/Introduction/Results/
@@ -104,7 +104,6 @@ Sửa mã Simulink: không sửa tay trong `baseline1.slx` rồi bỏ đó - ngu
 - Đã dọn file không theo dõi trên máy cũ (`tools/local_tidy.py --apply`): 2357 file sang `E:\windataset_archive\`,
   28 log vào `logs/`, 169 file cache xoá; journal `E:\windataset_archive\tidy_journal.tsv` (`--undo` trả lại).
 - Trước khi nộp: số trang bản IEEE của Sreenath (1 dòng CẦN KIỂM trong EQUATIONS_TABLE); người dùng tick các dòng
-  EQUATIONS_TABLE; đọc toàn văn các bài còn TO GET trong `docs/READING_LOG.md` (`check_reading.py --final` phải
-  PASS); vẽ lại hình 3-9 theo kiểu IJDC từ 39 file kết quả gốc (máy mới chưa có `results/` gốc); đưa `results/`
-  lên Zenodo. Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
+  EQUATIONS_TABLE; vẽ lại hình 3-9 theo kiểu IJDC từ 39 file kết quả gốc (máy mới chưa có `results/` gốc); đưa
+  `results/` lên Zenodo. `check_reading.py --final` đã PASS (2026-10-07): mọi bài được trích đã đọc toàn văn. Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
 - Bước 6 dọn repo (fast-forward `main`, đổi nhánh mặc định): CHƯA làm, chờ người dùng cho phép rõ ràng.

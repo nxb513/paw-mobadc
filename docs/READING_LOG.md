@@ -128,27 +128,127 @@ the user downloads it), **DROP** (read, not relevant / not needed).
   wind disturbance").
 - Use for: wind on the load as an identified, uncompensated error source; acceleration-based force compensation.
 
+### guo2020 - Guo, Jia, Yu, Guo, Xie, Control Eng. Pract. 102 (2020) 104560
+- Version read: published PDF (ScienceDirect), downloaded by the user, 2026-10-07.
+- Supports: MOBADC = DO with an exosystem for the payload force (eq. (6), harmonic blocks A_i, (12)) + position ESO for
+  the wind (eqs. (14)-(15)) + attitude ESO (eqs. (19)-(20)); position law (9) a_d = K_g e_g + K_v e_v + g e3 + gdd_d,
+  F = m a_d - d_mf - d_lf; attitude law (18); attitude dynamics (5) M(eta) etadd + C etad = tau + d, with M, C from
+  Raffo et al.; thrust direction (4b); classical PID = (9), (16), (18) without the estimates (Remark 9); Theorem 1
+  (bounded error of the position loop if d_lf' is bounded and Xi is Hurwitz, eqs. (22)-(28)) and Theorem 2 (asymptotic
+  stability of the attitude loop under a small-angle linearisation, Assumption 4); parameters A.1 (m = 1.121 kg) and
+  gains A.2 (K_g diag(12,12,35), K_v diag(8,8,18), K_eta diag(2.16,1.92,0.59), K_omega diag(0.20,0.12,0.12), attitude
+  ESO 50/833/3906); indoor tests with fans up to 5 m/s, circle R 0.8 m at 1.26 m/s, payload 500 g; Table 1 (p. 9) Test 4
+  mean / STD: classical 0.1502 / 0.0700, ESO 0.2054 / 0.0205, DO 0.0725 / 0.0480, MOBADC 0.0350 / 0.0202 m; STD as the
+  within-run standard deviation of the error norm (Sec. 4.3).
+- Use for: the baseline, its laws, gains and indoor ranking; what its authors prove about stability.
+- Not for: ISS with respect to a compensation error (not in the paper); outdoor wind; delay.
+
+### bobtsov2012 - Bobtsov, Pyrkin, Int. J. Adapt. Control Signal Process. 26 (2012) 302-315
+- Version read: published PDF (Wiley), downloaded by the user, 2026-10-07.
+- Supports: cancellation of an unknown multiharmonic disturbance for a nonlinear plant with a known constant input
+  delay h, output measured only (Sec. 2, Assumptions 1-6); ideal law (13) u = -sum (1/L_i) delta_i(t + h - phi_i/w_i),
+  i.e. each estimated harmonic shifted ahead by the delay; realisable predictor (48)-(54) with k_p = cos(h w - phi_u)/L_u,
+  k_d = sin(h w - phi_u)/(w L_u) - with L_u = 1, phi_u = 0 this is the rotation e^{A tau} of a harmonic; frequency
+  identification (17)-(35); "the well-known controllers that can reject the unknown disturbance do not work when the
+  control has delay" (Sec. 1, 7); numerical example and reaction-wheel pendulum experiment.
+- Use for: shifting an estimated harmonic across a known delay (the source of C1).
+- Not for: exosystem-state propagation in a disturbance observer, the orthogonality bound (both ours).
+
+### qian2020 - Qian, Liu, IEEE Trans. Ind. Electron. 67(3) (2020) 2021-2029
+- Version read: accepted manuscript PDF (IEEE), downloaded by the user, 2026-10-07.
+- Supports: quadrotor with a cable-suspended point-mass payload; wind and cruising drag on both bodies as linear
+  drag on the airspeed, d_c = -lambda_p(v_q + B v_p), d_w = lambda_p v_w (eq. (9)); the lumped constant disturbance W
+  estimated by an uncertainty and disturbance estimator (UDE, eqs. (18)-(22)); no wind sensor (Sec. I); reduction
+  theorem for cascade stability; simulation only.
+- Use for: load drag lumped into one estimated disturbance.
+
+### wang2024 - Wang, Shen, Qiu, Zhu, IET Control Theory Appl. 18 (2024) 1686-1698
+- Version read: published PDF (open access), downloaded by the user, 2026-10-07.
+- Supports: Lagrangian model of quadrotor + suspended load (eqs. (1)-(6)); wind from the Dryden model (Sec. 2.2);
+  generalised wind drag forces on all coordinates as functions of the wind speed (eq. (9); called linear in the text,
+  written with squares); adaptive law for the payload mass (13); nonlinear disturbance observers (15)-(16) for the
+  translational and attitude wind disturbances; uniform boundedness (Theorem 1); simulation only.
+- Use for: wind on the load estimated with the other translational disturbances.
+- Not for: "linear drag" (the formula is quadratic in the wind-speed components).
+
+### li2023 - Li, Zhu, ISAS 2023, pp. 1-6
+- Version read: published PDF (IEEE Xplore), downloaded by the user, 2026-10-07 (previously abstract only).
+- Supports: ESO for system uncertainties and external wind (eq. (5)), NDO for the payload perturbation in the position
+  loop (eqs. (7)-(10)); payload model (1) without aerodynamic force on the load; Dryden wind applied to the attitude
+  axes; simulation only, compared with PID and ADRC.
+- Use for: observers combined for the wind and the load; a slung-load model that neglects the load's drag.
+
+### zhu2025 - Zhu, Zheng, Shao, Huang, Zheng, IEEE Trans. Autom. Sci. Eng. 22 (2025) 6061-6075
+- Version read: published PDF (IEEE Xplore), downloaded by the user, 2026-10-07.
+- Supports: swing experiments - linear and quadratic air-drag models under-damp small swings (21.8 % / 51 % peak error
+  below 0.1 rad), the extra damping comes from cable-joint dry friction and cable elasticity, modelled by a sign term
+  (eq. (7), Remark 1, Sec. II-C, Table III); the swing-disturbance spectrum sets the UDE bandwidth (Fig. 4, eqs.
+  (23)-(26), (38)-(40)); payload swing and wind lumped into one total disturbance f (eq. (17)); indoor flights with fans.
+- Use for: air drag alone damps small swings too weakly; load forces left to a lumped estimator; estimator bandwidth
+  from a swing model.
+
+### raffo2010 - Raffo, Ortega, Rubio, Automatica 46 (2010) 29-39
+- Version read: published PDF (ScienceDirect), downloaded by the user, 2026-10-07.
+- Supports: Lagrange-Euler model; translational dynamics (6)-(7) with thrust along the third column of R; rotational
+  dynamics (10) M(eta) etadd + C(eta, etad) etad = tau with the full Euler-angle inertia (11) and Coriolis terms;
+  integral MPC + nonlinear H-infinity control; simulation only.
+- Use for: the attitude model inherited by Guo et al.
+
+### han2009 - Han, IEEE Trans. Ind. Electron. 56(3) (2009) 900-906
+- Version read: published PDF (IEEE Xplore), downloaded by the user, 2026-10-07.
+- Supports: ADRC - the total disturbance F(t) as an extended state estimated by the ESO (eqs. (19)-(22)) and rejected
+  by the control law (25)-(26); plant delay handled by approximation, predictive output feedback (Smith predictor) or a
+  predictive pseudo input (Sec. V-A).
+- Use for: lumped-disturbance estimation and rejection; prediction as a remedy for a known delay.
+
+### omar2023 - Omar, Akram, Mukras, Mahvouz, Alexandria Eng. J. 63 (2023) 253-270
+- Version read: published PDF (open access), downloaded by the user, 2026-10-07.
+- Supports: survey - swing-free trajectories without payload feedback (Sec. 2.3.1, including dynamic programming and
+  reinforcement learning) and anti-swing controllers with swing-angle feedback (Sec. 2.3.2); most results in
+  simulation, few hardware implementations (Sec. 3.1, Table 1).
+- Use for: overview of slung-load swing control.
+
+### palunko2012 - Palunko, Cruz, Fierro, IEEE Robot. Autom. Mag. 19(3) (2012) 69-79
+- Version read: published PDF (IEEE Xplore), downloaded by the user, 2026-10-07.
+- Supports: swing-free trajectory generation by dynamic programming (eqs. (11)-(17)) with indoor experiments (47 g load,
+  0.62 m link); adaptive control for a shifted centre of gravity.
+- Use for: trajectory shaping against swing.
+
+### notter2016 - Notter, Heckmann, McFadyen, Gonzalez, IFAC-PapersOnLine 49-17 (2016) 182-187
+- Version read: published PDF (ScienceDirect), downloaded by the user, 2026-10-07.
+- Supports: coupled multirotor + heavy slung load model with quadratic load drag f_D,L = -1/2 C_D rho A |v_L| v_L
+  (eq. (12)); MPC that actively damps the load while tracking a figure-eight, flight-tested indoors; "the authors
+  ascribe [the larger lag of the load] to undervaluing the aerodynamic drag force of the load in the prediction model"
+  (Sec. 5.2).
+- Use for: model-predictive swing damping in flight; evidence that the load's drag matters.
+
+### faust2017 - Faust, Palunko, Cruz, Fierro, Tapia, Artificial Intelligence 247 (2017) 381-398
+- Version read: journal pre-proof PDF (ScienceDirect, "Prn:6/01/2015", 18 pp.), downloaded by the user, 2026-10-07.
+- Supports: reinforcement learning (approximate value iteration) of swing-free / minimal-residual-oscillation
+  trajectories, path following and PRM planning; experiments with a quadrotor and a suspended load (Sec. 3-4).
+- Use for: learning approaches to swing-free transport.
+
+### gomiero2026 - Gomiero, von Ellenrieder, IEEE Trans. Autom. Sci. Eng. 23 (2026) 3065-3082
+- Version read: published PDF (IEEE Xplore), downloaded by the user, 2026-10-07 (previously abstract only).
+- Supports: Lagrangian matrix model of a heavy-lift quadrotor with a rigid cuboid payload (eqs. (8)-(26)); quadratic
+  drag on the relative velocity of both bodies (eqs. (30)-(32)); wind as mean shear + Dryden turbulence + gusts
+  (eqs. (34)-(36)); first-order and super-twisting sliding-mode control, disturbances rejected by robustness, no
+  estimate (Sec. III-IV); simulation only (72 kg vehicle, 25 kg load, 18 m cable); observers named as future work.
+- Use for: load drag modelled in full and left to the robustness of the feedback law.
+
 ## TO GET (cited in the manuscript, full text not yet read - the user downloads into refs/<key>.pdf)
 
 | key | why it is cited | status |
 |---|---|---|
-| guo2020 | the baseline MOBADC, its gains, its indoor test, its stability analysis | closed (Elsevier) |
-| bobtsov2012 | harmonic shift across an input delay (source of C1) | closed (Wiley) |
-| qian2020 | slung load + wind, load drag lumped into an estimated disturbance | closed (IEEE) |
-| wang2024 | adaptive control, variable payload and wind (Dryden) | open access, blocked by a bot check |
-| li2023 | ESO for wind + DO for the payload | closed (IEEE) |
-| zhu2025 | air drag alone under-damps the swing (cable damping identified) | closed (IEEE) |
-| raffo2010 | attitude model used by Guo et al. | closed (Elsevier) |
-| han2009 | ADRC / ESO | closed (IEEE) |
-| omar2023 | survey of slung-load control | open access, CAPTCHA |
-| palunko2012 | slung-load transport, swing-free trajectories | closed (IEEE) |
-| notter2016 | MPC with heavy slung load, flight tests | open access, CAPTCHA / 403 |
-| faust2017 | reinforcement learning for suspended cargo | free to read, CAPTCHA |
-| gomiero2026 | heavy-lift quadrotor and cuboid load in wind, Lagrangian model, sliding modes | repository entry without file |
-| hamilton2019 | NREL NWTC M5 tower data and site characterisation | OSTI unreachable from this machine |
+
+(none - 2026-10-07: the thirteen works were downloaded and read; hamilton2019 was dropped)
 
 ## DROP
 
 ### shi2019 - Shi et al., ICRA 2019 (Neural Lander)
 - Version read: arXiv:1811.08027v2, 2026-10-07. Learned ground-effect residual for landing; no wind, no slung load -
   not needed for any statement of the paper (wind learning is covered by oconnell2022).
+
+### hamilton2019 - Hamilton, Debnath, NREL technical report NREL/TP-5000-72091 (2019)
+- Not obtained (OSTI unreachable from this machine); dropped by the user on 2026-10-07. The manuscript describes the M5
+  sonic anemometers (61 and 74 m, 20 Hz) as properties of the public data set it uses, without this citation.

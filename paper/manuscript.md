@@ -65,18 +65,21 @@ The first gap is the loop delay. An estimate-and-cancel loop acts on the disturb
 disturbance occurred. Measurement-based estimators are limited in exactly this way: filtering and actuation delays
 bound how fast an estimated force can be cancelled [@smeur2016; @oconnell2022]. For a slow disturbance this lag
 costs little. For a payload force that is periodic along a planned trajectory it is a phase error that no faster
-estimator can remove, because the estimate is correct and simply late. Yet the same exosystem that lets the observer
-represent the periodic force also predicts it: the estimated exosystem state can be propagated over the delay
-[@bobtsov2012]. The delay is therefore a modelling gap rather than an estimation limit.
+estimator can remove, because the estimate is correct and simply late. Yet the same internal model that lets the
+observer represent the periodic force also predicts it: an estimated harmonic can be shifted ahead by a known delay
+[@bobtsov2012], and for the observer's exosystem this shift is a propagation of its estimated state. The delay is
+therefore a modelling gap rather than an estimation limit.
 
 The second gap is the payload's drag. A measured wind turns the wind force into a measurable disturbance, and a
 measurable disturbance is best removed by feed-forward [@chen2016]; feed-forward from measured or previewed wind
 lowers the position error of a multirotor substantially [@mendez2022]. A feed-forward written for the airframe,
 however, omits the force that the wind exerts on the load and the cable passes on to the vehicle. Controllers for
-slung loads either neglect the aerodynamic force on the load [@shi2018] or leave it to an estimator together with
-everything else [@qian2020; @wang2024; @li2023]; in recent cooperative transport experiments the uncompensated load
-drag was the identified cause of the larger tracking error in wind [@sun2025]. The force balance of the coupled
-system states how large this force is, so it can be fed forward with the airframe's.
+slung loads neglect the aerodynamic force on the load [@shi2018; @li2023], leave it to an estimator together with
+everything else [@qian2020; @wang2024; @zhu2025], or leave it to the robustness of the feedback law [@gomiero2026].
+Where the load's drag was examined in flight, it mattered: an undervalued drag in a model-predictive controller was
+held responsible for the lag of the load [@notter2016], and in recent cooperative transport experiments the
+uncompensated load drag was the identified cause of the larger tracking error in wind [@sun2025]. The force balance
+of the coupled system states how large this force is, so it can be fed forward with the airframe's.
 
 A claim about wind rejection is only as strong as the wind it was tested in. Laboratory fans and jets produce flows
 that vary across space and are steady in time [@byun2021], whereas outdoor wind varies in time at a fixed point. The
@@ -107,11 +110,16 @@ point mass on $SE(3)\times S^2$ is a differentially flat hybrid system with the 
 and geometric controllers track the vehicle attitude, the load attitude or the load position with almost-global
 properties; the model contains neither wind nor drag [@sreenath2013]. Harmonic extended state observers estimate the
 periodic torque that a planar load swing exerts on the attitude, with the aerodynamic force on the load neglected by
-assumption; flight tests with a 0.5 kg load on a 1 m cable halved the pitch error [@shi2018]. Surveys and earlier
-work collect trajectory shaping, swing damping and learning approaches [@omar2023; @palunko2012; @notter2016;
-@faust2017]. Wind on the load has been modelled as linear drag and lumped with other terms into one estimated
-disturbance [@qian2020; @wang2024], or represented in a Lagrangian model of a heavy-lift vehicle and a cuboid load
-in wind [@gomiero2026]; observers have been combined for the wind and the load [@li2023]. In cooperative transport of
+assumption; flight tests with a 0.5 kg load on a 1 m cable halved the pitch error [@shi2018]. Swing has been limited
+by trajectory shaping with dynamic programming [@palunko2012] or reinforcement learning [@faust2017] and by
+model-predictive damping in flight [@notter2016]; a survey collects these and anti-swing feedback [@omar2023]. Wind on
+the load has been modelled as linear drag on the relative velocity and lumped with the other terms into one
+disturbance estimated by an uncertainty and disturbance estimator [@qian2020], as a drag force driven by Dryden-model
+wind and estimated with the other translational disturbances by a nonlinear disturbance observer [@wang2024], or as
+quadratic drag on both bodies of a heavy-lift vehicle with a cuboid load, left to sliding-mode control to reject
+[@gomiero2026]. An extended state observer for the wind on the vehicle has been combined with a disturbance observer
+for the load [@li2023], and the bandwidth of a disturbance estimator has been set from the spectrum of a swing model
+whose damping was identified experimentally [@zhu2025]. In cooperative transport of
 a cable-suspended load by several quadrotors, the onboard controllers estimate and cancel the external force from
 the accelerometer, the load is modelled with quadratic drag, and a 5 m/s fan wind raised the load tracking error
 because the planner had no wind model; integrating one was named as the remedy [@sun2025].
@@ -126,9 +134,11 @@ control - adapt fast but are limited by system delay, measurement noise and cont
 INDI the filter delay must be synchronised across the loop, actuator dynamics are handled by the incremental form,
 and predictive filtering was set aside because disturbances cannot be predicted [@smeur2016]; the cascaded form also
 measures translational disturbances, rejected a 10 m/s windtunnel gust with 0.21 m maximum deviation against 1.51 m
-for PID, and is sensitive to accelerometer bias [@smeur2018]. Cancelling a multiharmonic disturbance across a known
-input delay by shifting each estimated harmonic ahead is established for nonlinear plants [@bobtsov2012]. C1 applies
-this shift to the exosystem state of the payload observer, with the closed-loop delay measured rather than given.
+for PID, and is sensitive to accelerometer bias [@smeur2018]. Active disturbance rejection handles a known plant
+delay by approximating it or by predicting the output or the input [@han2009], and cancelling a multiharmonic
+disturbance across a known input delay by shifting each estimated harmonic ahead is established for nonlinear plants
+[@bobtsov2012]. C1 applies this shift to the exosystem state of the payload observer, with the closed-loop delay
+measured rather than given.
 
 **Wind sensing, feed-forward and preview.** Onboard airspeed sensing has been proposed for wind rejection, with the
 caveats of sensor count and low-airspeed reliability [@smeur2018]; a ground-based lidar that previews the incoming
@@ -339,8 +349,9 @@ force carried by $\boldsymbol d_{mf}$ through the tension; it is bounded because
 bounded, and Proposition 2 bounds what the offset leaves. Neither addition can therefore destabilise a loop that is
 input-to-state stable with respect to its compensation error; both move the ultimate bound, which is what Section 6
 measures. The assumption concerns the baseline alone: it is the property on which composite disturbance-observer
-controllers rest [@chen2004], examined for this baseline by its authors [@guo2020]. Section 6.7 shows that it fails
-for the published gains at motor lags of 25 ms and above, independently of either addition.
+controllers rest [@chen2004]; for this baseline its authors prove a bounded error of the position loop and asymptotic
+stability of the attitude loop under a small-angle linearisation [@guo2020]. Section 6.7 shows that the assumption
+fails for the published gains at motor lags of 25 ms and above, independently of either addition.
 
 ### 4.6 Comparison methods
 
@@ -364,7 +375,7 @@ an upper bound on what any wind predictor could add through the controller's for
 ### 5.1 Wind data and segments
 
 Measured wind comes from the sonic anemometers of the M5 tower at the National Wind Technology Center of NREL, at
-heights of 61 and 74 m, sampled at 20 Hz [@hamilton2019]. Each run lasts 200 s; statistics use $t \ge 140$ s. A
+heights of 61 and 74 m, sampled at 20 Hz. Each run lasts 200 s; statistics use $t \ge 140$ s. A
 segment enters a trajectory's set only if the vehicle can hold the trajectory against the static wind force at the
 segment's mean wind speed with tilt and thrust within 80 % of their limits; on the circle (radius 0.8 m, angular rate
 1.575 rad/s) this admits mean winds up to 8.02 m/s (Fig. 2).

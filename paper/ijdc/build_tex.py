@@ -444,7 +444,7 @@ def main():
            "\\keywords{" + ", ".join(k.strip() for k in keywords.split(";")) + "}\n\n\\maketitle\n\n"]
     out.extend(body)
     out.append("\\backmatter\n\n\\bmhead{Data availability}\n" + data + "\n\n")
-    out.append("\\bmhead{Declarations}\nCompeting interests, funding and the author's contribution are stated on the "
+    out.append("\\bmhead{Declarations}\nCompeting interests, funding and the authors' contributions are stated on the "
                "separate title page (double-anonymous review); the use of AI-assisted tools is described in "
                "Section~\\ref{sec:use-of-ai-assisted-tools}.\n\n")
     if appendix:

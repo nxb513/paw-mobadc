@@ -427,8 +427,8 @@ digit between the two executions, and the additional checks of Section 6.3 come 
 ### 5.5 Use of AI-assisted tools
 
 AI-assisted tools were used to help write the simulation and analysis code and to edit the manuscript. The design of
-the study, the registered claims, the analyses and the conclusions are the author's, who checked every result and
-takes full responsibility for the content.
+the study, the registered claims, the analyses and the conclusions are the authors', who checked every result and
+take full responsibility for the content.
 
 ## 6. Results
 

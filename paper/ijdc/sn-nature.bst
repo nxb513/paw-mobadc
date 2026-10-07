@@ -1053,9 +1053,12 @@ FUNCTION {format.booktitle}
   emphasize
 }
 FUNCTION {format.in.ed.booktitle}
+%% PATCHED 2026-10-07 for the IJDC submission: the template version pops the empty editor and pushes nothing, so an
+%% @inproceedings entry without an editor (e.g. IEEE conference proceedings) lost its booktitle and emptied the
+%% literal stack ("You can't pop an empty literal stack"). Without an editor, the booktitle alone is pushed.
 {  duplicate$ empty$ 'skip$
-    { 
-editor "editor" format.names.ed duplicate$ empty$ 'pop$
+    {
+editor "editor" format.names.ed duplicate$ empty$ { pop$ format.booktitle }
         {  
 format.booktitle swap$
 "(" editor num.names$ #1 > 'bbl.in.editors 'bbl.editor if$  * swap$   ") " *

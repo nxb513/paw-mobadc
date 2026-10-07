@@ -68,3 +68,7 @@ FILES TO UPLOAD
 - manuscript.pdf   the compiled, anonymised manuscript (the journal asks for the PDF beside the source)
 - title_page.pdf   title page with authors, affiliations and declarations (not sent to the reviewers)
 - cover_letter.txt the letter to the editor (paste into the cover-letter field)
+- figures/         Fig1-Fig9, each as PDF and EPS (vector, fonts embedded) and TIFF (600 dpi), if the system asks
+                   for the figures as separate files (they are also inside ijdc_latex.zip)
+- tables/          Table1-Table6, each as a standalone LaTeX file (editable) and its PDF, if the system asks for the
+                   tables as separate files (they are also inside manuscript.tex)

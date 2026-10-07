@@ -46,3 +46,13 @@ baseline1_baseline_backup.slx
 
 # ---- Publisher PDFs used to check equations: never committed (copyright) ----
 refs/
+
+# ---- LaTeX build products of paper/ijdc (the PDF is the CI artifact "ijdc-pdf") ----
+paper/ijdc/*.aux
+paper/ijdc/*.bbl
+paper/ijdc/*.blg
+paper/ijdc/*.log
+paper/ijdc/*.out
+paper/ijdc/*.fls
+paper/ijdc/*.fdb_latexmk
+paper/ijdc/*.pdf

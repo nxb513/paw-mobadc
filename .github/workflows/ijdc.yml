@@ -1,0 +1,51 @@
+name: IJDC manuscript (LaTeX)
+
+# Regenerates paper/ijdc/manuscript.tex from paper/manuscript.md (paper/ijdc/build_tex.py), fails if the committed
+# file differs, and compiles the anonymised manuscript and the title page to PDF (artifact "ijdc-pdf").
+
+on:
+  push:
+    paths:
+      - "paper/**"
+      - "docs/RESULTS_P2.md"
+      - "docs/RESULTS_FINAL.md"
+      - ".github/workflows/ijdc.yml"
+  workflow_dispatch:
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: pandoc (same version as the local build)
+        run: pip install pypandoc_binary==1.17
+      - name: manuscript.tex is up to date with manuscript.md
+        run: |
+          python paper/ijdc/build_tex.py
+          git diff --stat --exit-code -- paper/ijdc/manuscript.tex paper/ijdc/references.bib
+      - name: compile
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: paper/ijdc
+          root_file: |
+            manuscript.tex
+            title_page.tex
+          latexmk_use_lualatex: false
+      - name: warnings that need a look (undefined references or citations, overfull boxes)
+        if: always()
+        run: |
+          cd paper/ijdc
+          grep -E "undefined|Overfull|Citation .* undefined|multiply defined" manuscript.log title_page.log || echo "none"
+          if grep -E "Reference .* undefined|Citation .* undefined" manuscript.log; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ijdc-pdf
+          path: |
+            paper/ijdc/manuscript.pdf
+            paper/ijdc/title_page.pdf
+            paper/ijdc/manuscript.log
+            paper/ijdc/manuscript.blg

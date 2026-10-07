@@ -7,14 +7,17 @@ function S = make_p2_figures(varargin)
 %   make_p2_figures('Only', 9)               % Figure 9: re-simulates ONE dev circle_main segment, six controllers
 %   make_p2_figures('Only', [3 9], 'FromSaved', true)   % draw 3 / 9 from the time series kept in results/gd11/
 %   make_p2_figures('Root', 'results/final', 'Save', false)   % preview from another result tree
+%   make_p2_figures('Only', [3 9], 'Tol', 5e-5)   % re-run on another MATLAB / machine: agreement to 0.05 mm
 %   HOANG_NOSAVE = true; make_p2_figures     % draw, write nothing (figures/nosave_on.m)
 %
 %  Content: every panel shows the sets and roles of docs/RESULTS_P2.md. Error bars: +-1.65 SE, paired day jackknife
 %  (analysis/p2r_stat.m); subsets as analysis/p2r_subset.m ('one4' = the one set of the file, 'unsatL3' = A of
 %  sec 60.3). Main configuration L 1.0 m, m_p 0.5 kg. Nothing is simulated except Figures 3 and 9, which follow the
 %  rules fixed in sec 62.1 (3) and 63.5 and are saved only if every re-run column's mean error equals the stored
-%  row to 1e-12; their time series are then kept in results/gd11/ ('FromSaved' redraws from those files). A figure
-%  whose data are missing is not drawn, or shows "no data" in the affected row; the summary says why.
+%  row to 'Tol' (default 1e-12, bit for bit on the machine of the stored results; another MATLAB release or machine
+%  needs a looser 'Tol', the user's decision of 2026-10-07); their time series are then kept in <Root>/gd11/
+%  ('FromSaved' redraws from those files). A figure whose data are missing is not drawn, or shows "no data" in the
+%  affected row; the summary says why.
 %
 %  Presentation (2026-10-07, IJDC / Springer artwork rules): Figure 1 174 mm wide, Figures 2-9 129 mm - the width of
 %  the template's text block, so that their 8 pt text is printed at 8 pt in the review PDF (figures/paper_size.m),
@@ -24,7 +27,8 @@ function S = make_p2_figures(varargin)
 %  paper/manuscript.md.
 opt = struct('Only', 1:9, 'Root', fullfile(repo_root(), 'results'), ...
     'Out', fullfile(repo_root(), 'paper', 'figures'), 'Conf2Dir', 'wind_conf2', ...
-    'ExplManifest', 'wind_expl_t150_batch.json', 'Save', ~nosave_on(), 'Close', true, 'FromSaved', false);
+    'ExplManifest', 'wind_expl_t150_batch.json', 'Save', ~nosave_on(), 'Close', true, 'FromSaved', false, ...
+    'Tol', 1e-12);
 for i = 1:2:numel(varargin)
     assert(isfield(opt, varargin{i}), 'make_p2_figures: unknown option ''%s''.', varargin{i});
     opt.(varargin{i}) = varargin{i+1};
@@ -274,8 +278,8 @@ else
             fprintf('               solver stopped: %s\n', M{c}.crash_msg);
         end
     end
-    if ~all(d <= 1e-12)
-        msg = sprintf('agreement check FAILED (max |d| %.3g > 1e-12) - figure not saved', max(d));
+    if ~all(d <= opt.Tol)
+        msg = sprintf('agreement check FAILED (max |d| %.3g > %.3g) - figure not saved', max(d), opt.Tol);
         return
     end
     T = struct('file', fn, 'U', U(idx(k)), 'names', {nm}, 'mean', re, ...
@@ -371,8 +375,8 @@ else
     for c = 1:6
         fprintf('    %-22s re-run %.15f  stored %.15f  |d| %.3g\n', nm{c}, re(c), stored(c), d(c));
     end
-    if ~all(d <= 1e-12)
-        msg = sprintf('agreement check FAILED (max |d| %.3g > 1e-12) - figure not saved', max(d));
+    if ~all(d <= opt.Tol)
+        msg = sprintf('agreement check FAILED (max |d| %.3g > %.3g) - figure not saved', max(d), opt.Tol);
         return
     end
     T = struct('file', fn, 'names', {nm}, 't', {cellfun(@(m) m.t, M, 'UniformOutput', false)}, ...
@@ -410,15 +414,15 @@ end
 function [fh, msg] = fig4_c1(opt)
 fh = [];
 rel = @(p) p(1) / p(2) - 1;
-G = {'circle\newlinedevelopment', 'gd6/d2_p2.mat';
-     'circle\newlineheld-out', 'gd10/D2.mat';
-     'figure-eight\newlinedevelopment', 'gd6/tab_T3b_p2.mat';
-     'square\newlinedevelopment', 'gd6/tab_square_p2.mat'};
+G = {'circle\newlinedevelopment', 'gd6/d2_p2.mat', 'one4';
+     'circle\newlineheld-out', 'gd10/D2.mat', 'one4';
+     'figure-eight\newlinedevelopment', 'gd6/tab_T3b_p2.mat', 'one4orig';
+     'square\newlinedevelopment', 'gd6/tab_square_p2.mat', 'one4orig'};
 ng = size(G, 1);
 R3 = cell(ng, 1);  RV = R3;
 for i = 1:ng
-    R3{i} = rstat(opt, G{i, 2}, {'L3', 'L2'}, rel, 'one4');
-    RV{i} = rstat(opt, G{i, 2}, {'V', 'L2'}, rel, 'one4');
+    R3{i} = rstat(opt, G{i, 2}, {'L3', 'L2'}, rel, G{i, 3});
+    RV{i} = rstat(opt, G{i, 2}, {'V', 'L2'}, rel, G{i, 3});
 end
 if all(cellfun(@isempty, R3)), msg = 'no D2 / TAB file found'; return; end
 fh = newfig('oneandhalf', 13.0);
@@ -710,8 +714,8 @@ for i = 1:n
     end
 end
 fh = newfig('oneandhalf', 9.0);
-ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.445 0.12 0.37 0.80]);  hold(ax, 'on');  sty(ax);
-forest(ax, G(:, 1), R, repmat([0.30 0.30 0.30], n, 1));
+ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.465 0.12 0.35 0.80]);  hold(ax, 'on');  sty(ax);
+forest(ax, G(:, 1), R, repmat([0.30 0.30 0.30], n, 1), '');   % an empty group: 'empty' in the right column
 yl = get(ax, 'YLim');
 plot(ax, [10 10], yl, '--', 'Color', ctrl_colour('PAW-MOBADC'), 'LineWidth', 0.75, 'HandleVisibility', 'off');
 text(ax, 10, yl(2), ' threshold', 'FontSize', 8, 'Color', ctrl_colour('PAW-MOBADC'), 'VerticalAlignment', 'top');
@@ -733,9 +737,21 @@ function r = rstat(opt, f, cols, fun, sub)
 r = [];
 [Z, c, ok] = p2r_load(opt.Root, f);
 if ~ok || ~all(ismember(cols, c)), return; end
-[E, day, ~, keep] = p2r_subset(Z, c, cols, sub);
+[E, day, keep] = fsubset(Z, c, cols, sub);
 if sum(keep) < 2, return; end
 r = p2r_stat(fun, E(keep, :), day(keep));
+end
+
+function [E, day, keep] = fsubset(Z, c, cols, sub)
+%FSUBSET  p2r_subset, plus 'one4orig': finite in the stored columns L0 L2 L3 V only. The T3b / square tables of the
+%  final run also carry the PAW columns, whose one set is smaller; this is the like-for-like rule of
+%  make_results_final, so the figure shows the numbers of the paper's tables.
+if strcmp(sub, 'one4orig')
+    E = p2r_E(Z, c, cols);  day = {Z.rows.day}';
+    keep = all(isfinite(p2r_E(Z, c, intersect({'L0', 'L2', 'L3', 'V'}, c, 'stable'))), 2);
+else
+    [E, day, ~, keep] = p2r_subset(Z, c, cols, sub);
+end
 end
 
 %% =====================================================================
@@ -796,25 +812,29 @@ function s = num(v, fmt)
 s = strrep(sprintf(fmt, v), '-', char(8722));
 end
 
-function forest(ax, labels, R, cl)
-%FOREST  value (percent) +-1.65 SE per row, top to bottom; a missing row is labelled.
+function forest(ax, labels, R, cl, empty)
+%FOREST  value (percent) +-1.65 SE per row, top to bottom; a missing row is labelled ('no data', or EMPTY). The
+%  value labels sit on a white box so that the zero line and the grid do not cross them.
+if nargin < 5, empty = 'no data'; end
 n = numel(labels);
+plot(ax, [0 0], [0.4 n + 0.75], '-', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.5, 'HandleVisibility', 'off');
 for i = 1:n
     y = n - i + 1;  r = R{i};
     if isempty(r)
-        text(ax, 0, y, '  no data', 'FontSize', 8, 'Color', [0.5 0.5 0.5], 'VerticalAlignment', 'middle');
+        if ~isempty(empty)
+            text(ax, 0, y, ['  ' empty], 'FontSize', 8, 'Color', [0.5 0.5 0.5], 'VerticalAlignment', 'middle');
+        end
         continue
     end
     v = 100 * r.val;  e = 165 * r.se;
     if isfinite(e), plot(ax, [v - e, v + e], [y y], '-', 'Color', cl(i, :), 'LineWidth', 1.0); end
     plot(ax, v, y, 'o', 'MarkerFaceColor', cl(i, :), 'MarkerEdgeColor', cl(i, :), 'MarkerSize', 4);
     text(ax, v, y + 0.18, num(v, '%+.1f'), 'FontSize', 8, 'HorizontalAlignment', 'center', ...
-        'VerticalAlignment', 'bottom');
+        'VerticalAlignment', 'bottom', 'BackgroundColor', 'w', 'Margin', 0.5);
 end
 set(ax, 'YTick', 1:n, 'YTickLabel', labels(end:-1:1), 'YLim', [0.4 n + 0.75], 'XGrid', 'on', ...
-    'TickLabelInterpreter', 'tex');
+    'TickLabelInterpreter', 'tex', 'Layer', 'bottom');   % grid under the value labels
 xl = get(ax, 'XLim');  xl = [min(xl(1), -5), max(xl(2), 5)];
-plot(ax, [0 0], [0.4 n + 0.75], '-', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.5, 'HandleVisibility', 'off');
 set(ax, 'XLim', xl);
 end
 

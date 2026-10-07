@@ -4458,3 +4458,56 @@ the authorship when they were written. From 2026-10-07 the IJDC submission has t
 Bach Nguyen (corresponding author) and Xuan Hai Le (supervision); `paper/ijdc/title_page.tex`,
 `docs/devlog/ADVISOR_NOTES.md` (entry 2026-10-07). Nothing registered changes: every claim, threshold and decision
 above stands as written and dated.
+
+## 68. Figures on the user's new machine, from the final run (2026-10-07) - decisions, then facts
+
+Decisions of the user in chat, 2026-10-07: the figures are drawn on this machine and from the final run
+(`results/final`, REGISTER_FINAL sec 8-9), and the re-simulated figures need not agree bit for bit with the stored
+rows ("không cần khớp 100%, chạy trên máy tôi không sao cả; ở đây mới là final"). Written while the first re-run
+(Figure 9) was in progress, before any figure of this section was saved.
+
+- **Machine:** the user's new Windows machine, MATLAB R2024a + Simulink (the stored rows: R2022b, old machine and
+  GitHub runners).
+- **Figures 3 and 9** (`make_p2_figures`, option `Tol`): saved if every re-run column's mean error agrees with the
+  stored row to 5e-5 m (half of the 0.1 mm printed in the figure) instead of 1e-12; every |d| is printed and copied
+  below. The selection rules of sec 62.1 (3) and 63.5 are unchanged.
+- **Figure 4, figure-eight and square rows:** the one set of the stored columns L0 L2 L3 V (the final run's TAB
+  tables also carry the PAW columns; the like-for-like rule of `make_results_final`), so the figure shows the numbers
+  of the paper's text and of RESULTS_FINAL "Reproduction" (figure-eight -45.41 %, square -24.80 %).
+- **Held-out rows** (CONFIRM2, `gd10/`): not part of the final run (REGISTER_FINAL sec 6). They are drawn only from the
+  stored CONFIRM2 files or from a reproduction that the user approves separately; nothing of CONFIRM2 is re-run under
+  this section.
+- No number of the paper changes: the text and tables keep RESULTS_P2 / RESULTS_FINAL / tables_p2.
+
+### 68.1 A new figure set for the IJDC manuscript (decision of the user, 2026-10-07) - registered before drawing
+
+The user asked for new figures that follow the argument of the paper, free of the figure list of sec 62.1: only what
+bears on the claims; results that weaken a claim go to the Discussion; further runs are allowed. Figure 1 (system) is
+kept unchanged. Every figure is descriptive and adds no claim; numbers of held-out rows are read from the generated
+`docs/RESULTS_P2.md` / `paper/tables/tables_p2.md` (CONFIRM2 is not re-run), development rows from `results/final`.
+Generator: `figures/p2/make_ijdc_figures.m`.
+
+- **wind** - mean wind speed U and turbulence intensity per segment, development pool vs held-out days (as sec 62.1
+  (2)); the circle (8.02 m/s) and hover (10.86 m/s) envelopes marked.
+- **steps** - pooled error of MOBADC -> MOBADC-W -> PA-MOBADC (C1) -> PAW-MOBADC (C2): circle, development one set
+  (133) and held-out one set (56); hover, PA-MOBADC -> PAW-MOBADC on the registered scoring set (PA-MOBADC below its
+  tilt clamp: development 124, held-out 52 = the "unsat4" block, which is contained in it and has the same size).
+  Beside it the registered claims D2, H-static, H-static-circle as error reductions (dev, held-out; +-1.65 SE; by-day
+  median) with their thresholds (sec 60.3: D2 <= -15 %, H by-day median >= 10 %).
+- **flight** - one circle segment (the rule of sec 63.5: `wind_expl_t150_i0385`) re-simulated with MOBADC-W, PA-MOBADC,
+  PAW-MOBADC and INDI-DE, and one hover segment re-simulated with PA-MOBADC and PAW-MOBADC; hover rule fixed now: dev
+  N6_hover segments with PA-MOBADC tilt clamp < 1 % in `gd7/static-hover.mat`, the one closest to their median U
+  (ties: file name). Shown: the position error vector over t >= 140 s in the path frame (along-track, radial; circle)
+  and in the horizontal inertial frame with the mean wind direction (circle and hover). Each re-run column's mean
+  error is compared with the stored final-run row (`Tol` 5e-5 m, sec 68).
+- **horizon** - (a) the lag term of eq. lag-err for one harmonic, 2|sin(sigma tau_d / 2)|, against the loop delay,
+  sigma = 1.575 rad/s; (b) the registered N0P sweeps (`gd6/n0p_p2.mat`) of circle, figure-eight, square, multisine and
+  hover, pooled error relative to tau = 0, with tau*.
+- **wind-speed** - per-segment mean error against U on the dev circle (133; MOBADC-W, PA-MOBADC, PAW-MOBADC, INDI-DE)
+  and the dev hover set (PA-MOBADC, PAW-MOBADC; segments at the tilt clamp marked).
+- **robust** - h = 1 - PAW-MOBADC / PA-MOBADC (+-1.65 SE) for K-hat x 0.7 / 1 / 1.3 (circle S40, hover S40hover),
+  sensor noise 0.1 m/s, trajectory (figure-eight, square), the eight m_p x L levels and the preview variant; values
+  of RESULTS_P2 / RESULTS_FINAL (E1, E3, E4-E6).
+- **oracle** - C3 headroom per registered group (as sec 62.1 (8)), with the 10 % threshold.
+- **Discussion, measure** - hover: pooled error of INDI-DE with accelerometer bias 0 / 0.086 / 0.17 m/s^2 against
+  PA-MOBADC and PAW-MOBADC, held-out one set (RESULTS_P2) and dev S40hover (`gd7/static-indi-bias.mat`).

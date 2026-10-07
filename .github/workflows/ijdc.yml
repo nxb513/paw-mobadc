@@ -24,6 +24,13 @@ jobs:
           python-version: "3.11"
       - name: pandoc (same version as the local build)
         run: pip install pypandoc_binary==1.17
+      - name: fonts embedded in the figure PDFs (MATLAB writes Helvetica unembedded; the journal asks for embedded fonts)
+        run: |
+          sudo apt-get install -y -qq ghostscript > /dev/null
+          for f in paper/figures/ijdc_*.pdf paper/figures/p2_fig1_system.pdf; do
+            gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dEmbedAllFonts=true -dSubsetFonts=true \
+               -dCompatibilityLevel=1.5 -sOutputFile=embedded.pdf "$f" && mv embedded.pdf "$f"
+          done
       - name: manuscript.tex is up to date with manuscript.md (the PDF is compiled from the regenerated file)
         continue-on-error: true
         run: |

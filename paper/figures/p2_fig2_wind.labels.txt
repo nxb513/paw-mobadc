@@ -151,7 +151,6 @@ s
 0
 10
 20
-30
 0
 0.2
 0.4
@@ -160,28 +159,23 @@ s
 mean wind speed U [m/s]
 turbulence intensity
 0
-0.2
-0.4
-0.6
+0.5
 0
 0.05
 0.1
 0.15
 0.2
-0.25
 (b)
 turbulence intensity \sigma_u / U
 fraction of segments
 0
 10
 20
-30
 0
 0.05
 0.1
 0.15
 0.2
-0.25
 (a)
 mean wind speed U [m/s]
 fraction of segments

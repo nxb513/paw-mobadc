@@ -16,7 +16,8 @@ function S = make_p2_figures(varargin)
 %  row to 1e-12; their time series are then kept in results/gd11/ ('FromSaved' redraws from those files). A figure
 %  whose data are missing is not drawn, or shows "no data" in the affected row; the summary says why.
 %
-%  Presentation (2026-10-07, IJDC / Springer artwork rules): physical size 84 or 174 mm wide (figures/paper_size.m),
+%  Presentation (2026-10-07, IJDC / Springer artwork rules): Figure 1 174 mm wide, Figures 2-9 129 mm - the width of
+%  the template's text block, so that their 8 pt text is printed at 8 pt in the review PDF (figures/paper_size.m),
 %  one sans-serif face (figures/paper_style.m), 8 pt text throughout, no titles inside the figures - only panel
 %  labels (a), (b), ... with a few words; one fixed colour per controller (ctrl_colour); the paper's wording for sets
 %  (development / held-out, trajectory names), never the repository codes; explanations live in the captions of
@@ -159,7 +160,7 @@ ENV = [8.02 10.86 13.30];                                % sec 62.1 (2), A2 enve
 fprintf('    dev pool %d segments / %d days, CONFIRM2 %d segments / %d days\n', numel(Ud), numel(unique(dd)), ...
     numel(Uc), numel(unique(dc)));
 CD = [0.55 0.55 0.55];  CC = [0.10 0.10 0.10];
-fh = newfig('double', 5.6);
+fh = newfig('oneandhalf', 5.6);
 tl = tiledlayout(fh, 1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
 ld = sprintf('development (%d segments)', numel(Ud));
 lc = sprintf('held-out (%d segments)', numel(Uc));
@@ -179,7 +180,7 @@ envlines(ax, ENV);
 xlabel(ax, 'mean wind speed U [m/s]');  ylabel(ax, 'turbulence intensity');  plab(ax, '(c)');
 hl = [plot(ax, NaN, NaN, 's', 'MarkerFaceColor', 0.65 + 0.35 * CD, 'MarkerEdgeColor', CD, 'MarkerSize', 6), ...
       plot(ax, NaN, NaN, 'o', 'Color', CC, 'MarkerSize', 3, 'LineWidth', 0.5)];
-leg(ax, hl, {ld, lc}, 'Location', 'northeast', 'Token', [8 8]);
+leg(ax, hl, {ld, lc}, 'Orientation', 'horizontal', 'Token', [8 8], 'Tile', 'north');
 msg = sprintf('dev %d / CONFIRM2 %d segments; DESCRIPTIVE', numel(Ud), numel(Uc));
 end
 
@@ -286,7 +287,7 @@ else
     save(saved, 'T');
     how = sprintf('%s; re-run = stored to %.1g (max |d|); time series in results/gd11/', fn, max(d));
 end
-fh = newfig('double', 8.0);
+fh = newfig('oneandhalf', 8.4);
 tl = tiledlayout(fh, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 ax1 = nexttile(tl);  hold(ax1, 'on');  sty(ax1);
 ax2 = nexttile(tl);  hold(ax2, 'on');  sty(ax2);
@@ -303,7 +304,7 @@ plab(ax1, '(a)');  plab(ax2, '(b)');
 linkaxes([ax1 ax2], 'x');  xlim(ax1, [140 max(T.t{1})]);
 yl = ylim(ax1);  ylim(ax1, [0 yl(2) * 1.25]);
 leg(ax1, h, arrayfun(@(c) sprintf('%s (mean %s mm)', T.names{c}, num(1000 * T.mean(c), '%.1f')), 1:4, ...
-    'UniformOutput', false), 'Location', 'north', 'Orientation', 'horizontal', 'NumColumns', 4, 'Box', 'off', ...
+    'UniformOutput', false), 'NumColumns', 2, 'Box', 'off', 'Tile', 'north', ...
     'FontSize', 8, 'Token', [12 8]);
 msg = how;
 end
@@ -381,7 +382,7 @@ else
     save(saved, 'T');
     how = sprintf('%s; re-run = stored to %.1g (max |d|); time series in results/gd11/', fn, max(d));
 end
-fh = newfig('double', 11.6);
+fh = newfig('oneandhalf', 9.4);
 tl = tiledlayout(fh, 2, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
 lim = 0;                                                 % one scale for the six panels
 for c = 1:6
@@ -396,7 +397,8 @@ for c = 1:6
     plot(ax, T.gd{c}(ms, 1), T.gd{c}(ms, 2), '--', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.75);
     plot(ax, T.g{c}(ms, 1), T.g{c}(ms, 2), '-', 'Color', ctrl_colour(T.names{c}), 'LineWidth', 0.75);
     axis(ax, 'equal');  axis(ax, [-lim lim -lim lim]);
-    plab(ax, sprintf('(%s) %s, mean %s mm', L(c), T.names{c}, num(1000 * T.mean(c), '%.1f')));
+    plab(ax, {sprintf('(%s) %s', L(c), regexprep(T.names{c}, ' \(proposed\)$', '')), ...
+              sprintf('mean error %s mm', num(1000 * T.mean(c), '%.1f'))});
 end
 xlabel(tl, 'x [m]', 'FontSize', 8);  ylabel(tl, 'y [m]', 'FontSize', 8);
 msg = how;
@@ -419,9 +421,9 @@ for i = 1:ng
     RV{i} = rstat(opt, G{i, 2}, {'V', 'L2'}, rel, 'one4');
 end
 if all(cellfun(@isempty, R3)), msg = 'no D2 / TAB file found'; return; end
-fh = newfig('double', 7.0);
-tl = tiledlayout(fh, 1, 5, 'TileSpacing', 'compact', 'Padding', 'compact');
-ax = nexttile(tl, [1 3]);  hold(ax, 'on');  sty(ax);
+fh = newfig('oneandhalf', 13.0);
+tl = tiledlayout(fh, 2, 1, 'TileSpacing', 'loose', 'Padding', 'compact');
+ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
 c3 = ctrl_colour('PA-MOBADC');  cv = ctrl_colour('MOBADC-W + preview');
 h = gobjects(1, 2);
 for i = 1:ng
@@ -443,9 +445,9 @@ set(ax, 'XLim', [0.25 ng + 0.6], 'XTick', 1:ng, 'XTickLabel', G(:, 1), 'TickLabe
 ylabel(ax, 'change of the pooled error [%]');  plab(ax, '(a)');
 if all(isgraphics(h))
     leg(ax, h, {['PA-MOBADC / MOBADC-W ' char(8722) ' 1'], ['(MOBADC-W + preview) / MOBADC-W ' char(8722) ' 1']}, ...
-        'Location', 'northoutside', 'Orientation', 'horizontal', 'Token', [8 8]);
+        'NumColumns', 2, 'Token', [8 8], 'Tile', 'north');
 end
-ax = nexttile(tl, [1 2]);  hold(ax, 'on');  sty(ax);
+ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
 SC = {'gd6/d2_p2.mat', [0.60 0.60 0.60], '.', 'development', 6;  'gd10/D2.mat', [0.10 0.10 0.10], 'o', 'held-out', 3};
 hh = gobjects(0);  ll = {};  lo = Inf;  hi = 0;
 for i = 1:2
@@ -465,7 +467,7 @@ if isfinite(lo)
         'XTickLabel', arrayfun(@num2str, tk, 'UniformOutput', false), ...
         'YTickLabel', arrayfun(@num2str, tk, 'UniformOutput', false), 'XMinorTick', 'off', 'YMinorTick', 'off');
     axis(ax, 'square');
-    leg(ax, hh, ll, 'Location', 'northwest', 'Box', 'off', 'FontSize', 8, 'Token', [8 8]);
+    leg(ax, hh, ll, 'Location', 'northwest', 'Token', [8 8]);
 end
 xlabel(ax, 'MOBADC-W, error per segment [mm]');  ylabel(ax, 'PA-MOBADC, error per segment [mm]');
 plab(ax, '(b)');
@@ -487,8 +489,8 @@ ORD = {'circle', 'T3b', 'square', 'T5', 'hover', 'circle_L05', 'circle_L15'};   
 T = T(o);
 NAME = {'circle', 'circle';  'T3b', 'figure-eight';  'square', 'square';  'hover', 'hover';  'T5', 'multisine';
         'circle_L15', 'circle, L = 1.5 m';  'circle_L05', 'circle, L = 0.5 m'};
-n = numel(T);  nc = 4;  nr = ceil((n + 1) / nc);
-fh = newfig('double', 4.3 * nr + 0.8);
+n = numel(T);  nc = 3;  nr = ceil((n + 1) / nc);
+fh = newfig('oneandhalf', 3.8 * nr + 0.9);
 tl = tiledlayout(fh, nr, nc, 'TileSpacing', 'compact', 'Padding', 'compact');
 c3 = ctrl_colour('PA-MOBADC');  L = 'abcdefgh';
 for j = 1:n
@@ -544,8 +546,8 @@ FR = {'hover, development, unsaturated', 'gd7/static-hover.mat', {'L3', 'L3_iii0
 n = size(FR, 1);  R = cell(n, 1);
 for i = 1:n, R{i} = rstat(opt, FR{i, 2}, FR{i, 3}, hh, FR{i, 4}); end
 if all(cellfun(@isempty, R)), msg = 'no C2 file found'; return; end
-fh = newfig('double', 13.0);
-ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.335 0.635 0.645 0.335]);  hold(ax, 'on');  sty(ax);
+fh = newfig('oneandhalf', 14.0);
+ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.47 0.635 0.50 0.335]);  hold(ax, 'on');  sty(ax);
 cl = repmat([0.45 0.45 0.45], n, 1);  ic = [FR{:, 5}];  cl(ic, :) = repmat(ctrl_colour('PAW-MOBADC'), sum(ic), 1);
 forest(ax, FR(:, 1), R, cl);
 xlabel(ax, ['h = 1 ' char(8722) ' PAW-MOBADC / PA-MOBADC [%]']);  plab(ax, '(a)');
@@ -560,7 +562,7 @@ x = [1 2 3 4 5.6 6.6 7.6];
 Q = {'u_osc', 'theta_rms_stat_deg', 'theta_max_stat_deg'};
 YL = {'rotor-force oscillation u_{osc} [N]', 'cable angle, RMS [\circ]', 'cable angle, maximum [\circ]'};
 for q = 1:3
-    ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.075 + (q - 1) * 0.325, 0.135, 0.245, 0.37]);
+    ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.085 + (q - 1) * 0.33, 0.165, 0.235, 0.35]);
     hold(ax, 'on');  sty(ax);
     for i = 1:size(CF, 1)
         col = ctrl_colour(CF{i, 1});
@@ -583,7 +585,7 @@ for q = 1:3
             end
         end
     end
-    set(ax, 'XTick', x, 'XTickLabel', CF(:, 1), 'XLim', [0.4 8.2], 'XTickLabelRotation', 40, 'YGrid', 'on');
+    set(ax, 'XTick', x, 'XTickLabel', CF(:, 1), 'XLim', [0.4 8.2], 'XTickLabelRotation', 90, 'YGrid', 'on');
     if q == 3, set(ax, 'YScale', 'log', 'YMinorGrid', 'off', 'YMinorTick', 'off'); end
     yl = get(ax, 'YLim');
     if q == 3, yl(2) = yl(2) * 1.35; else, yl(2) = yl(1) + 1.15 * diff(yl); end
@@ -633,8 +635,8 @@ RT = {'circle, development', 'gd7/H3-circle.mat', {'H3', 'L3'}, 1;
 R = cell(size(RT, 1), 1);
 for i = 1:numel(R), R{i} = rstat(opt, RT{i, 2}, RT{i, 3}, rel, 'one4'); end
 if all(cellfun(@isempty, R)), msg = 'no H3 / C2 file found'; return; end
-fh = newfig('double', 7.5);
-tl = tiledlayout(fh, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+fh = newfig('oneandhalf', 12.5);
+tl = tiledlayout(fh, 2, 1, 'TileSpacing', 'loose', 'Padding', 'compact');
 cn = {'L3', 'L3_iii0', 'H3'};  ln = p2_names(cn);
 ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
 hb = gobjects(1, 3);  NT = nan(size(G, 1), 2);  lo = Inf;  hi = 0;
@@ -666,7 +668,7 @@ set(ax, 'YScale', 'log', 'XTick', 1:size(G, 1), 'XTickLabel', G(:, 1), 'TickLabe
     'XLim', [0.5 size(G, 1) + 0.5], 'YGrid', 'on', 'XTickLabelRotation', 0);
 ylabel(ax, 'pooled error [mm]');  plab(ax, '(a)');
 k = isgraphics(hb);
-leg(ax, hb(k), ln(k), 'Location', 'northoutside', 'Orientation', 'horizontal', 'Token', [8 8]);
+leg(ax, hb(k), ln(k), 'Orientation', 'horizontal', 'Token', [8 8], 'Tile', 'north');
 ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
 cl = repmat(ctrl_colour('INDI-DE'), numel(R), 1);  cl([RT{:, 4}] == 2, :) = repmat(ctrl_colour('PAW-MOBADC'), 3, 1);
 forest(ax, RT(:, 1), R, cl);
@@ -676,7 +678,7 @@ set(ax, 'YLim', yl);
 p = [plot(ax, NaN, NaN, 'o', 'MarkerFaceColor', ctrl_colour('INDI-DE'), 'MarkerEdgeColor', ctrl_colour('INDI-DE')), ...
      plot(ax, NaN, NaN, 'o', 'MarkerFaceColor', ctrl_colour('PAW-MOBADC'), 'MarkerEdgeColor', ctrl_colour('PAW-MOBADC'))];
 leg(ax, p, {['INDI-DE / PA-MOBADC ' char(8722) ' 1'], ['PAW-MOBADC / INDI-DE ' char(8722) ' 1']}, ...
-    'Location', 'southoutside', 'Box', 'off', 'FontSize', 8, 'Token', [8 8]);
+    'Orientation', 'horizontal', 'Token', [8 8], 'Tile', 'south');
 xlabel(ax, 'relative difference [%]');  plab(ax, '(b)');
 msg = 'DESCRIPTIVE; dev circle PAW-MOBADC only on S40, INDI-DE only on circle_main';
 end
@@ -695,20 +697,20 @@ G = {'circle, K = 0, weak wind', 'N5-A-Weak';  'circle, K = 0, medium wind', 'N5
 hh = @(p) 1 - p(2) / p(1);
 n = size(G, 1);  R = cell(n, 1);  V = repmat({''}, n, 1);
 for i = 1:n
-    if isempty(G{i, 2}), V{i} = 'empty (outside the envelope)'; continue; end
+    if isempty(G{i, 2}), V{i} = 'empty'; continue; end
     c = {'L3', 'O'};  if strcmp(G{i, 2}, 'N6'), c = {'L3_6', 'O_6'}; end
     R{i} = rstat(opt, ['gd7/' G{i, 2} '.mat'], c, hh, 'one4');
     r = R{i};
     if isempty(r), V{i} = 'no data'; continue; end
     if r.n < 15 || r.nd < 6
-        V{i} = sprintf('%d seg., %d days: not evaluable', r.n, r.nd);
+        V{i} = sprintf('%d (%d d), not evaluable', r.n, r.nd);
     else
         hr = r.val >= 0.10 && all(sign(r.loo) == sign(r.val)) && r.med >= 0.05;
-        V{i} = sprintf('%d seg., %d days: %s', r.n, r.nd, tern(hr, 'headroom', 'no headroom'));
+        V{i} = sprintf('%d (%d d)%s', r.n, r.nd, tern(hr, ', headroom', ''));
     end
 end
-fh = newfig('double', 8.6);
-ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.30 0.13 0.42 0.83]);  hold(ax, 'on');  sty(ax);
+fh = newfig('oneandhalf', 9.0);
+ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.445 0.12 0.37 0.80]);  hold(ax, 'on');  sty(ax);
 forest(ax, G(:, 1), R, repmat([0.30 0.30 0.30], n, 1));
 yl = get(ax, 'YLim');
 plot(ax, [10 10], yl, '--', 'Color', ctrl_colour('PAW-MOBADC'), 'LineWidth', 0.75, 'HandleVisibility', 'off');
@@ -717,6 +719,8 @@ xl = get(ax, 'XLim');
 for i = 1:n
     text(ax, xl(2) + 0.04 * diff(xl), n - i + 1, V{i}, 'FontSize', 8, 'Clipping', 'off');
 end
+text(ax, xl(2) + 0.04 * diff(xl), n + 0.9, 'segments (days)', 'FontSize', 8, 'Clipping', 'off', ...
+    'VerticalAlignment', 'bottom');
 xlabel(ax, ['h = 1 ' char(8722) ' oracle / PA-MOBADC [%]']);
 msg = 'C3 map; rule sec 0.6 (h >= 10 %, LOO sign, by-day median >= 5 %; n >= 15, days >= 6)';
 end
@@ -759,11 +763,14 @@ end
 
 function lg = leg(ax, h, labels, varargin)
 %LEG  Legend of the paper: no box, 8 pt; 'Token', [w h] sets the length of the line samples.
-tok = [];
+tok = [];  tile = '';
 k = find(strcmp(varargin, 'Token'), 1);
 if ~isempty(k), tok = varargin{k + 1};  varargin(k:k + 1) = []; end
+k = find(strcmp(varargin, 'Tile'), 1);
+if ~isempty(k), tile = varargin{k + 1};  varargin(k:k + 1) = []; end
 lg = legend(ax, h, labels, 'Box', 'off', 'FontSize', 8, varargin{:});
 if ~isempty(tok), try, lg.ItemTokenSize = tok; catch, end, end
+if ~isempty(tile), lg.Layout.Tile = tile; end
 end
 
 function fh = newfig(w, hcm)
@@ -819,9 +826,9 @@ v = 100 * r.val;  e = 165 * r.se;
 if isfinite(e), plot(ax, [x x], [v - e, v + e], '-', 'Color', col, 'LineWidth', 1.0); end
 h = plot(ax, x, v, mk, 'MarkerFaceColor', col, 'MarkerEdgeColor', col, 'MarkerSize', 4.5);
 if strcmp(side, 'left')
-    text(ax, x - 0.07, v, num(v, '%.1f'), 'FontSize', 8, 'HorizontalAlignment', 'right');
+    text(ax, x - 0.09, v, num(v, '%.1f'), 'FontSize', 8, 'HorizontalAlignment', 'right');
 else
-    text(ax, x + 0.07, v, num(v, '%.1f'), 'FontSize', 8, 'HorizontalAlignment', 'left');
+    text(ax, x + 0.09, v, num(v, '%.1f'), 'FontSize', 8, 'HorizontalAlignment', 'left');
 end
 end
 

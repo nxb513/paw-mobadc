@@ -50,6 +50,7 @@ T = add(T, 'E1', 'E1-h0', 'gd7/static-hover-k.mat', {'L3', 'L3_iii0'}, hh, 'one4
 T = add(T, 'E2', 'E2-c', 'gd7/static-circle-spk.mat', {'L3', 'L3_iii0'}, hh, 'one4', 'h, spike filter', 'circle_main');
 T = add(T, 'E2', 'E2-c-A', 'gd7/static-circle-spk.mat', {'L3', 'L3_iii0'}, hh, 'unsatL3', 'h, spike filter (A: PA-MOBADC unsaturated)', 'circle_main');
 T = add(T, 'E2', 'E2-c0', 'gd7/six-circle-h3.mat', {'L3', 'L3_iii0'}, hh, 'one', 'h, no filter (reference)', 'circle_main');
+T = add(T, 'E2', 'E2-c0-A', 'gd7/six-circle-h3.mat', {'L3', 'L3_iii0'}, hh, 'unsatL3', 'h, no filter (reference, A)', 'circle_main');
 T = add(T, 'E2', 'E2-h', 'gd7/static-hover-spk.mat', {'L3', 'L3_iii0'}, hh, 'one4', 'h, spike filter', 'N6_hover');
 T = add(T, 'E2', 'E2-h-A', 'gd7/static-hover-spk.mat', {'L3', 'L3_iii0'}, hh, 'unsatL3', 'h, spike filter (A: PA-MOBADC unsaturated)', 'N6_hover');
 T = add(T, 'E2', 'E2-h0-A', 'gd7/static-hover.mat', {'L3', 'L3_iii0'}, hh, 'unsatL3', 'h, no filter (reference, A)', 'N6_hover');

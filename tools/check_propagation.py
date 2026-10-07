@@ -77,7 +77,8 @@ SKIP = (
 # Results give absolute errors to three significant figures).
 # There a number passes if some number of RESULTS_P2 / TABLES_P2 with at least as many decimals rounds (half up) to
 # it; whole percentages are checked too. Everywhere else the rule stays VERBATIM.
-ROUNDED = ("## Highlights", "## Abstract", "## 1. Introduction", "## 6. Results", "## 9. Conclusion")
+ROUNDED = ("## Highlights", "## Abstract", "## 1. Introduction", "## 6. Results", "## 8. Conclusion",
+           "## 9. Conclusion")   # 2026-10-07: the IJDC manuscript ends with "## 8. Conclusion"
 # Millimetres anywhere outside SKIP: verbatim in the sources, or a metre value of the sources x 1000, rounded.
 SHAPE_MM = (r"(?<![\w.])(\d+(?:\.\d+)?)\s*mm\b", "millimetres")
 SHAPES_ROUNDED = [(r"(?<![\w.])(\d+)\s*%", "whole percentage"),

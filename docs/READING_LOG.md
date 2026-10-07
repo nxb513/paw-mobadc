@@ -79,6 +79,74 @@ the user downloads it), **DROP** (read, not relevant / not needed).
 - Use for: the disturbance-estimation family of MOBADC; measured disturbances fed forward; separate modelling of the
   disturbance paths; the case for a rigorous comparison.
 
+### shi2018 - Shi, Wu, Chou, Electronics 7(6) (2018) 83
+- Version read: published open-access HTML (mdpi.com, CC BY 4.0), 2026-10-07.
+- Supports: quadrotor with a slung load modelled by Lagrangian mechanics, planar swing, inelastic massless cable;
+  **aerodynamic effects on the load neglected by assumption** (Sec. 2.1.1, assumption 3); near hover the load torque on
+  the attitude is a sum of sinusoids at sqrt(g/L) and 3 sqrt(g/L) (eq. (26)); traditional ESO handles slowly varying
+  disturbances and cannot fully estimate the periodic slung-load disturbance, an internal model in the observer does
+  (Sec. 1, 3); HESO + backstepping, bounded estimation and tracking errors (Secs. 3-4); flight test 0.5 kg load on a
+  1 m cable: 50.11 % lower RMS pitch error (Sec. 5.2, Table 2).
+- Use for: periodic slung-load disturbance and internal-model observers; load aerodynamics neglected in prior work.
+
+### smeur2016 - Smeur, Chu, de Croon, J. Guid. Control Dyn. 39(3) (2016) 450-461
+- Version read: accepted author manuscript (TU Delft repository), 2026-10-07.
+- Supports: INDI measures angular acceleration so that unmodelled dynamics including gusts are compensated (Sec. I);
+  filtering the angular-acceleration estimate introduces a delay that must be synchronised by filtering the input with
+  the same filter (Secs. I, III); actuator dynamics are handled by the incremental form (Sec. I); **predictive filtering
+  was set aside because it needs more modelling and "disturbances cannot be predicted"** (Sec. I); without the filter
+  compensation the vehicle oscillated (Sec. VI); adaptive control effectiveness (Sec. IV).
+- Use for: delay in measurement-based disturbance estimation; the contrast between unstructured disturbances and a
+  payload force with known structure.
+
+### nosek2018 - Nosek, Ebersole, DeHaven, Mellor, PNAS 115(11) (2018) 2600-2606
+- Version read: published full text (PubMed Central PMC5856500), 2026-10-07.
+- Supports: prediction vs postdiction; preregistration defines questions and analysis plan before outcomes are
+  observed (Abstract, Introduction); a dataset split into exploration and a sealed holdout converts postdictions from
+  the first part into predictions for the holdout (Challenge 7); deviations reported transparently keep most of the
+  diagnosticity (Challenge 1); for preexisting data the question is who has observed the data and what was
+  communicated (Challenge 3).
+- Use for: development / held-out design; post-hoc findings confirmed on held-out days; the prior exposure of the
+  held-out days stated.
+
+### mendez2022 - Mendez, Whidborne, Chen, ICUAS 2022, pp. 1455-1464 (doi 10.1109/ICUAS54217.2022.9836086)
+- Version read: author copy (UCL Discovery 10152959), 2026-10-07; metadata checked with Crossref.
+- Supports: observer-based wind estimates suffer from estimation phase delay and convergence error; onboard wind
+  measurement is contaminated by the propellers (Sec. I); ground lidar preview + transport model + trim-based
+  feed-forward (Secs. II-III); simulation with measured wind: RMS position error 0.698 m without feed-forward, -43.20 %
+  with anemometer feed-forward, -46.40 % with lidar preview (Table I); feed-forward robust to multiplicative
+  uncertainty and delays in its channel (Tables II-III); feed-forward not flight-tested (Sec. IV-D, V).
+- Use for: measured / previewed wind fed forward lowers multirotor position error; phase delay of observer estimates.
+
+### sun2025 - Sun, Wang, Sanalitro, Franchi, Tognon, Alonso-Mora, Science Robotics 10 (2025) eadu8015
+- Version read: arXiv:2501.18802v2 (30 Oct 2025), 2026-10-07; publication checked with Crossref.
+- Supports: cooperative transport of a cable-suspended load by several quadrotors; onboard controllers estimate the
+  external force (cable tension, drag, wind) from the accelerometer and compensate it, INDI inner loop (Methods);
+  load drag modelled as quadratic (C_D 1.05, 0.05 m^2) in simulation; in a ~5 m/s fan wind the disturbance on the
+  load raised the tracking error (RMSE 0.048 -> 0.055 m with three, 0.070 m with four quadrotors) because the planner
+  had no aerodynamic model, and integrating a wind-effect model is named as future work (Results, "Robustness against
+  wind disturbance").
+- Use for: wind on the load as an identified, uncompensated error source; acceleration-based force compensation.
+
+## TO GET (cited in the manuscript, full text not yet read - the user downloads into refs/<key>.pdf)
+
+| key | why it is cited | status |
+|---|---|---|
+| guo2020 | the baseline MOBADC, its gains, its indoor test, its stability analysis | closed (Elsevier) |
+| bobtsov2012 | harmonic shift across an input delay (source of C1) | closed (Wiley) |
+| qian2020 | slung load + wind, load drag lumped into an estimated disturbance | closed (IEEE) |
+| wang2024 | adaptive control, variable payload and wind (Dryden) | open access, blocked by a bot check |
+| li2023 | ESO for wind + DO for the payload | closed (IEEE) |
+| zhu2025 | air drag alone under-damps the swing (cable damping identified) | closed (IEEE) |
+| raffo2010 | attitude model used by Guo et al. | closed (Elsevier) |
+| han2009 | ADRC / ESO | closed (IEEE) |
+| omar2023 | survey of slung-load control | open access, CAPTCHA |
+| palunko2012 | slung-load transport, swing-free trajectories | closed (IEEE) |
+| notter2016 | MPC with heavy slung load, flight tests | open access, CAPTCHA / 403 |
+| faust2017 | reinforcement learning for suspended cargo | free to read, CAPTCHA |
+| gomiero2026 | heavy-lift quadrotor and cuboid load in wind, Lagrangian model, sliding modes | repository entry without file |
+| hamilton2019 | NREL NWTC M5 tower data and site characterisation | OSTI unreachable from this machine |
+
 ## DROP
 
 ### shi2019 - Shi et al., ICRA 2019 (Neural Lander)

@@ -26,3 +26,5 @@ jobs:
         run: python tools/data_manifest.py --check
       - name: final-run workflow matches rerun/rerun_steps.m
         run: python rerun/make_workflow.py --check
+      - name: cited works read in full (report; --final before submission)
+        run: python tools/check_reading.py

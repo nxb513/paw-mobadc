@@ -452,7 +452,9 @@ def scan_length():
     anyway. tools/length_audit.py holds the measurement and the per-section
     breakdown; docs/LENGTH_AUDIT.md holds what is to be done about it.
     """
-    ABS_MAX, BODY_WARN = 210, 12000
+    # 2026-10-07: target journal International Journal of Dynamics and Control (Springer). Its instructions for
+    # authors (read from the journal's submission guidelines, pasted by the user): "an abstract of 150 to 250 words".
+    ABS_MIN, ABS_MAX, BODY_WARN = 150, 250, 12000
     f = ROOT / "paper" / "manuscript.md"
     if not f.exists():
         return ["paper/manuscript.md not found"], None
@@ -464,8 +466,8 @@ def scan_length():
         n_ab = None
     else:
         n_ab = len(_words(m.group(1)))
-        if n_ab > ABS_MAX:
-            bad.append(f"Abstract {n_ab} words, limit {ABS_MAX}")
+        if n_ab > ABS_MAX or n_ab < ABS_MIN:
+            bad.append(f"Abstract {n_ab} words, journal range {ABS_MIN}-{ABS_MAX}")
     full = ROOT / "docs" / "MANUSCRIPT_FULL.md"
     n_body = len(_words(full.read_text(encoding="utf-8"))) if full.exists() else 0
     return bad, (n_ab, n_body, BODY_WARN)
@@ -486,7 +488,7 @@ def scan_highlights():
     t = f.read_text(encoding="utf-8")
     m = re.search(r"^## Highlights$(.*?)^## ", t, re.M | re.S)
     if not m:
-        return ["paper/manuscript.md has no Highlights section"]
+        return []          # 2026-10-07: IJDC asks for no Highlights; if a section is added, the rule below applies
     items = [ln.strip()[2:].strip() for ln in m.group(1).splitlines()
              if ln.strip().startswith("- ")]
     bad = []
@@ -628,9 +630,12 @@ def scan_attribution():
     if not man.exists() or not bdir.is_dir():
         return []
     text = man.read_text(encoding="utf-8")
-    m = re.search(r"^### 4\.0 (.*?)^### 4\.1 ", text, re.M | re.S)
+    # 2026-10-07: in the IJDC manuscript the table is Appendix A ("Components added to the simulation model")
+    m = re.search(r"^## Appendix A\. Components added(.*?)^## ", text, re.M | re.S)
     if not m:
-        return ["paper/manuscript.md has no Section 4.0 attribution table"]
+        m = re.search(r"^### 4\.0 (.*?)^### 4\.1 ", text, re.M | re.S)
+    if not m:
+        return ["paper/manuscript.md has no attribution table (Appendix A or Section 4.0)"]
     table = m.group(1)
     scripts = sorted(f.stem for f in bdir.glob("build_*.m"))
     bad = []

@@ -19,8 +19,8 @@ days: the delay compensation lowers the error of the measured-wind baseline by 5
 it by a further 63 % in hover and 37 % on a circle. The work concerns the dynamics and control of a nonlinear,
 underactuated system under measured disturbances, which we believe fits the scope of the journal.
 
-The manuscript is prepared for double-anonymous review; the author names, affiliations and declarations are given on
-the separate title page and in the submission system. The work has not been published and is not under
+The manuscript is prepared for double-anonymous review; the author names, affiliations and declarations are given in
+the submission system. The work has not been published and is not under
 consideration elsewhere, and all authors have approved the submission. No funding was received, and the authors have
 no competing interests to declare. AI-assisted tools were used to help write the simulation and analysis code and to
 edit the manuscript, as described in Section 5.5.

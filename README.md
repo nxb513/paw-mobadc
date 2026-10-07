@@ -32,7 +32,8 @@ from this branch).
 | `core/` | parameters, the P2 plant, segment sets (`p2_segset.m`), the run harness (`pa_configs.m`) |
 | `experiments/` | the runners (`run_p2_gd6.m`, `run_p2_gd7.m`) and the night scripts `gd*_*.m` that produced the results |
 | `analysis/` | `make_results_p2.m`, `make_p2_tables.m`, the statistics `p2r_*.m`, the names `p2_names.m` |
-| `figures/p2/make_p2_figures.m` | Figures 1-9 |
+| `figures/p2/make_ijdc_figures.m` | Figures 2-9 of the IJDC manuscript (`paper/figures/ijdc_*`, REGISTER_P2 sec 68.1) |
+| `figures/p2/make_p2_figures.m` | Figure 1 (`p2_fig1_system`); the earlier figure set `p2_fig2-9` |
 | `verification/` | `check_all.m` (7 gates, no simulation), `verify_p2_repro.m` (re-simulation against the stored results), block checks |
 | `tools/`, `python/` | text gates; wind download and export; the frozen wind predictor and its training code |
 
@@ -70,6 +71,7 @@ All commands run in MATLAB from the repository root after `setup_path`. They rea
 | Table 5 (six controllers, circle) | `make_p2_tables` | `gd6/guo_p2.mat`, `gd6/guo_trim_p2.mat`, `gd7/six-circle-h3.mat` | sec 63.2 |
 | Table 6 (ablation) | `make_p2_tables` | `gd6/d2_p2.mat`, `gd7/six-circle-h3.mat`, `gd7/static-hover.mat`, `gd10/D2.mat`, `gd10/C2-*.mat` | sec 63.3 |
 | Figure 1 (system) | `make_p2_figures('Only', 1)` | none | sec 62.1 |
+| Figures 2-9 of the IJDC manuscript | `make_ijdc_figures` (`'Only', {'response'}, 'FromSaved', true` redraws the time responses without simulating) | `results/final` (dev), `docs/RESULTS_P2.md`, `docs/RESULTS_FINAL.md`, `paper/tables/tables_p2.md` (held-out values), wind files | sec 68.1 |
 | Figure 2 (wind data) | `make_p2_figures('Only', 2)` | `field_grid_K050.mat`, exploration and CONFIRM2 segment lists | sec 62.1 |
 | Figure 3 (one CONFIRM2 segment) | `make_p2_figures('Only', 3)` - re-simulates, must equal the stored rows | `gd10/sets.mat`, `gd10/D2.mat`, `gd10/C2-circle.mat`, `wind_conf2/` | sec 62.1 |
 | Figure 4 (C1) | `make_p2_figures('Only', 4)` | `gd6/d2_p2.mat`, `gd10/D2.mat`, `gd6/tab_T3b_p2.mat`, `gd6/tab_square_p2.mat` | sec 62.1 |

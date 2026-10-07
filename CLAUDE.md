@@ -48,7 +48,7 @@ thật. Không có lab: mọi thông số lấy từ tài liệu công bố (`do
    (`tools/check_propagation.py` kiểm; làm tròn half-up được chấp nhận ở Highlights/Abstract/Introduction/Results/
    Conclusion). Trích dẫn chỉ khi đã đọc toàn văn (`docs/READING_LOG.md`, `tools/check_reading.py --final`).
 5. **File sinh tự động - không sửa tay:** `docs/RESULTS_P2.md` (`make_results_p2`), `docs/RESULTS_FINAL.md`
-   (`make_results_final`), `paper/tables/tables_p2.md` (`make_p2_tables`), `paper/figures/*` (`make_p2_figures`),
+   (`make_results_final`), `paper/tables/tables_p2.md` (`make_p2_tables`), `paper/figures/*` (`make_p2_figures`, `make_ijdc_figures`),
    `paper/ijdc/manuscript.tex` (`python paper/ijdc/build_tex.py`), bảng tên trong README (`python tools/readme_names.py --write`),
    `data/SHA256SUMS.txt` (`python tools/data_manifest.py --write`).
 6. **Không commit:** PDF trong `refs/` (bản quyền), dữ liệu gió, mọi `.mat` (trừ `field_grid_K050.mat`), `results/`,
@@ -71,6 +71,7 @@ Mọi lệnh MATLAB chạy từ gốc repo, sau `setup_path`. Claude chạy MATL
 | sinh lại số của bài | `make_results_p2` → `docs/RESULTS_P2.md` |
 | bảng 1-6 | `make_p2_tables` → `paper/tables/tables_p2.md` |
 | hình 1-9 | `make_p2_figures` (hoặc `make_p2_figures('Only', [3 9])`) → `paper/figures/` |
+| hình 2-9 bản IJDC | `addpath figures/p2; make_ijdc_figures` → `paper/figures/ijdc_*` (vẽ từ `results/final` + số held-out của RESULTS_P2; `'Only', {'response'}, 'FromSaved', true` không mô phỏng lại; REGISTER_P2 §68.1) |
 | 7 bước kiểm (không mô phỏng) | `check_all` - phải 7/7 PASS: syntax, protocol_lock, check_retracted, check_propagation, extract_eml, check_equations, check_names |
 | tái lập | `S = verify_p2_repro` (14 mô phỏng: Hình 3, 9 bit-for-bit \|d\| = 0; D2 dòng 1 đúng đến chữ số in, \|d\| ≤ 1.04e-7 m, REGISTER_P2 §65); `verify_p2_repro('Quick', true)` = 4 mô phỏng (chỉ D2 dòng 1) |
 | dữ liệu kết quả | `python tools/data_manifest.py --check` |
@@ -103,8 +104,8 @@ Sửa mã Simulink: không sửa tay trong `baseline1.slx` rồi bỏ đó - ngu
   README.
 - Đã dọn file không theo dõi trên máy cũ (`tools/local_tidy.py --apply`): 2357 file sang `E:\windataset_archive\`,
   28 log vào `logs/`, 169 file cache xoá; journal `E:\windataset_archive\tidy_journal.tsv` (`--undo` trả lại).
-- Trước khi nộp: số trang bản IEEE của Sreenath (1 dòng CẦN KIỂM trong EQUATIONS_TABLE); người dùng tick các dòng
-  EQUATIONS_TABLE; vẽ lại hình 3-9 theo kiểu IJDC từ 39 file kết quả gốc (máy mới chưa có `results/` gốc); đưa
+- Trước khi nộp: người dùng tick các dòng EQUATIONS_TABLE (Sreenath đã đối chiếu trên bản IEEE 2026-10-07, không còn
+  CẦN KIỂM); vẽ lại hình 3-9 theo kiểu IJDC từ 39 file kết quả gốc (máy mới chưa có `results/` gốc); đưa
   `results/` lên Zenodo. `check_reading.py --final` đã PASS (2026-10-07): mọi bài được trích đã đọc toàn văn.
   Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
 - Bước 6 dọn repo (fast-forward `main`, đổi nhánh mặc định): CHƯA làm, chờ người dùng cho phép rõ ràng.

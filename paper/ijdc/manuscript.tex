@@ -215,7 +215,7 @@ The attitude reference inverts the force direction with a 30\textdegree{} tilt c
 \label{eq:sensors}
 \end{equation}
 
-The accelerometer returns the inertial acceleration plus noise, without the gravity leakage that an attitude error causes in a real specific-force measurement. This choice favours the acceleration-based comparison method; its consequence is quantified with an explicit bias in Section~\ref{sec:measurement-versus-prediction-indi-de}.
+The accelerometer returns the inertial acceleration plus noise, without the gravity leakage that an attitude error causes in a real specific-force measurement. This choice favours the acceleration-based comparison method; its consequence is quantified with an explicit bias in Section~\ref{sec:measurement-versus-prediction-on-the-circle}.
 
 \section{Controllers}\label{sec:controllers}
 
@@ -279,7 +279,15 @@ A measured disturbance needs no estimator and therefore no estimator bandwidth \
 \label{eq:lag-err}
 \end{equation}
 
-The bracket does not vanish when the observer is exact. For one harmonic of amplitude \(a\) and frequency \(\sigma\) its magnitude is \(2a\,|\sin(\sigma\tau_d/2)|\); on the circle of this study (\(\sigma = 1.575\) rad/s) and with the delay measured below (\(\tau_d = 290\) ms) this is 0.45 of the amplitude. A perfect estimate applied late leaves almost half of the periodic payload force uncancelled, and a faster estimator cannot change that.
+The bracket does not vanish when the observer is exact. For one harmonic of amplitude \(a\) and frequency \(\sigma\) its magnitude is \(2a\,|\sin(\sigma\tau_d/2)|\); on the circle of this study (\(\sigma = 1.575\) rad/s) and with the delay measured below (\(\tau_d = 290\) ms) this is 0.45 of the amplitude (Fig.~\ref{fig:2}a). A perfect estimate applied late leaves almost half of the periodic payload force uncancelled, and a faster estimator cannot change that.
+
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{ijdc_horizon.pdf}
+\caption{Why the loop delay matters. (a) Fraction of a harmonic payload force of frequency \(\sigma\) that a cancellation late by the loop delay \(\tau_d\) leaves uncancelled, \(2|\sin(\sigma\tau_d/2)|\), at the frequency of the circle; in the shaded range a late cancellation adds error. (b) Pooled error of PA-MOBADC against the prediction horizon \(\tau\) in the registered sweeps on the development segments, relative to its value at \(\tau = 0\); dots: the chosen horizon \(\tau^*\).}\label{fig:2}
+\end{figure}
+
 
 \textbf{Prediction through the exosystem.} The observer's internal model is the generator of the disturbance, so the estimate can be carried over the delay with it:
 
@@ -349,7 +357,7 @@ Both additions change only the compensation signal \(\hat{\boldsymbol d}_{mf} + 
 \label{eq:ed-bound}
 \end{equation}
 
-The first term is bounded because the observer's error dynamics are stable and driven by the bounded mismatch between the payload force and the exosystem \cite{chen2004}, and Proposition 1 shows that prediction does not enlarge it; the second because the payload force and the exosystem output are bounded on bounded trajectories. The third contains, by design, the excess \(\hat K k\lVert\boldsymbol r_Q\rVert\boldsymbol r_Q\) that offsets the load's wind force carried by \(\boldsymbol d_{mf}\) through the tension; it is bounded because the wind and the velocities are bounded, and Proposition 2 bounds what the offset leaves. Neither addition can therefore destabilise a loop that is input-to-state stable with respect to its compensation error; both move the ultimate bound, which is what Section~\ref{sec:results} measures. The assumption concerns the baseline alone: it is the property on which composite disturbance-observer controllers rest \cite{chen2004}; for this baseline its authors prove a bounded error of the position loop and asymptotic stability of the attitude loop under a small-angle linearisation \cite{guo2020}. Section~\ref{sec:motor-lag-and-the-published-gains} shows that the assumption fails for the published gains at motor lags of 25 ms and above, independently of either addition.
+The first term is bounded because the observer's error dynamics are stable and driven by the bounded mismatch between the payload force and the exosystem \cite{chen2004}, and Proposition 1 shows that prediction does not enlarge it; the second because the payload force and the exosystem output are bounded on bounded trajectories. The third contains, by design, the excess \(\hat K k\lVert\boldsymbol r_Q\rVert\boldsymbol r_Q\) that offsets the load's wind force carried by \(\boldsymbol d_{mf}\) through the tension; it is bounded because the wind and the velocities are bounded, and Proposition 2 bounds what the offset leaves. Neither addition can therefore destabilise a loop that is input-to-state stable with respect to its compensation error; both move the ultimate bound, which is what Section~\ref{sec:results} measures. The assumption concerns the baseline alone: it is the property on which composite disturbance-observer controllers rest \cite{chen2004}; for this baseline its authors prove a bounded error of the position loop and asymptotic stability of the attitude loop under a small-angle linearisation \cite{guo2020}. Section~\ref{sec:the-boundedness-assumption-and-the-published-gains} shows that the assumption fails for the published gains at motor lags of 25 ms and above, independently of either addition.
 
 \subsection{Comparison methods}\label{sec:comparison-methods}
 
@@ -373,13 +381,13 @@ an upper bound on what any wind predictor could add through the controller's for
 
 \subsection{Wind data and segments}\label{sec:wind-data-and-segments}
 
-Measured wind comes from the sonic anemometers of the M5 tower at the National Wind Technology Center of NREL, at heights of 61 and 74 m, sampled at 20 Hz. Each run lasts 200 s; statistics use \(t \ge 140\) s. A segment enters a trajectory's set only if the vehicle can hold the trajectory against the static wind force at the segment's mean wind speed with tilt and thrust within 80 \% of their limits; on the circle (radius 0.8 m, angular rate 1.575 rad/s) this admits mean winds up to 8.02 m/s (Fig.~\ref{fig:2}).
+Measured wind comes from the sonic anemometers of the M5 tower at the National Wind Technology Center of NREL, at heights of 61 and 74 m, sampled at 20 Hz. Each run lasts 200 s; statistics use \(t \ge 140\) s. A segment enters a trajectory's set only if the vehicle can hold the trajectory against the static wind force at the segment's mean wind speed with tilt and thrust within 80 \% of their limits; on the circle (radius 0.8 m, angular rate 1.575 rad/s) this admits mean winds up to 8.02 m/s (Fig.~\ref{fig:3}).
 
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\linewidth]{p2_fig2_wind.pdf}
-\caption{Wind per segment, development pool and held-out days: (a) mean wind speed, (b) turbulence intensity, (c) both. Dotted lines: the wind envelopes of the circle and hover sets.}\label{fig:2}
+\includegraphics[width=\linewidth]{ijdc_wind.pdf}
+\caption{Measured wind of the development pool and of the held-out days: (a) distribution of the mean wind speed \(U\) per segment, (b) turbulence intensity against \(U\). Dotted: the largest mean wind at which the vehicle can hold the circle and the hover point (Section~\ref{sec:wind-data-and-segments}).}\label{fig:3}
 \end{figure}
 
 
@@ -457,25 +465,31 @@ AI-assisted tools were used to help write the simulation and analysis code and t
 
 \subsection{Main comparison}\label{sec:main-comparison}
 
-\textbf{The proposed PAW-MOBADC lowers the pooled error of MOBADC on the circle from 0.0451 m to 0.0120 m, by 73.42 \% (SE 6.34), on the development set (133 segments on 42 days), and from 0.0405 m to 0.00873 m, by 78.44 \% (SE 0.61), on the 56 held-out segments.} These comparisons are descriptive; the registered claims are the two steps of Sections~\ref{sec:c1-compensation-of-the-loop-delay} and \ref{sec:c2-payload-drag-in-the-wind-feed-forward}.
-
-Table~\ref{tab:main} ranks eight controllers on the 133-segment development circle. PID tracks with a pooled error of 0.201 m, DO 0.184 m, ESO 0.0758 m and MOBADC 0.0451 m; the known-weight trims lower PID and DO to 0.153 m and 0.140 m, and INDI-DE reaches 0.0384 m. MOBADC has the lowest error of Guo's four controllers, as in their indoor test \cite{guo2020}, but ESO now ranks above DO and PID, whereas it ranked below PID indoors. The difference is consistent with the character of the wind: a fan flow varies across the room, so the vehicle meets the same gust once per lap \cite{byun2021}, whereas measured outdoor wind varies slowly in time, which suits an extended state observer's slowly varying estimate. Fig.~\ref{fig:3} shows the trajectories on one segment chosen by a registered rule: PAW-MOBADC stays on the desired circle, INDI-DE flies a circle offset outwards, and the baselines drift with the wind, and Fig.~\ref{fig:4} shows the position error and payload angle on one held-out segment. Against MOBADC-W, the stronger reference because it already uses the wind measurement, the complete controller lowers the error by 74.57 \% (SE 1.83) on the held-out circle (Table~\ref{tab:ablation}).
-
+\textbf{The proposed PAW-MOBADC lowers the pooled error of MOBADC on the circle from 0.0451 m to 0.0120 m, by 73.42 \% (SE 6.34), on the development set (133 segments on 42 days), and from 0.0405 m to 0.00873 m, by 78.44 \% (SE 0.61), on the 56 held-out segments.} Each of the two additions removes a distinct part of this error (Fig.~\ref{fig:4}, Table~\ref{tab:ablation}). On the held-out circle the measured-wind feed-forward leaves MOBADC-W at 0.0343 m, the delay compensation brings the error to 0.0143 m and the payload-drag term to 0.00873 m; against MOBADC-W, the stronger reference because it already uses the wind measurement, the complete controller lowers the error by 74.57 \% (SE 1.83). In hover the registered horizon is \(\tau = 0\), so PA-MOBADC equals MOBADC-W, and the payload-drag term lowers the error from 0.00680 m to 0.00252 m on the held-out segments where PA-MOBADC is below its tilt clamp. These comparisons are descriptive; the registered claims behind the two steps are those of Sections~\ref{sec:c1-compensation-of-the-loop-delay} and \ref{sec:c2-payload-drag-in-the-wind-feed-forward}. Among the controllers of Guo et al., MOBADC keeps the lowest error on the development circle (Table~\ref{tab:main}), as in their indoor test \cite{guo2020}.
 
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\linewidth]{p2_fig9_traj.pdf}
-\caption{Flown (solid) and desired (dashed) paths of the six controllers of Table~\ref{tab:main} on one development circle segment chosen by a registered rule; each panel gives the mean position error on the segment.}\label{fig:3}
+\includegraphics[width=\linewidth]{ijdc_compare.pdf}
+\caption{Pooled position error of each controller on the development set and on the held-out days: (a) circle; (b) hover, on the segments where PA-MOBADC is below its tilt clamp (the registered scoring set; with \(\tau = 0\) PA-MOBADC equals MOBADC-W). \(n\): segments.}\label{fig:4}
 \end{figure}
 
 
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{p2_fig3_series.pdf}
-\caption{One held-out circle segment chosen by a registered rule: (a) position error and (b) cable angle of MOBADC-W, PA-MOBADC, PAW-MOBADC and INDI-DE; the legend gives the mean error on the segment.}\label{fig:4}
-\end{figure}
+\begin{sidewaystable}
+\caption{Ablation MOBADC-W $\rightarrow$ PA-MOBADC (C1) $\rightarrow$ PAW-MOBADC (C2): pooled error of each stage on the block's common set of segments and the step changes (SE; leave-one-out range; by-day median). ``unsat.'' = segments on which PA-MOBADC is below its tilt clamp. MOBADC-W was not run in hover.}\label{tab:ablation}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}@{}}
+\toprule
+block & segments (days) & MOBADC-W [m] & PA-MOBADC [m] & PAW-MOBADC [m] & C1: PA-MOBADC / MOBADC-W $-$ 1 & C2: PAW-MOBADC / PA-MOBADC $-$ 1 & total: PAW-MOBADC / MOBADC-W $-$ 1 \\
+\midrule
+circle, development & 133 (42) & 0.03631 & 0.01806 & 0.01199 & $-$50.25 \% (8.31; [$-$57.29, $-$50.14]; $-$62.23) & $-$33.64 \% (8.23; [$-$42.93, $-$32.99]; $-$36.76) & $-$66.99 \% (8.83; [$-$75.63, $-$66.88]; $-$76.61) \\
+circle, held-out & 56 (14) & 0.03434 & 0.01432 & 0.00873 & $-$58.30 \% (4.57; [$-$60.66, $-$58.12]; $-$63.88) & $-$39.00 \% (2.91; [$-$39.21, $-$37.59]; $-$35.07) & $-$74.57 \% (1.83; [$-$76.09, $-$74.51]; $-$76.42) \\
+hover, development & 137 (43) & -- & 0.02461 & 0.01962 & -- & $-$20.27 \% (42.39; [$-$63.56, $-$19.75]; $-$62.92) & -- \\
+hover, development, PA-MOBADC unsat. & 124 (41) & -- & 0.00892 & 0.00306 & -- & $-$65.68 \% (1.59; [$-$65.95, $-$64.50]; $-$62.92) & -- \\
+hover, held-out & 56 (14) & -- & 0.01057 & 0.00385 & -- & $-$63.55 \% (1.75; [$-$65.74, $-$62.49]; $-$61.30) & -- \\
+\botrule
+\end{tabular}
+\end{sidewaystable}
 
 
 \begin{table}[!htbp]
@@ -498,41 +512,29 @@ PAW-MOBADC (proposed) & 0.01199 (0.00374; 0.00777) & 0.00764 & 0.02631 & 0.00335
 \end{table}
 
 
-\begin{sidewaystable}
-\caption{Ablation MOBADC-W $\rightarrow$ PA-MOBADC (C1) $\rightarrow$ PAW-MOBADC (C2): pooled error of each stage on the block's common set of segments and the step changes (SE; leave-one-out range; by-day median). ``unsat.'' = segments on which PA-MOBADC is below its tilt clamp. MOBADC-W was not run in hover.}\label{tab:ablation}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.075\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}>{\raggedright\arraybackslash}p{0.155\linewidth}@{}}
-\toprule
-block & segments (days) & MOBADC-W [m] & PA-MOBADC [m] & PAW-MOBADC [m] & C1: PA-MOBADC / MOBADC-W $-$ 1 & C2: PAW-MOBADC / PA-MOBADC $-$ 1 & total: PAW-MOBADC / MOBADC-W $-$ 1 \\
-\midrule
-circle, development & 133 (42) & 0.03631 & 0.01806 & 0.01199 & $-$50.25 \% (8.31; [$-$57.29, $-$50.14]; $-$62.23) & $-$33.64 \% (8.23; [$-$42.93, $-$32.99]; $-$36.76) & $-$66.99 \% (8.83; [$-$75.63, $-$66.88]; $-$76.61) \\
-circle, held-out & 56 (14) & 0.03434 & 0.01432 & 0.00873 & $-$58.30 \% (4.57; [$-$60.66, $-$58.12]; $-$63.88) & $-$39.00 \% (2.91; [$-$39.21, $-$37.59]; $-$35.07) & $-$74.57 \% (1.83; [$-$76.09, $-$74.51]; $-$76.42) \\
-hover, development & 137 (43) & -- & 0.02461 & 0.01962 & -- & $-$20.27 \% (42.39; [$-$63.56, $-$19.75]; $-$62.92) & -- \\
-hover, development, PA-MOBADC unsat. & 124 (41) & -- & 0.00892 & 0.00306 & -- & $-$65.68 \% (1.59; [$-$65.95, $-$64.50]; $-$62.92) & -- \\
-hover, held-out & 56 (14) & -- & 0.01057 & 0.00385 & -- & $-$63.55 \% (1.75; [$-$65.74, $-$62.49]; $-$61.30) & -- \\
-\botrule
-\end{tabular}
-\end{sidewaystable}
+\textbf{What each step removes.} Fig.~\ref{fig:5} shows the tracking error on one circle and one hover segment, each chosen by a registered rule. On the circle, MOBADC-W flies behind and outside the reference by a nearly constant amount: in the frame of the path its error is an offset along the track and outwards. This is the lag term of \eqref{eq:lag-err}. The payload force turns with the vehicle, so a cancellation that is one loop delay late leaves an error that is constant in the frame of the path. PA-MOBADC removes the offset; what remains follows the wind and is largest in the gusts, and PAW-MOBADC removes most of it. In hover the payload force has no orbital frequency, the error of PA-MOBADC follows the wind directly, and PAW-MOBADC reduces it.
+
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{ijdc_response.pdf}
+\caption{Time responses on one development circle segment (left) and one development hover segment (right), each chosen by a registered rule: (a, b) horizontal wind speed; (c, e) tracking error of the vehicle along the path and outward from the centre of the circle; (d, f) tracking error east and north.}\label{fig:5}
+\end{figure}
+
+
+\textbf{Across segments} the same division holds (Fig.~\ref{fig:6}). On the development circle the error of MOBADC-W hardly depends on the mean wind speed - it is set by the delay, not by the wind - whereas the error of PA-MOBADC grows with the wind speed and that of PAW-MOBADC stays nearly flat. In hover the error of both grows with the wind, and PAW-MOBADC stays below PA-MOBADC in every wind-speed bin.
+
+
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{ijdc_windspeed.pdf}
+\caption{Mean position error per segment against the mean wind speed of the segment, development sets: (a) circle, (b) hover. Dots: segments; lines: medians of eight bins with equal numbers of segments; open circles in (b): segments on which PA-MOBADC reaches its tilt clamp.}\label{fig:6}
+\end{figure}
 
 \subsection{C1 - compensation of the loop delay}\label{sec:c1-compensation-of-the-loop-delay}
 
-The registered development gate D2 passed: PA-MOBADC lowered the pooled error of MOBADC-W by 50.33 \% (SE 8.28, by-day median \textminus{}62.23 \%), from 0.0363 m to 0.0180 m. \textbf{On the held-out days D2 was confirmed: \textminus{}58.30 \% (SE 4.57, leave-one-out range {[}\textminus{}60.66, \textminus{}58.12{]}, by-day median \textminus{}63.88 \%), from 0.0343 m to 0.0143 m} (Table~\ref{tab:claims}, Fig.~\ref{fig:5}). The size of the gain agrees with the argument of Section~\ref{sec:c1-compensation-of-the-loop-delay-pa-mobadc}: a 290 ms delay leaves 0.45 of a harmonic payload force uncancelled, and prediction removes most of it. The horizon itself comes from the registered sweep of Fig.~\ref{fig:6}: on the circle the pooled error has its minimum at 290 ms, in hover at the lower edge of the grid, \(\tau = 0\).
-
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{p2_fig4_c1.pdf}
-\caption{C1: (a) PA-MOBADC / MOBADC-W \textminus{} 1 and (MOBADC-W + preview) / MOBADC-W \textminus{} 1 with $\pm$1.65 SE per trajectory, on the development set and on the held-out days (\(n\): segments); (b) error of PA-MOBADC against MOBADC-W per circle segment, with the identity line.}\label{fig:5}
-\end{figure}
-
-
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{p2_fig5_tau.pdf}
-\caption{Pooled error of PA-MOBADC against the prediction horizon \(\tau\) on the development segments, per trajectory: coarse grid, fine grid and the chosen horizon \(\tau^*\).}\label{fig:6}
-\end{figure}
-
+The registered development gate D2 passed: PA-MOBADC lowered the pooled error of MOBADC-W by 50.33 \% (SE 8.28, by-day median \textminus{}62.23 \%), from 0.0363 m to 0.0180 m. \textbf{On the held-out days D2 was confirmed: \textminus{}58.30 \% (SE 4.57, leave-one-out range {[}\textminus{}60.66, \textminus{}58.12{]}, by-day median \textminus{}63.88 \%), from 0.0343 m to 0.0143 m} (Table~\ref{tab:claims}). The size of the gain agrees with the argument of Section~\ref{sec:c1-compensation-of-the-loop-delay-pa-mobadc}: a 290 ms delay leaves 0.45 of a harmonic payload force uncancelled (Fig.~\ref{fig:2}a), and prediction removes most of it. The horizon comes from the registered sweep of Fig.~\ref{fig:2}b: on the circle the pooled error has its minimum at 290 ms, and in hover, where the payload force has no orbital frequency, at the lower edge of the grid, \(\tau = 0\).
 
 \begin{sidewaystable}
 \caption{The claims on the development set and on the held-out days (Section~\ref{sec:registration-and-held-out-confirmation}): value, day-jackknife SE, leave-one-segment-out range, by-day median, and the verdict of the registered test. ``unsat.'' = scored on the segments on which PA-MOBADC is below its tilt clamp; ``1/day'' = one segment per day.}\label{tab:claims}
@@ -580,19 +582,19 @@ The gain holds on the other planned trajectories, \textminus{}45.41 \% on the fi
 
 \subsection{C2 - payload drag in the wind feed-forward}\label{sec:c2-payload-drag-in-the-wind-feed-forward}
 
-\textbf{Found post hoc on the development set.} PAW-MOBADC was first a comparison column of the MBP test (Section~\ref{sec:model-based-payload-prediction-mbp}). In hover, on the development segments where PA-MOBADC is below its tilt clamp, it lowered the error of PA-MOBADC by 65.68 \% (SE 1.59); on the full hover set the value was +20.27 \% (SE 42.39), pulled down by one segment at the actuator limit on which both controllers saturate (Table~\ref{tab:ablation}). On the circle (one segment per day) it lowered the error by 43.67 \% (SE 2.16).
+\textbf{Found post hoc on the development set.} PAW-MOBADC was first a comparison column of the test of a model-based payload predictor (Section~\ref{sec:limits-of-the-payload-drag-term}). On the development segments where PA-MOBADC is below its tilt clamp it lowered the error of PA-MOBADC by 65.68 \% (SE 1.59) in hover, and by 43.67 \% (SE 2.16) on the circle (one segment per day).
 
-\textbf{Registered and confirmed on the held-out days.} Both claims were registered from these numbers before the held-out days were opened. H-static (hover) was confirmed with \(h\) = +63.00 \% (SE 1.37, 52 segments on 14 days, no failure), H-static-circle with +37.18 \% (SE 3.04, 53 segments, no failure). On the full held-out sets the error falls from 0.0143 m to 0.00873 m on the circle and from 0.0106 m to 0.00385 m in hover (Fig.~\ref{fig:7}). Table~\ref{tab:ablation} separates the steps: on the held-out circle C1 gives \textminus{}58.30 \% against MOBADC-W and C2 a further \textminus{}39.00 \%. In hover the registered horizon is \(\tau = 0\), so PA-MOBADC equals MOBADC-W there and the whole gain over MOBADC-W is C2's.
+\textbf{Registered and confirmed on the held-out days.} Both claims were registered from these numbers before the held-out days were opened. H-static (hover) was confirmed with \(h\) = +63.00 \% (SE 1.37, 52 segments on 14 days, no failure), H-static-circle with +37.18 \% (SE 3.04, 53 segments, no failure) (Table~\ref{tab:claims}). Table~\ref{tab:ablation} separates the steps: on the held-out circle C1 gives \textminus{}58.30 \% against MOBADC-W and C2 a further \textminus{}39.00 \%. In hover the whole gain over MOBADC-W is C2's.
+
+\textbf{What the static term depends on.} Proposition 2 names two sources of residual, the assumed ratio and the swing; Fig.~\ref{fig:7} and Table~\ref{tab:c2} collect the checks that probe them.
 
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\linewidth]{p2_fig6_c2.pdf}
-\caption{C2: (a) gain \(h\) = 1 \textminus{} PAW-MOBADC / PA-MOBADC with $\pm$1.65 SE on the development set (post hoc) and on the held-out days (registered, scored on the segments where PA-MOBADC is below its tilt clamp); (b) control effort, (c) RMS and (d) maximum cable angle. Bars: quadratic mean over the held-out segments (maximum: median); dots: segments; diamonds: development set (cable angle only; the effort is stored for the held-out days only).}\label{fig:7}
+\includegraphics[width=\linewidth]{ijdc_sensitivity.pdf}
+\caption{What the payload-drag term depends on, development sets: (a) pooled error against the drag ratio assumed by the controller (PA-MOBADC does not use it); (b) error reduction by C2 per trajectory, added to PA-MOBADC or to MOBADC-W + preview; (c) error reduction by C2 per payload mass and cable length on the circle; (d) error reduction by C2 with and without wind-sensor noise. Whiskers: \$\pm\$1.65 SE.}\label{fig:7}
 \end{figure}
 
-
-\textbf{What the static term depends on.} Proposition 2 names two sources of residual, the assumed ratio and the swing; Table~\ref{tab:c2} collects the checks that probe them.
 
 \begin{table}[!htbp]
 \caption{What the payload-drag term depends on (development set, descriptive). $h = 1 -$ PAW-MOBADC / PA-MOBADC; in the preview rows the term is added to MOBADC-W + preview and $h = 1 -$ (PAW-MOBADC + preview) / (MOBADC-W + preview). ``1/day'' = one segment per day; ``unsat.'' = segments on which PA-MOBADC is below its tilt clamp.}\label{tab:c2}
@@ -641,41 +643,21 @@ square, added to the preview & square & +15.25 \% (3.93) & $-$42.76 \% (0.42) \\
   \emph{Reference preview.} Added to the preview instead of to the prediction, the payload-drag term lowers the error by 28.80 \% on the circle, 49.73 \% on the figure-eight and 15.25 \% on the square: C2 is independent of how the delay is compensated.
 \end{itemize}
 
-\subsection{Measurement versus prediction: INDI-DE}\label{sec:measurement-versus-prediction-indi-de}
+\subsection{Measurement versus prediction on the circle}\label{sec:measurement-versus-prediction-on-the-circle}
 
-The two kinds of disturbance separate the methods. \textbf{On the circle}, where the payload force is periodic and fast compared with the loop delay, prediction wins: on the held-out days INDI-DE's pooled error is 37.2 mm, against 14.3 mm for PA-MOBADC and 8.73 mm for PAW-MOBADC (INDI-DE is 159.54 \% above PA-MOBADC; 112.93 \% on the development set; Fig.~\ref{fig:8}). INDI-DE's error is nearly the same on every circle segment whatever the wind, which identifies its source: it measures the trajectory-driven payload force correctly and one loop delay late, the lag term of \eqref{eq:lag-err}. \textbf{In hover}, where the disturbance is slow, fast measurement is enough: INDI-DE reaches 2.60 mm, against 3.85 mm for PAW-MOBADC and 10.6 mm for PA-MOBADC. This advantage depends on the idealised accelerometer of Section~\ref{sec:actuators-and-sensors}. A horizontal accelerometer bias of 0.086 m/s$^2$ or 0.17 m/s$^2$, the gravity leakage of an attitude error of 0.50\textdegree{} or 0.99\textdegree{}, raises INDI-DE's error to 7.66 mm and 14.5 mm, above PAW-MOBADC, in agreement with the bias sensitivity of outer-loop INDI \cite{smeur2018}.
-
-
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{p2_fig7_fast.pdf}
-\caption{Measurement against prediction: (a) pooled error of PA-MOBADC, PAW-MOBADC and INDI-DE per set (\(n\): segments); (b) INDI-DE / PA-MOBADC \textminus{} 1 and PAW-MOBADC / INDI-DE \textminus{} 1 with $\pm$1.65 SE.}\label{fig:8}
-\end{figure}
+On the circle, where the payload force is periodic and fast compared with the loop delay, an acceleration-based estimate does not close the first gap. On the held-out days INDI-DE's pooled error is 37.2 mm, against 14.3 mm for PA-MOBADC and 8.73 mm for PAW-MOBADC (INDI-DE is 159.54 \% above PA-MOBADC; 112.93 \% on the development set; Fig.~\ref{fig:4}). Its error is nearly the same on every circle segment whatever the wind (Fig.~\ref{fig:6}a), and in the frame of the path it shows the same offset as MOBADC-W (Fig.~\ref{fig:5}): it measures the trajectory-driven payload force correctly and one loop delay late, the lag term of \eqref{eq:lag-err}. In hover, where the disturbance is slow, the comparison turns; Section~\ref{sec:when-to-predict-and-when-to-measure} discusses when measurement suffices.
 
 \subsection{Advance knowledge of the wind (C3)}\label{sec:advance-knowledge-of-the-wind-c3}
 
-Knowing the true future wind adds almost nothing once the wind is measured. In the registered headroom test the oracle lowered the error of PA-MOBADC by 0.69 \% on the circle and by 2.87 \% in hover with the wind-to-payload term (Fig.~\ref{fig:9}). The largest headroom among the eleven evaluable groups was 5.83 \% (a post-hoc group), below the registered threshold of 10 \%, so no group met the headroom rule. On the unsaturated segments of one post-hoc group, strong hover wind relative to the envelope, the oracle gained 41.52 \% (10 development segments); the held-out days held a single usable segment in that wind band, so H-hover was not confirmable.
+Knowing the true future wind adds almost nothing once the wind is measured. In the registered headroom test the oracle lowered the error of PA-MOBADC by 0.69 \% on the circle and by 2.87 \% in hover with the wind-to-payload term (Fig.~\ref{fig:8}). The largest headroom among the eleven evaluable groups was 5.83 \% (a post-hoc group), below the registered threshold of 10 \%, so no group met the headroom rule. The residual error of PA-MOBADC therefore lies in the payload's response to the wind it already measures, which is what C2 addresses, and not in the timing of the wind.
 
 
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\linewidth]{p2_fig8_c3.pdf}
-\caption{C3: headroom \(h\) = 1 \textminus{} oracle / PA-MOBADC with $\pm$1.65 SE in the twelve registered wind groups (in the hover group with the wind-to-payload term, both controllers carry that term); dashed: the registered threshold; right: segments, days and the verdict of the headroom rule.}\label{fig:9}
+\includegraphics[width=\linewidth]{ijdc_oracle.pdf}
+\caption{Error reduction from perfect advance knowledge of the wind, \(h\) = 1 \textminus{} oracle / PA-MOBADC, in the registered wind groups, with \$\pm\$1.65 SE; dashed: the registered threshold; right: \(h\), segments and days. *: post-hoc group. The group with strong wind on the circle at \(K = 0\) contained no segment.}\label{fig:8}
 \end{figure}
-
-\subsection{Model-based payload prediction (MBP)}\label{sec:model-based-payload-prediction-mbp}
-
-Predicting the payload force with an open-loop pendulum model did not pass its registered test: in hover it was worse than PA-MOBADC on the full set (\(h\) = \textminus{}158.83 \%, SE 200.46), although better on the unsaturated segments (+72.72 \%), and on the circle its error was 222.33 \% above PA-MOBADC. A model of the load that runs open loop diverges from the real swing, whereas the static term of C2 and the observer of C1 both stay tied to measurements.
-
-\subsection{Motor lag and the published gains}\label{sec:motor-lag-and-the-published-gains}
-
-With Guo's gains \cite{guo2020} the full plant stayed stable on all ten registered runs at a motor lag of 17 ms and diverged on all ten at 25 ms and at 30 ms. Guo et al.~flew these gains stably \cite{guo2020}; a motor lag of 17 ms is consistent with that and is used throughout. The result agrees with the observation that position and attitude gains are not free once actuator dynamics are taken into account \cite{smeur2018}, and it marks where the boundedness assumption of Section~\ref{sec:boundedness-of-the-closed-loop} holds for this baseline.
-
-\subsection{Control effort and payload swing}\label{sec:control-effort-and-payload-swing}
-
-On the held-out days PAW-MOBADC uses more control effort: the RMS oscillation of the rotor forces is 0.611 N on the circle, against 0.532 N for MOBADC, 0.579 N for PA-MOBADC and 0.543 N for INDI-DE, and 0.556 N in hover, against 0.532 N for PA-MOBADC and 0.503 N for INDI-DE. On the circle this is about 15 \% more effort than MOBADC for a 78 \% lower position error. The payload's RMS angle is almost the same for every controller: 16.24--16.88\textdegree{} on the circle, where it is mostly the steady cone angle of about 15\textdegree{}, and 7.99--8.03\textdegree{} in hover.
 
 \section{Discussion}\label{sec:discussion}
 
@@ -683,23 +665,43 @@ On the held-out days PAW-MOBADC uses more control effort: the RMS oscillation of
 
 \subsection{When to predict and when to measure}\label{sec:when-to-predict-and-when-to-measure}
 
+On the circle prediction wins (Section~\ref{sec:measurement-versus-prediction-on-the-circle}). \textbf{In hover}, where the disturbance is slow, fast measurement is enough: on the held-out days INDI-DE reaches 2.60 mm, against 3.85 mm for PAW-MOBADC and 10.6 mm for PA-MOBADC (Fig.~\ref{fig:9}). This advantage depends on the idealised accelerometer of Section~\ref{sec:actuators-and-sensors}. A horizontal accelerometer bias of 0.086 m/s$^2$ or 0.17 m/s$^2$, the gravity leakage of an attitude error of 0.50\textdegree{} or 0.99\textdegree{}, raises INDI-DE's error to 7.66 mm and 14.5 mm, above PAW-MOBADC, in agreement with the bias sensitivity of outer-loop INDI \cite{smeur2018}.
+
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{ijdc_measure.pdf}
+\caption{Hover: pooled error of INDI-DE with a horizontal accelerometer bias, against PA-MOBADC and PAW-MOBADC, on the held-out days (solid) and on the development set with one segment per day (dashed). In brackets: the attitude error whose gravity leakage equals the bias.}\label{fig:9}
+\end{figure}
+
+
 The circle and hover results follow one rule: a disturbance that is periodic and fast compared with the loop delay has to be predicted, and a slow one can be measured. Prediction uses knowledge the controller already holds - the frequency in its internal model - and costs two trigonometric evaluations per mode; Proposition 1 guarantees that it does not amplify the observer's error. Measurement needs no model of the disturbance but arrives one delay late, which on a planned trajectory leaves the error that INDI-DE shows on the circle, and it inherits the accelerometer's bias, which removes its advantage in hover at an attitude error of half a degree. The view that disturbances cannot be predicted \cite{smeur2016} holds for disturbances without structure; a payload force on a planned path has structure that the observer has already identified.
 
 \subsection{Two realisations of delay compensation}\label{sec:two-realisations-of-delay-compensation}
 
 On a planned trajectory the loop delay can be compensated inside the observer (PA-MOBADC) or by feeding forward the reference acceleration one horizon ahead (MOBADC-W + preview). On the held-out days they give \textminus{}58.30 \% and \textminus{}62.40 \% against MOBADC-W, on the development set \textminus{}50.33 \% and \textminus{}53.95 \%; the two values differ by less than the standard error of either. Both need advance knowledge - the frequency of the payload force or the future trajectory - so neither applies to trajectories that are not planned. PAW-MOBADC uses prediction because it works inside the observer with the frequency the observer already holds and leaves the reference and the trajectory generator unchanged. The payload-drag term combines with either: added to the preview it lowers the error by 28.80 \% on the circle (Section~\ref{sec:c2-payload-drag-in-the-wind-feed-forward}).
 
-\subsection{Robustness of the payload-drag term}\label{sec:robustness-of-the-payload-drag-term}
+\subsection{Limits of the payload-drag term}\label{sec:limits-of-the-payload-drag-term}
 
-The term multiplies the measured airframe wind force by \(1+\hat K\). Its gain survives a 30 \% error in the assumed drag ratio, a 0.1 m/s wind-sensor noise and the full range of payload masses and cable lengths tested, which is what Proposition 2 leads one to expect for a residual proportional to the ratio error and to the swing rate. The same multiplication passes measurement spikes to the force command: on one development segment of the circle and one of hover, both carrying single-sample spikes in the wind record, PAW-MOBADC stopped the solver while PA-MOBADC completed the run; none of the held-out segments produced a failure. A causal filter that holds a sample whose step exceeds 5 m/s did not remove these failures at no cost - it moved them to other segments, on two of which PA-MOBADC itself diverged with the filtered wind - and the gain was unchanged (38.00 \% on the circle and 65.65 \% in hover on the unsaturated segments, against 38.20 \% and 65.68 \% without the filter). A wind sensor for this term therefore needs spike handling designed with the controller, not a generic filter.
+The term multiplies the measured airframe wind force by \(1+\hat K\), so its gain depends on the vehicle staying inside its actuator limits and on a clean wind measurement. On the full development hover set, including the segments where PA-MOBADC reaches its tilt clamp, the gain over PA-MOBADC is +20.27 \% (SE 42.39) instead of 65.68 \%: one segment at the actuator limit, on which both controllers saturate, dominates the pooled value (Table~\ref{tab:ablation}). This is why the held-out claim was registered on the segments below the tilt clamp; on the full held-out hover set the gain is 63.55 \%. The same multiplication passes measurement spikes to the force command: on one development segment of the circle and one of hover, both carrying single-sample spikes in the wind record, PAW-MOBADC stopped the solver while PA-MOBADC completed the run; none of the held-out segments produced a failure. A causal filter that holds a sample whose step exceeds 5 m/s did not remove these failures at no cost - it moved them to other segments, on two of which PA-MOBADC itself diverged with the filtered wind - and the gain was unchanged (38.00 \% on the circle and 65.65 \% in hover on the unsaturated segments, against 38.20 \% and 65.68 \% without the filter). A wind sensor for this term therefore needs spike handling designed with the controller, not a generic filter.
+
+A richer model of the load does not help. Predicting the payload force with an open-loop pendulum model (MBP) did not pass its registered test: in hover it was worse than PA-MOBADC on the full set (\(h\) = \textminus{}158.83 \%, SE 200.46), although better on the unsaturated segments (+72.72 \%), and on the circle its error was 222.33 \% above PA-MOBADC. A model of the load that runs open loop diverges from the real swing, whereas the static term of C2 and the observer of C1 both stay tied to measurements.
 
 \subsection{What advance wind knowledge can add}\label{sec:what-advance-wind-knowledge-can-add}
 
-For the 61--74 m wind of this dataset the measured-wind channel is already close to the oracle: the sensor delay is one sample, and the static drag model passes the low-frequency wind that dominates the force. The error that remains is the payload's own dynamics, which C1 and C2 address. Wind nearer the ground carries more energy at high frequency and may leave more headroom for prediction, as the strong-wind hover group suggests; the held-out days did not contain enough such wind to test it.
+For the 61--74 m wind of this dataset the measured-wind channel is already close to the oracle: the sensor delay is one sample, and the static drag model passes the low-frequency wind that dominates the force. The error that remains is the payload's own dynamics, which C1 and C2 address. Wind nearer the ground carries more energy at high frequency and may leave more headroom for prediction. On the unsaturated segments of one post-hoc group, strong hover wind relative to the envelope, the oracle gained 41.52 \% (10 development segments); the held-out days held a single usable segment in that wind band, so H-hover was not confirmable.
+
+\subsection{Control effort and payload swing}\label{sec:control-effort-and-payload-swing}
+
+The lower error costs control effort. On the held-out days the RMS oscillation of the rotor forces of PAW-MOBADC is 0.611 N on the circle, against 0.532 N for MOBADC, 0.579 N for PA-MOBADC and 0.543 N for INDI-DE, and 0.556 N in hover, against 0.532 N for PA-MOBADC and 0.503 N for INDI-DE. On the circle this is about 15 \% more effort than MOBADC for a 78 \% lower position error. The method improves the position of the vehicle, not the swing of the load: the payload's RMS angle is almost the same for every controller, 16.24--16.88\textdegree{} on the circle, where it is mostly the steady cone angle of about 15\textdegree{}, and 7.99--8.03\textdegree{} in hover. Damping the swing calls for feedback of the cable angle \cite{sreenath2013}.
+
+\subsection{The boundedness assumption and the published gains}\label{sec:the-boundedness-assumption-and-the-published-gains}
+
+Section~\ref{sec:boundedness-of-the-closed-loop} rests on a baseline that is input-to-state stable with respect to its compensation error. With Guo's gains \cite{guo2020} the full plant stayed stable on all ten registered runs at a motor lag of 17 ms and diverged on all ten at 25 ms and at 30 ms. Guo et al.~flew these gains stably \cite{guo2020}; a motor lag of 17 ms is consistent with that and is used throughout. The result agrees with the observation that position and attitude gains are not free once actuator dynamics are taken into account \cite{smeur2018}, and it marks where the boundedness assumption holds for this baseline.
 
 \subsection{Scope}\label{sec:scope}
 
-The results are simulation results, and the comparisons are designed so that the conclusions do not depend on favourable modelling: the accelerometer is ideal, which favours the acceleration-based competitor; the competitor's filter is the best value of a sweep; and the baseline's published gains are used unchanged. The method improves the position of the vehicle, not the swing of the load, whose RMS angle is the same for every controller; damping the swing calls for feedback of the cable angle \cite{sreenath2013}. Results hold for planned trajectories and hover. The held-out days had entered pooled wind statistics of an earlier stage of the project, and the two days inspected there in detail were removed before any controller run; the held-out confirmations rest on fourteen days.
+The results are simulation results, and the comparisons are designed so that the conclusions do not depend on favourable modelling: the accelerometer is ideal, which favours the acceleration-based competitor; the competitor's filter is the best value of a sweep; and the baseline's published gains are used unchanged. Results hold for planned trajectories and hover. The held-out days had entered pooled wind statistics of an earlier stage of the project, and the two days inspected there in detail were removed before any controller run; the held-out confirmations rest on fourteen days.
 
 \section{Conclusion}\label{sec:conclusion}
 
@@ -726,7 +728,7 @@ Flight tests, wind measured near the ground, and swing damping are the next step
 \backmatter
 
 \bmhead{Data availability}
-The wind records are public (NREL National Wind Technology Center M5 tower data). The code, the registers and the result files will be made available upon acceptance.
+The wind records are public data of the M5 tower of the NREL National Wind Technology Center (https://wind.nlr.gov/MetData/135mData/M5Twr/). The simulation and analysis code will be made publicly available on GitHub upon acceptance; the registers and the result files will be made available upon acceptance.
 
 \bmhead{Declarations}
 Competing interests, funding and the authors' contributions are stated on the separate title page (double-anonymous review); the use of AI-assisted tools is described in Section~\ref{sec:use-of-ai-assisted-tools}.

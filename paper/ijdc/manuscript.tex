@@ -140,19 +140,16 @@ With the cable taut, the quadrotor and the payload obey
 m_Q\dot{\boldsymbol v}_Q = \boldsymbol F - m_Q g\boldsymbol e_3 + T\boldsymbol q + \boldsymbol F_{wQ} - \boldsymbol F_d
 \label{eq:p2-quad}
 \end{equation}
-
 \begin{equation}
 m_L\ddot{\boldsymbol x}_L = -m_L g\boldsymbol e_3 - T\boldsymbol q + \boldsymbol F_{wL} + \boldsymbol F_d,\qquad \boldsymbol x_L = \boldsymbol x_Q + L\boldsymbol q
 \label{eq:p2-load}
 \end{equation}
-
 with the cable direction on the sphere
 
 \begin{equation}
 \dot{\boldsymbol q} = \boldsymbol\omega\times\boldsymbol q,\qquad \dot{\boldsymbol\omega} = \tfrac{1}{L}\,\boldsymbol q\times\Big[\frac{\boldsymbol F_{wL}+\boldsymbol F_d}{m_L} - \frac{\boldsymbol F + \boldsymbol F_{wQ} - \boldsymbol F_d}{m_Q}\Big]
 \label{eq:p2-sphere}
 \end{equation}
-
 and the tension that keeps the cable length fixed,
 
 \begin{equation}
@@ -166,14 +163,12 @@ Without wind and damping these equations reduce to the taut-cable model of Sreen
 \boldsymbol F_d = -c\,L\,(\boldsymbol\omega\times\boldsymbol q),\qquad c = 2\zeta_s\omega_n m_L,\qquad \omega_n = \sqrt{g/L},
 \label{eq:p2-damp}
 \end{equation}
-
 the viscous damping of a linear oscillator written with its damping ratio, here \(\zeta_s = 0.05\). The attitude dynamics are those of Guo et al. \cite{guo2020, raffo2010}, with full Euler-angle inertia and Coriolis terms, and the thrust direction follows the attitude:
 
 \begin{equation}
 \boldsymbol M(\boldsymbol\eta)\ddot{\boldsymbol\eta} + \boldsymbol C(\boldsymbol\eta,\dot{\boldsymbol\eta})\dot{\boldsymbol\eta} = \boldsymbol\tau,\qquad \boldsymbol F = f\,\boldsymbol R(\boldsymbol\eta)\boldsymbol e_3.
 \label{eq:rot}
 \end{equation}
-
 \subsection{Wind and the two disturbance paths}\label{sec:wind-and-the-two-disturbance-paths}
 
 Both bodies feel quadratic drag on their velocity relative to the air,
@@ -182,7 +177,6 @@ Both bodies feel quadratic drag on their velocity relative to the air,
 \boldsymbol F_w = \tfrac12\rho\,(C_DA)\,\lVert\boldsymbol w - \boldsymbol v\rVert(\boldsymbol w - \boldsymbol v),
 \label{eq:drag}
 \end{equation}
-
 with the airframe's drag area chosen so that it feels 1.0 N in a 5 m/s wind and the payload's drag area a fraction \(K\) of it:
 
 \begin{equation}
@@ -207,7 +201,6 @@ Each motor is a first-order lag,
 \dot f_i = (f_{i,cmd} - f_i)/\tau_m,\qquad \tau_m = 17\ \mathrm{ms},
 \label{eq:motor}
 \end{equation}
-
 behind the allocation of Guo et al.~with rotor-force and torque saturation:
 
 \begin{equation}
@@ -236,14 +229,12 @@ The position law of Guo et al. \cite{guo2020} is
 \boldsymbol a_d = \boldsymbol K_\gamma\boldsymbol e_\gamma + \boldsymbol K_v\boldsymbol e_v + g\boldsymbol e_3 + \ddot{\boldsymbol\gamma}_d,\qquad \boldsymbol F = m\boldsymbol a_d - \hat{\boldsymbol d}_{mf} - \hat{\boldsymbol d}_{lf},
 \label{eq:guo-law}
 \end{equation}
-
 with the published gains (Table~\ref{tab:param}). The payload estimate \(\hat{\boldsymbol d}_{mf}\) comes from a disturbance observer whose internal model is the exosystem
 
 \begin{equation}
 \dot{\boldsymbol\xi} = \boldsymbol A\boldsymbol\xi,\qquad \boldsymbol d_m = \boldsymbol B\boldsymbol\xi,\qquad \boldsymbol A_i = \begin{bmatrix}0&\sigma_i\\-\sigma_i&0\end{bmatrix},
 \label{eq:exo}
 \end{equation}
-
 with \(\sigma\) the angular rate of the planned trajectory, and \(\hat{\boldsymbol d}_{lf}\) from a position extended state observer. The controllers compared are:
 
 
@@ -329,12 +320,13 @@ The thrust must therefore balance the wind force on both bodies. The payload's d
 \hat{\boldsymbol d}_{lf} = (1+\hat K)\,\frac{K_w}{U_{ref}}\lVert\boldsymbol w_s - \boldsymbol v_Q\rVert(\boldsymbol w_s - \boldsymbol v_Q),\qquad \hat K = 0.5.
 \label{eq:paw-ff}
 \end{equation}
-
 \begin{proposition}[residual of the static term]
 With \(\boldsymbol r_Q = \boldsymbol w - \boldsymbol v_Q\), \(\boldsymbol r_L = \boldsymbol w - \boldsymbol v_L\) and \(k = K_w/U_{ref}\), the part of the payload's wind force that \eqref{eq:paw-ff} leaves uncompensated, measurement delay apart, is
 
 \begin{equation}
-\boldsymbol F_{wL} - \hat K k\lVert\boldsymbol r_Q\rVert\boldsymbol r_Q = (K-\hat K)\,k\lVert\boldsymbol r_Q\rVert\boldsymbol r_Q + K k\big(\lVert\boldsymbol r_L\rVert\boldsymbol r_L - \lVert\boldsymbol r_Q\rVert\boldsymbol r_Q\big),\qquad \big\lVert\lVert\boldsymbol r_L\rVert\boldsymbol r_L - \lVert\boldsymbol r_Q\rVert\boldsymbol r_Q\big\rVert \le \big(\lVert\boldsymbol r_L\rVert + \lVert\boldsymbol r_Q\rVert\big)\,L\lVert\boldsymbol\omega\rVert .
+\begin{gathered}
+\boldsymbol F_{wL} - \hat K k\lVert\boldsymbol r_Q\rVert\boldsymbol r_Q = (K-\hat K)\,k\lVert\boldsymbol r_Q\rVert\boldsymbol r_Q + K k\big(\lVert\boldsymbol r_L\rVert\boldsymbol r_L - \lVert\boldsymbol r_Q\rVert\boldsymbol r_Q\big),\\ \big\lVert\lVert\boldsymbol r_L\rVert\boldsymbol r_L - \lVert\boldsymbol r_Q\rVert\boldsymbol r_Q\big\rVert \le \big(\lVert\boldsymbol r_L\rVert + \lVert\boldsymbol r_Q\rVert\big)\,L\lVert\boldsymbol\omega\rVert .
+\end{gathered}
 \label{eq:ff-err}
 \end{equation}
 \end{proposition}
@@ -367,14 +359,12 @@ The first term is bounded because the observer's error dynamics are stable and d
 \hat{\boldsymbol d}_{mf} = H(z)\big[m\boldsymbol a_{meas} - \hat{\boldsymbol F}_{thr} + mg\boldsymbol e_3\big],\qquad \hat{\boldsymbol d}_{lf} = 0,
 \label{eq:h3}
 \end{equation}
-
 with \(H\) a second-order low-pass filter whose cut-off, 32 Hz, is the best value of a registered sweep and therefore chosen in favour of the competitor, and the thrust estimated through the nominal motor lag. Guo's attitude loop is kept; there is no inner INDI loop. \textbf{MBP} (model-based payload predictor) replaces the static term of C2 by an open-loop pendulum prediction of the payload force. \textbf{The oracle} of C3 feeds the wind channel with the true future wind,
 
 \begin{equation}
 \hat{\boldsymbol d}_{lf} = \frac{K_w}{U_{ref}}\lVert\boldsymbol w(t+\tau_w) - \boldsymbol v_Q\rVert(\boldsymbol w(t+\tau_w) - \boldsymbol v_Q),
 \label{eq:oracle}
 \end{equation}
-
 an upper bound on what any wind predictor could add through the controller's force model.
 
 \section{Experimental design}\label{sec:experimental-design}
@@ -409,7 +399,6 @@ The metric of a segment is the mean position-error norm over the window,
 m_i = \operatorname{mean}_{t\ge140}\lVert\boldsymbol\gamma_d - \boldsymbol\gamma\rVert,
 \label{eq:metric}
 \end{equation}
-
 pooled over a set as
 
 \begin{equation}
@@ -423,7 +412,6 @@ Because segments of one day share weather, every ratio carries a paired delete-o
 \mathrm{SE} = \sqrt{\tfrac{D-1}{D}\textstyle\sum_{d=1}^{D}(\hat\theta_{(-d)} - \bar\theta)^2},
 \label{eq:jack}
 \end{equation}
-
 with \(D\) the number of days, beside the range of leave-one-segment-out values and the median of the per-day values. One table is scored on one set of segments: a segment on which any column fails leaves that table. The control effort is reported as the RMS oscillation of the commanded rotor forces about their own means, and the payload swing as the RMS cable angle.
 
 \subsection{Registration and held-out confirmation}\label{sec:registration-and-held-out-confirmation}

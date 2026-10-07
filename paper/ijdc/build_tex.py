@@ -315,10 +315,20 @@ def protect_tables(body, store):
     return re.sub(r"(?:^\|.*\|\s*$\n?)+", rep, body, flags=re.M)
 
 
+SPLIT = {"eq:ff-err"}   # wider than the text block of the template (overfull in the LaTeX log): two lines
+
+
+def eq_body(body, label):
+    body = body.strip()
+    if label in SPLIT:
+        body = "\\begin{gathered}\n" + body.replace(",\\qquad", ",\\\\") + "\n\\end{gathered}"
+    return body
+
+
 def equations(md):
     md = re.sub(r"\$\$(.+?)\$\$\s*\{#(eq:[A-Za-z0-9_-]+)\}",
-                lambda m: "\n\\begin{equation}\n" + m.group(1).strip() + "\n\\label{" + m.group(2) + "}\n\\end{equation}\n",
-                md, flags=re.S)
+                lambda m: "\n\\begin{equation}\n" + eq_body(m.group(1), m.group(2)) + "\n\\label{" + m.group(2)
+                + "}\n\\end{equation}\n", md, flags=re.S)
     md = re.sub(r"\(@(eq:[A-Za-z0-9_-]+)\)", lambda m: "\\eqref{" + m.group(1) + "}", md)
     md = re.sub(r"@(eq:[A-Za-z0-9_-]+)", lambda m: "Eq.~\\eqref{" + m.group(1) + "}", md)
     return md
@@ -461,6 +471,8 @@ def main():
     s = re.sub(r"\\cite[pt]\{", lambda m: "\\cite{", s)
     s = cross_refs(s.replace("–", "--"), secmap)
     s = unicode_fix(s)
+    # a sentence that continues after a display equation is not a new paragraph (no indent)
+    s = re.sub(r"(\\end\{equation\}\n)\n+(?=[a-z\\(])", lambda m: m.group(1), s)
     left = re.findall(r"\(@eq:|\[@|TABLEPLACEHOLDER|\\pandocbounded", s)
     if left:
         raise SystemExit(f"build_tex: unconverted markup left: {sorted(set(left))}")

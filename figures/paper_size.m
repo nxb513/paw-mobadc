@@ -28,20 +28,20 @@ function paper_size(f, w, h)
 %  ======================================================================
 %  THE WIDTHS
 %  ======================================================================
-%    'single'  9.0 cm    one column
-%    'oneandhalf' 14.0 cm
-%    'double' 19.0 cm    full width, across both columns
+%    'single'      8.4 cm   one column
+%    'oneandhalf' 12.9 cm
+%    'double'     17.4 cm   full width, across both columns
 %
-%  These are the Elsevier artwork widths, which is the family this journal
-%  belongs to. They were NOT read out of Control Engineering Practice's own
-%  guide for authors - that page could not be retrieved, it serves a CAPTCHA to
-%  anything automated. If the journal states a different width, change it HERE
-%  and every figure follows; that is the whole reason this is a function and
-%  not three numbers copied into three scripts.
+%  These are the Springer artwork widths of the target journal, International
+%  Journal of Dynamics and Control (2026-10-07: 39, 84, 129 or 174 mm wide, at
+%  most 234 mm high; until then the Elsevier widths 9 / 14 / 19 cm were used).
+%  If the journal changes, change them HERE and every figure follows; that is
+%  the whole reason this is a function and not three numbers copied into three
+%  scripts.
 %
 %  A two-panel figure needs the full width. A single panel fits one column.
 
-WIDTH = struct('single', 9.0, 'oneandhalf', 14.0, 'double', 19.0);
+WIDTH = struct('single', 8.4, 'oneandhalf', 12.9, 'double', 17.4);
 
 if nargin < 1 || isempty(f), f = gcf; end
 if nargin < 2 || isempty(w), w = 'double'; end

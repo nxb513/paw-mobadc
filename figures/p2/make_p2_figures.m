@@ -1,20 +1,29 @@
 function S = make_p2_figures(varargin)
-%MAKE_P2_FIGURES  GD11 figures 1-8 of plant P2 (REGISTER_P2 sec 62.1) -> paper/figures/p2_fig<k>_<name>.pdf / .png
+%MAKE_P2_FIGURES  GD11 figures 1-9 of plant P2 (REGISTER_P2 sec 62.1) -> paper/figures/p2_fig<k>_<name>.pdf / .png
 %
-%   make_p2_figures                          % all eight
+%   make_p2_figures                          % all nine
 %   make_p2_figures('Only', [1 2 4 5 6 7 8]) % saved results and wind files only (no Simulink)
 %   make_p2_figures('Only', 3)               % Figure 3: re-simulates ONE CONFIRM2 segment (Simulink + wind_conf2/)
 %   make_p2_figures('Only', 9)               % Figure 9: re-simulates ONE dev circle_main segment, six controllers
+%   make_p2_figures('Only', [3 9], 'FromSaved', true)   % draw 3 / 9 from the time series kept in results/gd11/
+%   make_p2_figures('Root', 'results/final', 'Save', false)   % preview from another result tree
 %   HOANG_NOSAVE = true; make_p2_figures     % draw, write nothing (figures/nosave_on.m)
 %
-%  Every panel names its set and role (as docs/RESULTS_P2.md). Error bars: +-1.65 SE, paired day jackknife
+%  Content: every panel shows the sets and roles of docs/RESULTS_P2.md. Error bars: +-1.65 SE, paired day jackknife
 %  (analysis/p2r_stat.m); subsets as analysis/p2r_subset.m ('one4' = the one set of the file, 'unsatL3' = A of
-%  sec 60.3). Main configuration L 1.0 m, m_p 0.5 kg. Nothing is simulated except Figure 3, which follows the rule
-%  fixed in sec 62.1 (3) and is saved only if every re-run column's mean error equals the stored CONFIRM2 row to
-%  1e-12. A figure whose data are missing is not drawn; the summary says why.
+%  sec 60.3). Main configuration L 1.0 m, m_p 0.5 kg. Nothing is simulated except Figures 3 and 9, which follow the
+%  rules fixed in sec 62.1 (3) and 63.5 and are saved only if every re-run column's mean error equals the stored
+%  row to 1e-12; their time series are then kept in results/gd11/ ('FromSaved' redraws from those files). A figure
+%  whose data are missing is not drawn, or shows "no data" in the affected row; the summary says why.
+%
+%  Presentation (2026-10-07, IJDC / Springer artwork rules): physical size 84 or 174 mm wide (figures/paper_size.m),
+%  one sans-serif face (figures/paper_style.m), 8 pt text throughout, no titles inside the figures - only panel
+%  labels (a), (b), ... with a few words; one fixed colour per controller (ctrl_colour); the paper's wording for sets
+%  (development / held-out, trajectory names), never the repository codes; explanations live in the captions of
+%  paper/manuscript.md.
 opt = struct('Only', 1:9, 'Root', fullfile(repo_root(), 'results'), ...
     'Out', fullfile(repo_root(), 'paper', 'figures'), 'Conf2Dir', 'wind_conf2', ...
-    'ExplManifest', 'wind_expl_t150_batch.json', 'Save', ~nosave_on(), 'Close', true);
+    'ExplManifest', 'wind_expl_t150_batch.json', 'Save', ~nosave_on(), 'Close', true, 'FromSaved', false);
 for i = 1:2:numel(varargin)
     assert(isfield(opt, varargin{i}), 'make_p2_figures: unknown option ''%s''.', varargin{i});
     opt.(varargin{i}) = varargin{i+1};
@@ -44,93 +53,94 @@ end
 end
 
 %% =====================================================================
-%  1  system and block diagram (schematic, no data)
+%  1  plant and controller (schematic, no data)
 %% =====================================================================
 function [fh, msg] = fig1_system(~)
-P = p2_params();
-fh = newfig(11.5);
-ax = axes('Parent', fh, 'Position', [0.005 0.005 0.99 0.99]);  hold(ax, 'on');
-axis(ax, [0 100 0 64]);  axis(ax, 'off');
-K = [0.25 0.25 0.25];  FS = 6;  FK = 5.4;
-PL = [0.93 0.93 0.93];  OB = [0.87 0.90 0.95];  OP = [0.97 0.91 0.88];
-% ---- (a) the plant ----
-text(1, 62, '(a) plant P2 (side view)', 'Parent', ax, 'FontSize', FS + 1, 'FontWeight', 'bold');
-c = [16 50];                                              % body centre
-rectangle('Parent', ax, 'Position', [c(1) - 4, c(2) - 0.8, 8, 1.6], 'FaceColor', [0.6 0.6 0.6], 'EdgeColor', K);
-plot(ax, [c(1) - 11, c(1) + 11], [c(2) c(2)], '-', 'Color', K, 'LineWidth', 1.2);
-for xr = c(1) + [-10 10]
-    plot(ax, [xr xr], [c(2), c(2) + 1.3], '-', 'Color', K);
-    t = linspace(0, 2 * pi, 40);
-    plot(ax, xr + 4 * cos(t), c(2) + 1.5 + 0.45 * sin(t), '-', 'Color', K);
+fh = newfig('double', 7.0);
+ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0 0 1 1]);  hold(ax, 'on');
+axis(ax, [0 174 0 70]);  set(ax, 'DataAspectRatio', [1 1 1]);  axis(ax, 'off');
+K = [0.15 0.15 0.15];  BL = [0.00 0.45 0.70];  GR = [0.45 0.45 0.45];
+% ---- (a) the plant: quadrotor, cable, payload, wind and forces (side view) ----
+txt(ax, 1, 67.5, '(a)', 'FontWeight', 'bold');
+yw = [60 52 44 36 28 20];  lw = [7 5.5 7.5 5 7 6];               % a gusty wind profile, drawn not measured
+for i = 1:numel(yw), arr(ax, 2, yw(i), 2 + lw(i), yw(i), BL, 0.75); end
+txt(ax, 2, 64.2, '\bfw\rm(t)', 'Color', BL);
+plot(ax, [12 36], [53 53], '-', 'Color', K, 'LineWidth', 1.6);                       % arms
+for xr = [13 35]
+    plot(ax, [xr xr], [53 54.4], '-', 'Color', K, 'LineWidth', 0.75);
+    t = linspace(0, 2 * pi, 60);
+    patch(ax, xr + 6.5 * cos(t), 55.2 + 0.9 * sin(t), [0.86 0.86 0.86], 'EdgeColor', K, 'LineWidth', 0.5);
 end
-th = 18 * pi / 180;  Lc = 16;  p0 = [c(1), c(2) - 0.8];
-pe = p0 + Lc * [sin(th), -cos(th)];
-plot(ax, [p0(1) pe(1)], [p0(2) pe(2)], '-', 'Color', K, 'LineWidth', 0.8);
-plot(ax, [p0(1) p0(1)], [p0(2), pe(2) - 2], ':', 'Color', K);
-t = linspace(0, th, 20);
-plot(ax, p0(1) + 6 * sin(t), p0(2) - 6 * cos(t), '-', 'Color', K);
-text(p0(1) + 0.6, p0(2) - 7.6, '\theta', 'Parent', ax, 'FontSize', FS);
-t = linspace(0, 2 * pi, 50);
-patch('Parent', ax, 'XData', pe(1) + 2.2 * cos(t), 'YData', pe(2) + 2.2 * sin(t), 'FaceColor', [0.75 0.75 0.75], ...
-    'EdgeColor', K);
-text(c(1) - 9, c(2) + 4.2, sprintf('quadrotor  m_Q = %g kg', P.m_Q), 'Parent', ax, 'FontSize', FK);
-text(pe(1) - 3.2, (p0(2) + pe(2)) / 2 + 1, sprintf('cable L = %g m', P.L), 'Parent', ax, 'FontSize', FK, ...
-    'HorizontalAlignment', 'left');
-text(pe(1) - 7, pe(2) - 4, sprintf('payload  m_p = %g kg', P.m_L), 'Parent', ax, 'FontSize', FK);
-for y = [c(2) - 2, c(2) + 1, pe(2) - 1, pe(2) + 2]
-    arrow(ax, 0.6, y, 3.6, y, [0.2 0.4 0.7]);
+rectangle('Parent', ax, 'Position', [19 50.5 10 3], 'Curvature', [0.4 0.8], 'FaceColor', [0.35 0.35 0.35], ...
+    'EdgeColor', K, 'LineWidth', 0.5);
+arr(ax, 24, 54.2, 24, 63, K, 1.1);  txt(ax, 25.2, 61.6, '\bfF');
+th = 20 * pi / 180;  p0 = [24 50.5];  pe = p0 + 26 * [sin(th), -cos(th)];
+plot(ax, [p0(1) p0(1)], [p0(2) 19], ':', 'Color', K, 'LineWidth', 0.6);
+plot(ax, [p0(1) pe(1)], [p0(2) pe(2)], '-', 'Color', K, 'LineWidth', 0.9);         % cable
+t = linspace(0, th, 30);
+plot(ax, p0(1) + 9 * sin(t), p0(2) - 9 * cos(t), '-', 'Color', K, 'LineWidth', 0.5);
+txt(ax, p0(1) + 11.2 * sin(th / 2), p0(2) - 11.2 * cos(th / 2), '\theta', 'HorizontalAlignment', 'center');
+txt(ax, 27.2, 46.2, '\bfq');
+pm = p0 + 0.6 * (pe - p0) + 2.2 * [cos(th), sin(th)];
+txt(ax, pm(1), pm(2), 'L', 'HorizontalAlignment', 'center');
+ps = pe + 3.6 * [-sin(th), cos(th)] + 1.6 * [-cos(th), -sin(th)];
+arr(ax, ps(1), ps(2), ps(1) - 7 * sin(th), ps(2) + 7 * cos(th), K, 0.9);
+txt(ax, ps(1) - 4.0, ps(2) + 2.8, 'T', 'HorizontalAlignment', 'center');
+t = linspace(0, 2 * pi, 80);
+patch(ax, pe(1) + 3.4 * cos(t), pe(2) + 3.4 * sin(t), [0.55 0.55 0.55], 'EdgeColor', K, 'LineWidth', 0.5);
+txt(ax, 18.5, 48.4, 'm_Q', 'HorizontalAlignment', 'right');
+txt(ax, pe(1) + 4.2, pe(2) + 3.8, 'm_L');
+arr(ax, 29.6, 51.6, 37.4, 51.6, BL, 0.9);  txt(ax, 38.0, 51.6, '\bfF\rm_{wQ}', 'Color', BL);
+arr(ax, pe(1) + 3.7, pe(2), pe(1) + 11, pe(2), BL, 0.9);  txt(ax, pe(1) + 11.6, pe(2), '\bfF\rm_{wL}', 'Color', BL);
+arr(ax, pe(1), pe(2) - 3.6, pe(1), pe(2) - 11, K, 0.9);  txt(ax, pe(1) + 1.2, pe(2) - 9.4, 'm_L g');
+arr(ax, 5, 6, 12, 6, K, 0.6);  txt(ax, 12.6, 6, '\bfe\rm_1');
+arr(ax, 5, 6, 5, 13, K, 0.6);  txt(ax, 5, 14.6, '\bfe\rm_3', 'HorizontalAlignment', 'center');
+% ---- (b) the controller: baseline loop, C1 and C2 highlighted ----
+C1F = [1.00 0.93 0.78];  C1E = ctrl_colour('PA-MOBADC');
+C2F = [1.00 0.88 0.80];  C2E = ctrl_colour('PAW-MOBADC');
+PF = [0.93 0.93 0.93];
+txt(ax, 57, 67.5, '(b)', 'FontWeight', 'bold');
+blk(ax, 57, 47.5, 16, 9, {'reference', '\gamma_d(t)'}, 'w', K);
+arr(ax, 73, 52, 78, 52, K);
+blk(ax, 78, 47.5, 20, 9, {'position law', '(Guo et al.)'}, 'w', K);
+arr(ax, 98, 52, 104.6, 52, K);  txt(ax, 101.0, 55.0, 'm\bfa\rm_d', 'HorizontalAlignment', 'center');
+t = linspace(0, 2 * pi, 60);
+patch(ax, 107 + 2.4 * cos(t), 52 + 2.4 * sin(t), 'w', 'EdgeColor', K, 'LineWidth', 0.75);
+txt(ax, 107, 52, '\Sigma', 'HorizontalAlignment', 'center');
+arr(ax, 109.4, 52, 114, 52, K);  txt(ax, 111.7, 55.0, '\bfF', 'HorizontalAlignment', 'center');
+blk(ax, 114, 47.5, 21, 9, {'attitude loop', '+ motor lag'}, 'w', K);
+arr(ax, 135, 52, 140, 52, K);
+blk(ax, 140, 47.5, 23, 9, {'quadrotor with', 'slung payload'}, PF, K);
+polyarr(ax, [151.5 151.5 88 88], [56.5 62.5 62.5 56.5], K);
+txt(ax, 119.75, 64.3, 'measured state', 'HorizontalAlignment', 'center');
+blk(ax, 70, 29.5, 19, 9, {'disturbance', 'observer'}, 'w', K);
+arr(ax, 61, 34, 70, 34, K);  txt(ax, 65.5, 36.2, 'state', 'HorizontalAlignment', 'center');
+arr(ax, 89, 34, 96.6, 34, K);  txt(ax, 92.8, 36.2, '\xi', 'HorizontalAlignment', 'center');
+blk(ax, 96.6, 29.5, 18.4, 9, {'prediction', '\bfB\rm e^{\bfA\rm\tau}\xi'}, C1F, C1E);
+txt(ax, 115.0, 40.4, 'C1', 'FontWeight', 'bold', 'Color', C1E, 'HorizontalAlignment', 'right');
+arr(ax, 105.8, 38.5, 105.8, 49.9, K);
+txt(ax, 104.8, 44.6, [char(8722) '\bfd\rm_{mf}'], 'HorizontalAlignment', 'right');
+blk(ax, 115, 29.5, 28, 9, {'wind feed-forward', ['\times (1 + ' khat() ')']}, C2F, C2E);
+txt(ax, 143.0, 40.4, 'C2', 'FontWeight', 'bold', 'Color', C2E, 'HorizontalAlignment', 'right');
+polyarr(ax, [129 129 108.2 108.2], [38.5 44.2 44.2 49.9], K);
+txt(ax, 118.6, 46.9, [char(8722) '\bfd\rm_{lf}'], 'HorizontalAlignment', 'center');
+blk(ax, 64, 8, 31, 12.5, {'INDI-DE (compared):', 'estimate from', 'acceleration'}, 'w', GR, '--');
+arr(ax, 79.5, 20.5, 79.5, 29.5, GR, 0.75, '--');  txt(ax, 81, 25, 'replaces', 'Color', GR);
+blk(ax, 115, 11.5, 28, 9, {'wind sensor', '20 Hz, 50 ms delay'}, 'w', K);
+arr(ax, 129, 20.5, 129, 29.5, K);  txt(ax, 130.2, 25, '\bfw\rm_s');
+blk(ax, 146.5, 11.5, 26, 9, {'wind \bfw\rm(t)', 'NREL M5 record'}, PF, K);
+arr(ax, 151.5, 20.5, 151.5, 47.5, K);
+arr(ax, 146.5, 16, 143, 16, K);
+msg = 'schematic, no data';
 end
-text(0.6, c(2) - 4.2, 'wind', 'Parent', ax, 'FontSize', FK, 'Color', [0.2 0.4 0.7]);
-L = {'wind: measured NREL M5 series (20 Hz), acting on airframe and payload';
-     'quadratic drag on the velocity relative to the air:';
-     sprintf('   F = K_w |v| v / U_{ref},  K_w = %g N s/m,  U_{ref} = %g m/s', P.K_w, P.U_ref);
-     sprintf('payload drag area (C_DA)_L = K (C_DA)_Q, K = %g', P.K);
-     sprintf('wind sensor %g Hz, delay %g ms; motors: first-order lag %g ms', P.fs_wind, 1000 * P.delay_wind, 1000 * P.tau_m);
-     sprintf('limits: f_i \\leq %.4g N per rotor, total \\leq %.4g N, tilt \\leq 30\\circ', P.f_max, P.F_TOT_MAX)};
-for i = 1:numel(L), text(1, 19 - 3.0 * (i - 1), L{i}, 'Parent', ax, 'FontSize', FK - 0.4); end
-% ---- (b) the controller and the compared estimates ----
-text(37, 62, '(b) controller and the compared estimates', 'Parent', ax, 'FontSize', FS + 1, 'FontWeight', 'bold');
-bx(ax, 37, 47, 10, 8, {'reference', 'circle / hover', 'V: + preview \tau_{prev}'}, [1 1 1], FK);
-bx(ax, 49, 47, 15, 8, {'Guo law (9)', 'a_d = K_\gamma e_\gamma + K_\nu e_\nu', '+ g e_3 + a_{ref}'}, [1 1 1], FK);
-sumnode(ax, 67, 51, FS);
-bx(ax, 70, 47, 11, 8, {'thrust / tilt', 'limits', '(clamp)'}, [0.90 0.88 0.84], FK);
-bx(ax, 83, 47, 16, 8, {'attitude loop', '+ motors (lag)'}, [1 1 1], FK);
-bx(ax, 83, 31, 16, 9, {'P2: quadrotor', '+ slung payload', '(pendulum, drag)'}, PL, FK);
-bx(ax, 83, 18, 16, 7, {'wind w(t)', 'NREL M5, 20 Hz'}, PL, FK);
-bx(ax, 64, 18, 16, 7, {'wind sensor', '20 Hz, 50 ms delay'}, OB, FK);
-arrow(ax, 47, 51, 49, 51, K);  arrow(ax, 64, 51, 65.2, 51, K);  arrow(ax, 68.8, 51, 70, 51, K);
-arrow(ax, 81, 51, 83, 51, K);  arrow(ax, 91, 47, 91, 40, K);   arrow(ax, 91, 25, 91, 31, K);
-arrow(ax, 83, 21.5, 80, 21.5, K);
-text(68.2, 53.6, 'F', 'Parent', ax, 'FontSize', FK);
-text(64.6, 55.4, 'm a_d', 'Parent', ax, 'FontSize', FK);
-% measured state back to the law (dashed)
-plot(ax, [99 99.6 99.6 56.5 56.5], [35.5 35.5 57.5 57.5 55], '--', 'Color', K, 'LineWidth', 0.5);
-arrow(ax, 56.5, 56, 56.5, 55, K);
-text(70, 58.8, 'measured state (position, velocity, attitude, rates; accelerometer for INDI-DE)', 'Parent', ax, ...
-    'FontSize', FK - 0.4);
-% estimates
-bx(ax, 37, 29, 22, 11, {'payload estimate  d_{mf}', 'disturbance observer (DO)', ...
-    'PA-MOBADC: predicted \tau ahead, B e^{A\tau}\xi', '\tau = 290 ms circle, 0 hover'}, OB, FK);
-bx(ax, 61, 29, 20, 11, {'wind estimate  d_{lf}', 'MOBADC: position ESO', ...
-    '-W variants: sensor, K_w|w|w/U_{ref}', 'PAW-MOBADC: \times (1 + K-hat) = 1.5'}, OB, FK);
-plot(ax, [48 48 66.4], [40 43.5 43.5], '-', 'Color', K);  arrow(ax, 66.4, 43.5, 66.4, 49.2, K);
-plot(ax, [71 71 67.6], [40 42 42], '-', 'Color', K);      arrow(ax, 67.6, 42, 67.6, 49.2, K);
-text(56, 45, '- d_{mf}', 'Parent', ax, 'FontSize', FK);   text(72, 43.4, '- d_{lf}', 'Parent', ax, 'FontSize', FK);
-arrow(ax, 72, 25, 72, 29, K);
-bx(ax, 37, 11, 26, 9, {'INDI-DE (INDI-type estimate), compared', 'd_{mf} = H(z)[m a_{meas} - F_{thr} + m g e_3]', ...
-    '\omega_f = 32 Hz;  d_{lf} = 0'}, OP, FK);
-plot(ax, [48 48], [20 29], '--', 'Color', K);  arrow(ax, 48, 28, 48, 29, K);
-text(48.6, 24.5, 'replaces (INDI-DE)', 'Parent', ax, 'FontSize', FK - 0.4);
-KEY = {'controllers (circle; hover uses its exact-frequency DO table):', ...
-       'MOBADC: wind ESO, DO harmonics \{1\}    MOBADC-W: wind sensor, DO \{0, 1\}    + preview: \tau_{prev} = 180 ms', ...
-       'PA-MOBADC: MOBADC-W + payload estimate predicted \tau ahead (C1)', ...
-       'PAW-MOBADC (proposed): PA-MOBADC + static (1 + K-hat) payload-wind feed-forward (C2)    INDI-DE: wind channel 0'};
-for i = 1:numel(KEY), text(37, 7.6 - 2.3 * (i - 1), KEY{i}, 'Parent', ax, 'FontSize', FK - 0.4); end
-msg = 'schematic, no data (labels from core/p2_params.m)';
+
+function k = khat()
+%KHAT  K with a circumflex (combining U+0302) - the TeX interpreter has no \hat.
+k = char([75 770]);
 end
 
 %% =====================================================================
-%  2  wind data: U and TI, dev pool vs CONFIRM2
+%  2  wind data: U and TI, development pool vs held-out days
 %% =====================================================================
 function [fh, msg] = fig2_wind(opt)
 fh = [];
@@ -145,31 +155,31 @@ fc = cellfun(@(f) fullfile(opt.Conf2Dir, f), fc, 'UniformOutput', false);
 [Ud, Td, dd] = segwind(fd);  [Uc, Tc, dc] = segwind(fc);
 CH = {'2024-01-18', '2024-04-15'};                       % D23: not in CONFIRM2
 assert(~any(ismember(dc, CH)), 'fig2: a CONFIRM2 segment lies on a characterisation day (D23).');
-ENV = [8.02 10.86 13.30];  ENVL = {'circle K 0.5', 'hover K 0.5', 'hover K 0'};   % sec 62.1 (2), A2 envelopes
+ENV = [8.02 10.86 13.30];                                % sec 62.1 (2), A2 envelopes (named in the caption)
 fprintf('    dev pool %d segments / %d days, CONFIRM2 %d segments / %d days\n', numel(Ud), numel(unique(dd)), ...
     numel(Uc), numel(unique(dc)));
-CD = [0.35 0.35 0.35];  CC = [0.85 0.33 0.10];
-fh = newfig(6.8);
-ld = sprintf('dev pool (%d seg., %d days)', numel(Ud), numel(unique(dd)));
-lc = sprintf('CONFIRM2 (%d seg., %d days)', numel(Uc), numel(unique(dc)));
-ax = subplot(1, 3, 1, 'Parent', fh);  hold(ax, 'on');
+CD = [0.55 0.55 0.55];  CC = [0.10 0.10 0.10];
+fh = newfig('double', 5.6);
+tl = tiledlayout(fh, 1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
+ld = sprintf('development (%d segments)', numel(Ud));
+lc = sprintf('held-out (%d segments)', numel(Uc));
+ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
 e = 0:0.5:ceil(max([Ud; Uc]) + 0.5);
-h1 = fracstairs(ax, Ud, e, CD);  h2 = fracstairs(ax, Uc, e, CC);
-xlabel(ax, 'U [m/s] (mean horizontal wind, t \geq 140 s)');  ylabel(ax, 'fraction of segments');
-title(ax, '(a) mean wind U');
-envlines(ax, ENV, ENVL);
-ax = subplot(1, 3, 2, 'Parent', fh);  hold(ax, 'on');
+h1 = fracstairs(ax, Ud, e, CD, true);  h2 = fracstairs(ax, Uc, e, CC, false);
+envlines(ax, ENV);
+xlabel(ax, 'mean wind speed U [m/s]');  ylabel(ax, 'fraction of segments');  plab(ax, '(a)');
+ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
 e = 0:0.025:max(0.6, ceil(40 * max([Td; Tc])) / 40);
-fracstairs(ax, Td, e, CD);  fracstairs(ax, Tc, e, CC);
-xlabel(ax, 'TI = \sigma_u / U');  ylabel(ax, 'fraction of segments');
-title(ax, '(b) turbulence intensity');
-ax = subplot(1, 3, 3, 'Parent', fh);  hold(ax, 'on');
+fracstairs(ax, Td, e, CD, true);  fracstairs(ax, Tc, e, CC, false);
+xlabel(ax, 'turbulence intensity \sigma_u / U');  ylabel(ax, 'fraction of segments');  plab(ax, '(b)');
+ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
 plot(ax, Ud, Td, '.', 'Color', CD, 'MarkerSize', 5);
-plot(ax, Uc, Tc, 'o', 'Color', CC, 'MarkerSize', 2.5);
-xlabel(ax, 'U [m/s]');  ylabel(ax, 'TI');  title(ax, '(c) TI vs U, per segment');
-envlines(ax, ENV, {});
-legend(ax, [h1 h2], {ld, lc}, 'Location', 'best', 'FontSize', 5);
-style_axes(fh);
+plot(ax, Uc, Tc, 'o', 'Color', CC, 'MarkerSize', 2.6, 'LineWidth', 0.5);
+envlines(ax, ENV);
+xlabel(ax, 'mean wind speed U [m/s]');  ylabel(ax, 'turbulence intensity');  plab(ax, '(c)');
+hl = [plot(ax, NaN, NaN, 's', 'MarkerFaceColor', 0.65 + 0.35 * CD, 'MarkerEdgeColor', CD, 'MarkerSize', 6), ...
+      plot(ax, NaN, NaN, 'o', 'Color', CC, 'MarkerSize', 3, 'LineWidth', 0.5)];
+leg(ax, hl, {ld, lc}, 'Location', 'northeast', 'Token', [8 8]);
 msg = sprintf('dev %d / CONFIRM2 %d segments; DESCRIPTIVE', numel(Ud), numel(Uc));
 end
 
@@ -187,19 +197,20 @@ for i = 1:n
 end
 end
 
-function h = fracstairs(ax, x, e, col)
-n = histc(x(:), e);  n = n(:).' / numel(x);
-h = stairs(ax, e, n, '-', 'Color', col, 'LineWidth', 1);
+function h = fracstairs(ax, x, e, col, filled)
+n = histc(x(:), e);  n = n(:).' / numel(x); %#ok<HISTC>
+[xs, ys] = stairs(e, n);
+if filled
+    patch(ax, [xs(1); xs(:); xs(end)], [0; ys(:); 0], col, 'FaceAlpha', 0.35, 'EdgeColor', 'none', ...
+        'HandleVisibility', 'off');
+end
+h = plot(ax, xs, ys, '-', 'Color', col, 'LineWidth', 0.9);
 end
 
-function envlines(ax, ENV, ENVL)
+function envlines(ax, ENV)
 yl = get(ax, 'YLim');
 for k = 1:numel(ENV)
-    plot(ax, ENV(k) * [1 1], yl, ':', 'Color', [0.2 0.4 0.7], 'LineWidth', 0.8, 'HandleVisibility', 'off');
-    if ~isempty(ENVL)
-        text(ENV(k), yl(2) * (0.97 - 0.08 * (k - 1)), sprintf(' %s %.2f', ENVL{k}, ENV(k)), 'Parent', ax, ...
-            'FontSize', 4.6, 'Color', [0.2 0.4 0.7]);
-    end
+    plot(ax, ENV(k) * [1 1], yl, ':', 'Color', [0.25 0.25 0.25], 'LineWidth', 0.75, 'HandleVisibility', 'off');
 end
 set(ax, 'YLim', yl);
 end
@@ -209,16 +220,6 @@ end
 %% =====================================================================
 function [fh, msg] = fig3_series(opt)
 fh = [];
-% the frozen model and code only (REGISTER_P2 sec 60.6 rule, sec 61.5): a local change stops before any simulation
-[st, out] = system(sprintf('git -C "%s" status --porcelain -- baseline1.slx core experiments', repo_root()));
-if st ~= 0
-    msg = sprintf('git status failed (%d) - not run: %s', st, strtrim(out));
-    return
-end
-if ~isempty(strtrim(out))
-    msg = sprintf('local change in baseline1.slx / core / experiments - not run:%s%s', newline, out);
-    return
-end
 Zs = load(fullfile(opt.Root, 'gd10', 'sets.mat'), 'Sets');
 s = Zs.Sets.circle;
 files = s.files(:);  U = s.U(:);  n = numel(files);
@@ -228,59 +229,83 @@ idx = o1(o2);
 k = ceil(n / 2);                                         % lower median (28th of 56)
 fn = files{idx(k)};
 fprintf('    CONFIRM2 circle set: %d segments; lower median U = %.4f m/s (rank %d): %s\n', n, U(idx(k)), k, fn);
-D2 = load(fullfile(opt.Root, 'gd10', 'D2.mat'), 'rows');
-C2 = load(fullfile(opt.Root, 'gd10', 'C2-circle.mat'), 'rows', 'key');
-i2 = find(strcmp({D2.rows.file}, fn), 1);  ic = find(strcmp({C2.rows.file}, fn), 1);
-assert(~isempty(i2) && ~isempty(ic), 'fig3: %s not in the stored CONFIRM2 rows.', fn);
-stored = [D2.rows(i2).E(2), D2.rows(i2).E(3), C2.rows(ic).E(strcmp(C2.key.cols, 'L3_iii0')), ...
-          C2.rows(ic).E(strcmp(C2.key.cols, 'H3'))];
-ff = fullfile(opt.Conf2Dir, fn);
-% the calls of run_p2_gd6 D2 (L2, L3) and run_p2_gd7 C2-circle (L3_iii0, H3), unchanged, + KeepTraj / KeepLog
-b6 = {'Grid', true, 'PlantModel', 'p2', 'SensorDelayMs', 50, 'PayloadModel', 1, 'PayloadWind', 0.5, ...
-      'OnDiverge', 'flag', 'Quiet', true, 'PredDelay', true, 'Cond', 'Test 4'};
-b7 = [b6, {'L', 1.0, 'DoHarm', [0 1], 'TauPred', 0.290, 'TauPrev', 0, 'Only', {'g_psens'}, 'OracleTauMs', 280}];
-kl = {'KeepTraj', true, 'KeepLog', {'p2_mon_log'}};
-[~, A] = pa_configs(ff, b6{:}, 'DoHarm', [0 1], 'Only', {'g_sens', 'g_psens'}, 'TauPred', 0.290, 'TauPrev', 0, kl{:});
-try, Simulink.sdi.clear; catch, end
-[~, B] = pa_configs(ff, b7{:}, 'P2PredScale', [1 1 1 1.5], kl{:});
-try, Simulink.sdi.clear; catch, end
-[~, C] = pa_configs(ff, b7{:}, 'P2Cmp', 1, 'P2H3Hz', 32, kl{:});
-try, Simulink.sdi.clear; catch, end
-M = {A.g_sens, A.g_psens, B.g_psens, C.g_psens};
 nm = p2_names({'L2', 'L3', 'L3_iii0', 'H3'});
-re = cellfun(@(m) m.mean, M);
-d = abs(re - stored);
-for c = 1:4
-    fprintf('    %-10s re-run %.15f  stored %.15f  |d| %.3g\n', nm{c}, re(c), stored(c), d(c));
-    if isfield(M{c}, 'crash_msg') && ~isempty(M{c}.crash_msg)
-        fprintf('               solver stopped: %s\n', M{c}.crash_msg);
+saved = fullfile(opt.Root, 'gd11', ['series_' strrep(fn, '.mat', '') '.mat']);
+if opt.FromSaved
+    if exist(saved, 'file') ~= 2, msg = sprintf('%s not found (run once without FromSaved)', saved); return; end
+    Z = load(saved, 'T');  T = Z.T;
+    how = sprintf('%s; drawn from the saved time series %s (not re-simulated)', fn, saved);
+else
+    % the frozen model and code only (REGISTER_P2 sec 60.6 rule, sec 61.5): a local change stops before any simulation
+    [st, out] = system(sprintf('git -C "%s" status --porcelain -- baseline1.slx core experiments', repo_root()));
+    if st ~= 0
+        msg = sprintf('git status failed (%d) - not run: %s', st, strtrim(out));
+        return
     end
+    if ~isempty(strtrim(out))
+        msg = sprintf('local change in baseline1.slx / core / experiments - not run:%s%s', newline, out);
+        return
+    end
+    D2 = load(fullfile(opt.Root, 'gd10', 'D2.mat'), 'rows');
+    C2 = load(fullfile(opt.Root, 'gd10', 'C2-circle.mat'), 'rows', 'key');
+    i2 = find(strcmp({D2.rows.file}, fn), 1);  ic = find(strcmp({C2.rows.file}, fn), 1);
+    assert(~isempty(i2) && ~isempty(ic), 'fig3: %s not in the stored CONFIRM2 rows.', fn);
+    stored = [D2.rows(i2).E(2), D2.rows(i2).E(3), C2.rows(ic).E(strcmp(C2.key.cols, 'L3_iii0')), ...
+              C2.rows(ic).E(strcmp(C2.key.cols, 'H3'))];
+    ff = fullfile(opt.Conf2Dir, fn);
+    % the calls of run_p2_gd6 D2 (L2, L3) and run_p2_gd7 C2-circle (L3_iii0, H3), unchanged, + KeepTraj / KeepLog
+    b6 = {'Grid', true, 'PlantModel', 'p2', 'SensorDelayMs', 50, 'PayloadModel', 1, 'PayloadWind', 0.5, ...
+          'OnDiverge', 'flag', 'Quiet', true, 'PredDelay', true, 'Cond', 'Test 4'};
+    b7 = [b6, {'L', 1.0, 'DoHarm', [0 1], 'TauPred', 0.290, 'TauPrev', 0, 'Only', {'g_psens'}, 'OracleTauMs', 280}];
+    kl = {'KeepTraj', true, 'KeepLog', {'p2_mon_log'}};
+    [~, A] = pa_configs(ff, b6{:}, 'DoHarm', [0 1], 'Only', {'g_sens', 'g_psens'}, 'TauPred', 0.290, 'TauPrev', 0, kl{:});
+    try, Simulink.sdi.clear; catch, end
+    [~, B] = pa_configs(ff, b7{:}, 'P2PredScale', [1 1 1 1.5], kl{:});
+    try, Simulink.sdi.clear; catch, end
+    [~, C] = pa_configs(ff, b7{:}, 'P2Cmp', 1, 'P2H3Hz', 32, kl{:});
+    try, Simulink.sdi.clear; catch, end
+    M = {A.g_sens, A.g_psens, B.g_psens, C.g_psens};
+    re = cellfun(@(m) m.mean, M);
+    d = abs(re - stored);
+    for c = 1:4
+        fprintf('    %-10s re-run %.15f  stored %.15f  |d| %.3g\n', nm{c}, re(c), stored(c), d(c));
+        if isfield(M{c}, 'crash_msg') && ~isempty(M{c}.crash_msg)
+            fprintf('               solver stopped: %s\n', M{c}.crash_msg);
+        end
+    end
+    if ~all(d <= 1e-12)
+        msg = sprintf('agreement check FAILED (max |d| %.3g > 1e-12) - figure not saved', max(d));
+        return
+    end
+    T = struct('file', fn, 'U', U(idx(k)), 'names', {nm}, 'mean', re, ...
+        't', {cellfun(@(m) m.t, M, 'UniformOutput', false)}, 'g', {cellfun(@(m) m.g, M, 'UniformOutput', false)}, ...
+        'gd', {cellfun(@(m) m.gd, M, 'UniformOutput', false)}, ...
+        'tl', {cellfun(@(m) m.log.p2_mon_log.t, M, 'UniformOutput', false)}, ...
+        'theta', {cellfun(@(m) m.log.p2_mon_log.v(:, 5), M, 'UniformOutput', false)});
+    od = fullfile(opt.Root, 'gd11');  if exist(od, 'dir') ~= 7, mkdir(od); end
+    save(saved, 'T');
+    how = sprintf('%s; re-run = stored to %.1g (max |d|); time series in results/gd11/', fn, max(d));
 end
-if ~all(d <= 1e-12)
-    msg = sprintf('agreement check FAILED (max |d| %.3g > 1e-12) - figure not saved', max(d));
-    return
-end
-fh = newfig(8.5);
-col = colcols();
-ax1 = subplot(2, 1, 1, 'Parent', fh);  hold(ax1, 'on');
-ax2 = subplot(2, 1, 2, 'Parent', fh);  hold(ax2, 'on');
-h = zeros(1, 4);
+fh = newfig('double', 8.0);
+tl = tiledlayout(fh, 2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+ax1 = nexttile(tl);  hold(ax1, 'on');  sty(ax1);
+ax2 = nexttile(tl);  hold(ax2, 'on');  sty(ax2);
+h = gobjects(1, 4);
 for c = 1:4
-    m = M{c};
-    ms = m.t >= 140;
-    e = sqrt(sum((m.gd(ms, :) - m.g(ms, :)).^2, 2));
-    h(c) = plot(ax1, m.t(ms), e, '-', 'Color', col(c, :), 'LineWidth', 0.6);
-    L = m.log.p2_mon_log;  mt = L.t(:) >= 140;
-    plot(ax2, L.t(mt), L.v(mt, 5) * 180 / pi, '-', 'Color', col(c, :), 'LineWidth', 0.6);
+    ms = T.t{c} >= 140;
+    e = sqrt(sum((T.gd{c}(ms, :) - T.g{c}(ms, :)).^2, 2));
+    h(c) = plot(ax1, T.t{c}(ms), 1000 * e, '-', 'Color', ctrl_colour(T.names{c}), 'LineWidth', 0.75);
+    mt = T.tl{c}(:) >= 140;
+    plot(ax2, T.tl{c}(mt), T.theta{c}(mt) * 180 / pi, '-', 'Color', ctrl_colour(T.names{c}), 'LineWidth', 0.75);
 end
-ylabel(ax1, '||e_\gamma|| [m]');  ylabel(ax2, '\theta [deg]');  xlabel(ax2, 't [s]');
-title(ax1, sprintf(['(a) position error - CONFIRM2 circle, lower-median-U segment %s (U = %.2f m/s); ' ...
-    'illustration only'], strrep(fn, '_', '\_'), U(idx(k))));
-title(ax2, '(b) payload swing angle');
-legend(ax1, h, arrayfun(@(c) sprintf('%s  mean %.4f m', nm{c}, re(c)), 1:4, 'UniformOutput', false), ...
-    'Location', 'northeast', 'FontSize', 5);
-style_axes(fh);
-msg = sprintf('%s; re-run = stored to %.1g (max |d|)', fn, max(d));
+ylabel(ax1, 'position error [mm]');  ylabel(ax2, 'cable angle \theta [\circ]');  xlabel(ax2, 'time t [s]');
+plab(ax1, '(a)');  plab(ax2, '(b)');
+linkaxes([ax1 ax2], 'x');  xlim(ax1, [140 max(T.t{1})]);
+yl = ylim(ax1);  ylim(ax1, [0 yl(2) * 1.25]);
+leg(ax1, h, arrayfun(@(c) sprintf('%s (mean %s mm)', T.names{c}, num(1000 * T.mean(c), '%.1f')), 1:4, ...
+    'UniformOutput', false), 'Location', 'north', 'Orientation', 'horizontal', 'NumColumns', 4, 'Box', 'off', ...
+    'FontSize', 8, 'Token', [12 8]);
+msg = how;
 end
 
 %% =====================================================================
@@ -288,11 +313,6 @@ end
 %% =====================================================================
 function [fh, msg] = fig9_traj(opt)
 fh = [];
-[st, out] = system(sprintf('git -C "%s" status --porcelain -- baseline1.slx core experiments', repo_root()));
-if st ~= 0 || ~isempty(strtrim(out))
-    msg = sprintf('git status failed or local change in baseline1.slx / core / experiments - not run:%s%s', newline, out);
-    return
-end
 S = p2_segset('circle_main', 'CapPerDay', 4, 'Quiet', true);
 assert(strncmp(S.sha256, 'a227e9d87a2ac436', 16), 'fig9: circle_main is not the registered set.');
 D2 = load(fullfile(opt.Root, 'gd6', 'd2_p2.mat'), 'rows');
@@ -311,76 +331,87 @@ tie = cand(dU == min(dU));
 fn = D2.rows(tie(o(1))).file;
 fprintf('    dev circle_main: %d of %d segments with PA-MOBADC tilt_sat < 1 %%; median U %.4f m/s; chosen %s (U %.4f)\n', ...
     numel(cand), numel(D2.rows), md, fn, U(strcmp({D2.rows.file}, fn)));
-% stored values: Guo's four (guo_p2), INDI-DE and PAW-MOBADC (six-circle-h3, sec 63.4)
-G = load(fullfile(opt.Root, 'gd6', 'guo_p2.mat'), 'rows', 'key');
-sx = fullfile(opt.Root, 'gd7', 'six-circle-h3.mat');      % sec 63.4: variant B
-X = load(sx, 'rows', 'key');
-ig = find(strcmp({G.rows.file}, fn), 1);  ix = find(strcmp({X.rows.file}, fn), 1);
-assert(~isempty(ig) && ~isempty(ix), 'fig9: %s not in guo_p2 / %s.', fn, sx);
-CT = {'Classical', {'0', '0', '0'}; 'DO', {'1', '0', '0'}; 'ESO', {'0', '1', '1'}; 'MOBADC', {'1', '1', '1'}};
-nm = [p2_names(CT(:, 1)'), {'INDI-DE', 'PAW-MOBADC (proposed)'}];
-stored = [arrayfun(@(c) G.rows(ig).E(strcmp(G.key.ctrl, CT{c, 1})), 1:4), ...
-          X.rows(ix).E(strcmp(X.key.cols, 'H3')), X.rows(ix).E(strcmp(X.key.cols, 'L3_iii0'))];
-pa = {'Grid', true, 'PlantModel', 'p2', 'SensorDelayMs', 50, 'PayloadModel', 1, 'PayloadWind', 0.5, ...
-      'OnDiverge', 'flag', 'Quiet', true, 'PredDelay', true, 'Cond', 'Test 4', 'L', 1.0};
-bg = [pa, {'DoHarm', 1, 'Only', {'g_base'}, 'TauPred', 0.290, 'TauPrev', 0, 'KeepTraj', true}];    % run_p2_gd6 GUO
-b7 = [pa, {'DoHarm', [0 1], 'TauPred', 0.290, 'TauPrev', 0, 'Only', {'g_psens'}, 'OracleTauMs', 280, ...
-      'KeepTraj', true}];                                                                             % run_p2_gd7
-M = cell(1, 6);
-for c = 1:4
-    [~, R] = pa_configs(fn, bg{:}, 'Switches', CT{c, 2});  M{c} = R.g_base;
+saved = fullfile(opt.Root, 'gd11', ['traj_' strrep(fn, '.mat', '') '.mat']);
+if opt.FromSaved
+    if exist(saved, 'file') ~= 2, msg = sprintf('%s not found (run once without FromSaved)', saved); return; end
+    Z = load(saved, 'T');  T = Z.T;
+    how = sprintf('%s; drawn from the saved time series %s (not re-simulated)', fn, saved);
+else
+    [st, out] = system(sprintf('git -C "%s" status --porcelain -- baseline1.slx core experiments', repo_root()));
+    if st ~= 0 || ~isempty(strtrim(out))
+        msg = sprintf('git status failed or local change in baseline1.slx / core / experiments - not run:%s%s', newline, out);
+        return
+    end
+    % stored values: Guo's four (guo_p2), INDI-DE and PAW-MOBADC (six-circle-h3, sec 63.4)
+    G = load(fullfile(opt.Root, 'gd6', 'guo_p2.mat'), 'rows', 'key');
+    sx = fullfile(opt.Root, 'gd7', 'six-circle-h3.mat');      % sec 63.4: variant B
+    X = load(sx, 'rows', 'key');
+    ig = find(strcmp({G.rows.file}, fn), 1);  ix = find(strcmp({X.rows.file}, fn), 1);
+    assert(~isempty(ig) && ~isempty(ix), 'fig9: %s not in guo_p2 / %s.', fn, sx);
+    CT = {'Classical', {'0', '0', '0'}; 'DO', {'1', '0', '0'}; 'ESO', {'0', '1', '1'}; 'MOBADC', {'1', '1', '1'}};
+    nm = [p2_names(CT(:, 1)'), {'INDI-DE', 'PAW-MOBADC (proposed)'}];
+    stored = [arrayfun(@(c) G.rows(ig).E(strcmp(G.key.ctrl, CT{c, 1})), 1:4), ...
+              X.rows(ix).E(strcmp(X.key.cols, 'H3')), X.rows(ix).E(strcmp(X.key.cols, 'L3_iii0'))];
+    pa = {'Grid', true, 'PlantModel', 'p2', 'SensorDelayMs', 50, 'PayloadModel', 1, 'PayloadWind', 0.5, ...
+          'OnDiverge', 'flag', 'Quiet', true, 'PredDelay', true, 'Cond', 'Test 4', 'L', 1.0};
+    bg = [pa, {'DoHarm', 1, 'Only', {'g_base'}, 'TauPred', 0.290, 'TauPrev', 0, 'KeepTraj', true}];    % run_p2_gd6 GUO
+    b7 = [pa, {'DoHarm', [0 1], 'TauPred', 0.290, 'TauPrev', 0, 'Only', {'g_psens'}, 'OracleTauMs', 280, ...
+          'KeepTraj', true}];                                                                             % run_p2_gd7
+    M = cell(1, 6);
+    for c = 1:4
+        [~, R] = pa_configs(fn, bg{:}, 'Switches', CT{c, 2});  M{c} = R.g_base;
+        try, Simulink.sdi.clear; catch, end
+    end
+    [~, R] = pa_configs(fn, b7{:}, 'P2Cmp', 1, 'P2H3Hz', 32);  M{5} = R.g_psens;
     try, Simulink.sdi.clear; catch, end
+    [~, R] = pa_configs(fn, b7{:}, 'P2PredScale', [1 1 1 1.5]);  M{6} = R.g_psens;
+    try, Simulink.sdi.clear; catch, end
+    re = cellfun(@(m) m.mean, M);  d = abs(re - stored);
+    for c = 1:6
+        fprintf('    %-22s re-run %.15f  stored %.15f  |d| %.3g\n', nm{c}, re(c), stored(c), d(c));
+    end
+    if ~all(d <= 1e-12)
+        msg = sprintf('agreement check FAILED (max |d| %.3g > 1e-12) - figure not saved', max(d));
+        return
+    end
+    T = struct('file', fn, 'names', {nm}, 't', {cellfun(@(m) m.t, M, 'UniformOutput', false)}, ...
+        'g', {cellfun(@(m) m.g, M, 'UniformOutput', false)}, 'gd', {cellfun(@(m) m.gd, M, 'UniformOutput', false)}, ...
+        'mean', re);
+    od = fullfile(opt.Root, 'gd11');  if exist(od, 'dir') ~= 7, mkdir(od); end
+    save(saved, 'T');
+    how = sprintf('%s; re-run = stored to %.1g (max |d|); time series in results/gd11/', fn, max(d));
 end
-[~, R] = pa_configs(fn, b7{:}, 'P2Cmp', 1, 'P2H3Hz', 32);  M{5} = R.g_psens;
-try, Simulink.sdi.clear; catch, end
-[~, R] = pa_configs(fn, b7{:}, 'P2PredScale', [1 1 1 1.5]);  M{6} = R.g_psens;
-try, Simulink.sdi.clear; catch, end
-re = cellfun(@(m) m.mean, M);  d = abs(re - stored);
-for c = 1:6
-    fprintf('    %-22s re-run %.15f  stored %.15f  |d| %.3g\n', nm{c}, re(c), stored(c), d(c));
-end
-if ~all(d <= 1e-12)
-    msg = sprintf('agreement check FAILED (max |d| %.3g > 1e-12) - figure not saved', max(d));
-    return
-end
-T = struct('file', fn, 'names', {nm}, 't', {cellfun(@(m) m.t, M, 'UniformOutput', false)}, ...
-    'g', {cellfun(@(m) m.g, M, 'UniformOutput', false)}, 'gd', {cellfun(@(m) m.gd, M, 'UniformOutput', false)}, ...
-    'mean', re); %#ok<NASGU>
-od = fullfile(opt.Root, 'gd11');  if exist(od, 'dir') ~= 7, mkdir(od); end
-save(fullfile(od, ['traj_' strrep(fn, '.mat', '') '.mat']), 'T');
-fh = newfig(12.0);
+fh = newfig('double', 11.6);
+tl = tiledlayout(fh, 2, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
 lim = 0;                                                 % one scale for the six panels
 for c = 1:6
-    ms = M{c}.t >= 140;
-    lim = max([lim; abs(reshape(M{c}.g(ms, 1:2), [], 1)); abs(reshape(M{c}.gd(ms, 1:2), [], 1))]);
+    ms = T.t{c} >= 140;
+    lim = max([lim; abs(reshape(T.g{c}(ms, 1:2), [], 1)); abs(reshape(T.gd{c}(ms, 1:2), [], 1))]);
 end
 lim = 1.05 * lim;
+L = 'abcdef';
 for c = 1:6
-    ax = subplot(2, 3, c, 'Parent', fh);  hold(ax, 'on');
-    ms = M{c}.t >= 140;
-    plot(ax, M{c}.gd(ms, 1), M{c}.gd(ms, 2), '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.8);
-    plot(ax, M{c}.g(ms, 1), M{c}.g(ms, 2), '-', 'Color', [0.85 0.33 0.10], 'LineWidth', 0.6);
+    ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
+    ms = T.t{c} >= 140;
+    plot(ax, T.gd{c}(ms, 1), T.gd{c}(ms, 2), '--', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.75);
+    plot(ax, T.g{c}(ms, 1), T.g{c}(ms, 2), '-', 'Color', ctrl_colour(T.names{c}), 'LineWidth', 0.75);
     axis(ax, 'equal');  axis(ax, [-lim lim -lim lim]);
-    title(ax, sprintf('%s: mean %.4f m', nm{c}, re(c)), 'FontSize', 6);
-    xlabel(ax, 'x [m]');  if mod(c, 3) == 1, ylabel(ax, 'y [m]'); end
+    plab(ax, sprintf('(%s) %s, mean %s mm', L(c), T.names{c}, num(1000 * T.mean(c), '%.1f')));
 end
-annotation(fh, 'textbox', [0.05 0.0 0.9 0.04], 'String', sprintf(['dev circle\\_main segment %s (rule REGISTER\\_P2 ' ...
-    'sec 63.5), t >= 140 s; dashed: desired circle (R 0.8 m), solid: flown. L 1.0 m, m_p 0.5 kg, K 0.5. Illustration ' ...
-    'only.'], strrep(fn, '_', '\_')), 'EdgeColor', 'none', 'FontSize', 5);
-style_axes(fh);
-msg = sprintf('%s; re-run = stored to %.1g (max |d|); time series in results/gd11/', fn, max(d));
+xlabel(tl, 'x [m]', 'FontSize', 8);  ylabel(tl, 'y [m]', 'FontSize', 8);
+msg = how;
 end
 
 %% =====================================================================
-%  4  C1: L3/L2 - 1 and V/L2 - 1 per trajectory; scatter L3 vs L2
+%  4  C1: PA-MOBADC / MOBADC-W - 1 and preview per trajectory; per-segment scatter
 %% =====================================================================
 function [fh, msg] = fig4_c1(opt)
 fh = [];
 rel = @(p) p(1) / p(2) - 1;
-G = {'circle_main dev', 'gd6/d2_p2.mat', 'CLAIM-dev';
-     'circle CONFIRM2', 'gd10/D2.mat', 'CLAIM';
-     'T3b_main dev', 'gd6/tab_T3b_p2.mat', 'DESCR.';
-     'square_main dev', 'gd6/tab_square_p2.mat', 'DESCR.'};
+G = {'circle\newlinedevelopment', 'gd6/d2_p2.mat';
+     'circle\newlineheld-out', 'gd10/D2.mat';
+     'figure-eight\newlinedevelopment', 'gd6/tab_T3b_p2.mat';
+     'square\newlinedevelopment', 'gd6/tab_square_p2.mat'};
 ng = size(G, 1);
 R3 = cell(ng, 1);  RV = R3;
 for i = 1:ng
@@ -388,51 +419,56 @@ for i = 1:ng
     RV{i} = rstat(opt, G{i, 2}, {'V', 'L2'}, rel, 'one4');
 end
 if all(cellfun(@isempty, R3)), msg = 'no D2 / TAB file found'; return; end
-fh = newfig(8.0);
-col = colcols();
-ax = subplot(1, 2, 1, 'Parent', fh);  hold(ax, 'on');
-h = zeros(1, 2);
+fh = newfig('double', 7.0);
+tl = tiledlayout(fh, 1, 5, 'TileSpacing', 'compact', 'Padding', 'compact');
+ax = nexttile(tl, [1 3]);  hold(ax, 'on');  sty(ax);
+c3 = ctrl_colour('PA-MOBADC');  cv = ctrl_colour('MOBADC-W + preview');
+h = gobjects(1, 2);
 for i = 1:ng
-    a = vpoint(ax, i - 0.13, R3{i}, col(2, :), 'o');  if a ~= 0, h(1) = a; end
-    a = vpoint(ax, i + 0.13, RV{i}, [0.45 0.45 0.45], 's');  if a ~= 0, h(2) = a; end
+    a = vpoint(ax, i - 0.14, R3{i}, c3, 'o', 'left');  if ~isempty(a), h(1) = a; end
+    a = vpoint(ax, i + 0.14, RV{i}, cv, 's', 'right');  if ~isempty(a), h(2) = a; end
 end
-yl = get(ax, 'YLim');  yl = [yl(1) - 0.08 * diff(yl), max(yl(2), 0) + 0.12 * diff(yl)];
+yl = get(ax, 'YLim');  yl = [yl(1) - 0.06 * diff(yl), max(yl(2), 0) + 0.16 * diff(yl)];
 set(ax, 'YLim', yl);
 for i = 1:ng
     if ~isempty(R3{i})
-        text(i, yl(2) - 0.05 * diff(yl), sprintf('n %d (%d d)', R3{i}.n, R3{i}.nd), 'Parent', ax, ...
-            'FontSize', 4.6, 'HorizontalAlignment', 'center');
+        text(ax, i, yl(2), sprintf('n = %d', R3{i}.n), 'FontSize', 8, ...
+            'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
+    else
+        text(ax, i, mean(yl), 'no data', 'FontSize', 8, 'HorizontalAlignment', 'center', 'Color', [0.5 0.5 0.5]);
     end
 end
-plot(ax, [0.5 ng + 0.5], [0 0], ':', 'Color', [0.4 0.4 0.4]);
-set(ax, 'XLim', [0.5 ng + 0.5], 'XTick', 1:ng, 'XTickLabel', ...
-    cellfun(@(a, b) sprintf('%s [%s]', strrep(a, '_', '\_'), b), G(:, 1), G(:, 3), 'UniformOutput', false));
-try, set(ax, 'XTickLabelRotation', 15); catch, end
-ylabel(ax, 'relative change of the pooled error [%]  (\pm1.65 SE)');
-title(ax, '(a) prediction (PA-MOBADC / MOBADC-W - 1) and preview (MOBADC-W + preview / MOBADC-W - 1)');
-hl = h(h ~= 0);
-if numel(hl) == 2, legend(ax, hl, {'PA-MOBADC / MOBADC-W - 1', '(MOBADC-W + preview) / MOBADC-W - 1'}, 'Location', 'southeast', 'FontSize', 5); end
-ax = subplot(1, 2, 2, 'Parent', fh);  hold(ax, 'on');
-SC = {'gd6/d2_p2.mat', [0.35 0.35 0.35], '.', 'dev circle\_main';  'gd10/D2.mat', [0.85 0.33 0.10], 'o', 'CONFIRM2 circle'};
-hh = [];  ll = {};  lo = Inf;  hi = 0;
+plot(ax, [0.25 ng + 0.6], [0 0], '-', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
+set(ax, 'XLim', [0.25 ng + 0.6], 'XTick', 1:ng, 'XTickLabel', G(:, 1), 'TickLabelInterpreter', 'tex', 'YGrid', 'on');
+ylabel(ax, 'change of the pooled error [%]');  plab(ax, '(a)');
+if all(isgraphics(h))
+    leg(ax, h, {['PA-MOBADC / MOBADC-W ' char(8722) ' 1'], ['(MOBADC-W + preview) / MOBADC-W ' char(8722) ' 1']}, ...
+        'Location', 'northoutside', 'Orientation', 'horizontal', 'Token', [8 8]);
+end
+ax = nexttile(tl, [1 2]);  hold(ax, 'on');  sty(ax);
+SC = {'gd6/d2_p2.mat', [0.60 0.60 0.60], '.', 'development', 6;  'gd10/D2.mat', [0.10 0.10 0.10], 'o', 'held-out', 3};
+hh = gobjects(0);  ll = {};  lo = Inf;  hi = 0;
 for i = 1:2
     [Z, cols, ok] = p2r_load(opt.Root, SC{i, 1});
     if ~ok, continue; end
     [E, ~, ~, keep] = p2r_subset(Z, cols, {'L2', 'L3'}, 'one4');
-    E = E(keep, :);
-    hh(end + 1) = plot(ax, E(:, 1), E(:, 2), SC{i, 3}, 'Color', SC{i, 2}, 'MarkerSize', 3 + 2 * (i == 1)); %#ok<AGROW>
-    ll{end + 1} = sprintf('%s (%d)', SC{i, 4}, size(E, 1)); %#ok<AGROW>
+    E = 1000 * E(keep, :);
+    hh(end + 1) = plot(ax, E(:, 1), E(:, 2), SC{i, 3}, 'Color', SC{i, 2}, 'MarkerSize', SC{i, 5}, 'LineWidth', 0.5); %#ok<AGROW>
+    ll{end + 1} = sprintf('%s (%d segments)', SC{i, 4}, size(E, 1)); %#ok<AGROW>
     lo = min(lo, min(E(:)));  hi = max(hi, max(E(:)));
 end
 if isfinite(lo)
     lim = [lo / 1.3, hi * 1.3];
-    plot(ax, lim, lim, '-', 'Color', [0.5 0.5 0.5]);
-    set(ax, 'XScale', 'log', 'YScale', 'log', 'XLim', lim, 'YLim', lim);
-    legend(ax, hh, ll, 'Location', 'southeast', 'FontSize', 5);
+    plot(ax, lim, lim, '-', 'Color', [0.6 0.6 0.6], 'LineWidth', 0.5);
+    tk = [1 2 5 10 20 50 100 200 500];  tk = tk(tk >= lim(1) & tk <= lim(2));
+    set(ax, 'XScale', 'log', 'YScale', 'log', 'XLim', lim, 'YLim', lim, 'XTick', tk, 'YTick', tk, ...
+        'XTickLabel', arrayfun(@num2str, tk, 'UniformOutput', false), ...
+        'YTickLabel', arrayfun(@num2str, tk, 'UniformOutput', false), 'XMinorTick', 'off', 'YMinorTick', 'off');
+    axis(ax, 'square');
+    leg(ax, hh, ll, 'Location', 'northwest', 'Box', 'off', 'FontSize', 8, 'Token', [8 8]);
 end
-xlabel(ax, 'MOBADC-W mean error per segment [m]');  ylabel(ax, 'PA-MOBADC mean error per segment [m]');
-title(ax, '(b) per segment, one set (identity line)');
-style_axes(fh);
+xlabel(ax, 'MOBADC-W, error per segment [mm]');  ylabel(ax, 'PA-MOBADC, error per segment [mm]');
+plab(ax, '(b)');
 msg = 'C1; sets and roles on the axis';
 end
 
@@ -442,33 +478,51 @@ end
 function [fh, msg] = fig5_tau(opt)
 fh = [];
 f = fullfile(opt.Root, 'gd6', 'n0p_p2.mat');
-if exist(f, 'file') ~= 2, msg = 'results/gd6/n0p_p2.mat not found'; return; end
+if exist(f, 'file') ~= 2, msg = sprintf('%s not found', f); return; end
 Z = load(f, 'T');
 T = Z.T(strcmp({Z.T.mode}, 'N0P'));
 if isempty(T), msg = 'no N0P row in n0p_p2.mat'; return; end
-n = numel(T);  nc = min(4, n);  nr = ceil(n / nc);
-fh = newfig(4.2 * nr + 1.2);
+ORD = {'circle', 'T3b', 'square', 'T5', 'hover', 'circle_L05', 'circle_L15'};   % the paper's order
+[~, o] = sort(cellfun(@(l) tern(any(strcmp(ORD, l)), find(strcmp(ORD, l), 1), 99), {T.label}));
+T = T(o);
+NAME = {'circle', 'circle';  'T3b', 'figure-eight';  'square', 'square';  'hover', 'hover';  'T5', 'multisine';
+        'circle_L15', 'circle, L = 1.5 m';  'circle_L05', 'circle, L = 0.5 m'};
+n = numel(T);  nc = 4;  nr = ceil((n + 1) / nc);
+fh = newfig('double', 4.3 * nr + 0.8);
+tl = tiledlayout(fh, nr, nc, 'TileSpacing', 'compact', 'Padding', 'compact');
+c3 = ctrl_colour('PA-MOBADC');  L = 'abcdefgh';
 for j = 1:n
-    ax = subplot(nr, nc, j, 'Parent', fh);  hold(ax, 'on');
+    ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
     t = T(j);
-    plot(ax, 1000 * t.coarse.tau, t.coarse.R, '-o', 'Color', [0.35 0.35 0.35], 'MarkerSize', 2.5);
+    k = find(strcmp(NAME(:, 1), t.label), 1);
+    assert(~isempty(k), 'fig5: no paper name for the N0P condition ''%s''.', t.label);
+    hc = plot(ax, 1000 * t.coarse.tau, 1000 * t.coarse.R, '-o', 'Color', [0.45 0.45 0.45], 'MarkerSize', 2.5, ...
+        'LineWidth', 0.75);
+    hf = [];  hs = [];
     if isstruct(t.fine) && ~isempty(t.fine)
-        plot(ax, 1000 * t.fine.tau, t.fine.R, 's', 'Color', [0.85 0.33 0.10], 'MarkerSize', 3);
-        k = find(abs(t.fine.tau - t.tau_star) < 1e-9, 1);
-        if ~isempty(k)
-            plot(ax, 1000 * t.tau_star, t.fine.R(k), 'p', 'MarkerFaceColor', [0.85 0.33 0.10], ...
-                'Color', [0.85 0.33 0.10], 'MarkerSize', 7);
+        hf = plot(ax, 1000 * t.fine.tau, 1000 * t.fine.R, 's', 'Color', c3, 'MarkerSize', 3, 'LineWidth', 0.75);
+        kk = find(abs(t.fine.tau - t.tau_star) < 1e-9, 1);
+        if ~isempty(kk)
+            hs = plot(ax, 1000 * t.tau_star, 1000 * t.fine.R(kk), 'p', 'MarkerFaceColor', c3, 'Color', c3, ...
+                'MarkerSize', 7);
         end
     end
-    title(ax, sprintf('%s (%s, L %.1f): \\tau* = %.0f ms%s', strrep(t.label, '_', '\_'), t.cond, t.L, ...
-        1000 * t.tau_star, tern(t.edge_ok, '', ' [EDGE]')), 'FontSize', 6);
-    xlabel(ax, '\tau [ms]');
-    if mod(j - 1, nc) == 0, ylabel(ax, 'pooled mean error [m]'); end
+    yl = ylim(ax);
+    plot(ax, 1000 * t.tau_star * [1 1], yl, ':', 'Color', c3, 'LineWidth', 0.75);  ylim(ax, yl);
+    set(ax, 'XLim', [0 400]);
+    right = 1000 * t.tau_star < 200;
+    text(ax, 1000 * t.tau_star + tern(right, 12, -12), yl(2) - 0.06 * diff(yl), ...
+        sprintf('\\tau* = %.0f ms%s', 1000 * t.tau_star, tern(t.edge_ok, '', ' (edge)')), ...
+        'HorizontalAlignment', tern(right, 'left', 'right'), 'VerticalAlignment', 'top', 'FontSize', 8);
+    plab(ax, sprintf('(%s) %s', L(j), NAME{k, 2}));
 end
-annotation(fh, 'textbox', [0.05 0.0 0.9 0.04], 'String', sprintf(['N0P: PA-MOBADC, pooled over the dev A4 ' ...
-    'fixed-5 segments (%d) at each tau; circles coarse grid, squares fine grid, star tau*. DESCRIPTIVE (tuning).'], ...
-    numel(T(1).files)), 'EdgeColor', 'none', 'FontSize', 5);
-style_axes(fh);
+ax = nexttile(tl);  axis(ax, 'off');  hold(ax, 'on');
+p = [plot(ax, NaN, NaN, '-o', 'Color', [0.45 0.45 0.45], 'MarkerSize', 2.5, 'LineWidth', 0.75), ...
+     plot(ax, NaN, NaN, 's', 'Color', c3, 'MarkerSize', 3, 'LineWidth', 0.75), ...
+     plot(ax, NaN, NaN, 'p', 'MarkerFaceColor', c3, 'Color', c3, 'MarkerSize', 7)];
+leg(ax, p, {'coarse grid', 'fine grid', 'chosen horizon \tau*'}, 'Location', 'west');
+xlabel(tl, 'prediction horizon \tau [ms]', 'FontSize', 8);
+ylabel(tl, 'pooled error of PA-MOBADC [mm]', 'FontSize', 8);
 msg = sprintf('%d N0P condition(s); set: dev A4 fixed-5 (%d segments); tuning, DESCRIPTIVE', n, numel(T(1).files));
 end
 
@@ -478,72 +532,66 @@ end
 function [fh, msg] = fig6_c2(opt)
 fh = [];
 hh = @(p) 1 - p(2) / p(1);
-FR = {'hover', 'dev N6\_hover, A (PA-MOBADC unsat.)', 'gd7/static-hover.mat', {'L3', 'L3_iii0'}, 'unsatL3', 'POST-HOC';
-      'hover', 'dev N6\_hover, full one set', 'gd7/static-hover.mat', {'L3', 'L3_iii0'}, 'one4', 'POST-HOC';
-      'hover', 'dev S40hover, K-hat nominal', 'gd7/static-hover-k.mat', {'L3', 'L3_iii0'}, 'one4', 'POST-HOC';
-      'hover', 'dev S40hover, K-hat \times 0.7', 'gd7/static-hover-k.mat', {'L3', 'L3_iii0_k070'}, 'one4', 'POST-HOC';
-      'hover', 'dev S40hover, K-hat \times 1.3', 'gd7/static-hover-k.mat', {'L3', 'L3_iii0_k130'}, 'one4', 'POST-HOC';
-      'hover', 'CONFIRM2 hover, A', 'gd10/C2-hover.mat', {'L3', 'L3_iii0'}, 'unsatL3', 'CLAIM';
-      'circle', 'dev S40, one set', 'gd7/static-circle.mat', {'L3', 'L3_iii0'}, 'one4', 'POST-HOC';
-      'circle', 'CONFIRM2 circle, A', 'gd10/C2-circle.mat', {'L3', 'L3_iii0'}, 'unsatL3', 'CLAIM'};
+X = char(215);
+FR = {'hover, development, unsaturated', 'gd7/static-hover.mat', {'L3', 'L3_iii0'}, 'unsatL3', false;
+      'hover, development, all segments', 'gd7/static-hover.mat', {'L3', 'L3_iii0'}, 'one4', false;
+      'hover, development, 1/day', 'gd7/static-hover-k.mat', {'L3', 'L3_iii0'}, 'one4', false;
+      ['hover, development, 1/day, ' khat() ' ' X ' 0.7'], 'gd7/static-hover-k.mat', {'L3', 'L3_iii0_k070'}, 'one4', false;
+      ['hover, development, 1/day, ' khat() ' ' X ' 1.3'], 'gd7/static-hover-k.mat', {'L3', 'L3_iii0_k130'}, 'one4', false;
+      'hover, held-out, unsaturated (registered)', 'gd10/C2-hover.mat', {'L3', 'L3_iii0'}, 'unsatL3', true;
+      'circle, development, 1/day', 'gd7/static-circle.mat', {'L3', 'L3_iii0'}, 'one4', false;
+      'circle, held-out, unsaturated (registered)', 'gd10/C2-circle.mat', {'L3', 'L3_iii0'}, 'unsatL3', true};
 n = size(FR, 1);  R = cell(n, 1);
-for i = 1:n, R{i} = rstat(opt, FR{i, 3}, FR{i, 4}, hh, FR{i, 5}); end
+for i = 1:n, R{i} = rstat(opt, FR{i, 2}, FR{i, 3}, hh, FR{i, 4}); end
 if all(cellfun(@isempty, R)), msg = 'no C2 file found'; return; end
-fh = newfig(12.0);
-ax = axes('Parent', fh, 'Position', [0.30 0.60 0.66 0.35]);  hold(ax, 'on');
-lab = cellfun(@(a, b, c) sprintf('%s: %s [%s]', a, b, c), FR(:, 1), FR(:, 2), FR(:, 6), 'UniformOutput', false);
-cl = repmat([0.35 0.35 0.35], n, 1);  ic = strcmp(FR(:, 6), 'CLAIM');  cl(ic, :) = repmat([0.85 0.33 0.10], sum(ic), 1);
-forest(ax, lab, R, cl);
-xlabel(ax, 'h = 1 - PAW-MOBADC / PA-MOBADC  [%]  (\pm1.65 SE)');
-title(ax, '(a) PAW-MOBADC: gain of the static (1 + K-hat) payload-wind feed-forward over PA-MOBADC');
-% effort and swing: CONFIRM2 (bars = pooled / median, dots = segments), dev (open diamonds, theta only)
-CF = {'circle', 'MOBADC-W', 'gd10/D2.mat', 'L2', 'gd6/d2_p2.mat', 'L2';
-      'circle', 'PA-MOBADC', 'gd10/D2.mat', 'L3', 'gd6/d2_p2.mat', 'L3';
-      'circle', 'PAW-MOBADC', 'gd10/C2-circle.mat', 'L3_iii0', 'gd7/static-circle.mat', 'L3_iii0';
-      'circle', 'INDI-DE', 'gd10/C2-circle.mat', 'H3', 'gd7/H3-circle.mat', 'H3';
-      'hover', 'PA-MOBADC', 'gd10/C2-hover.mat', 'L3', 'gd7/static-hover.mat', 'L3';
-      'hover', 'PAW-MOBADC', 'gd10/C2-hover.mat', 'L3_iii0', 'gd7/static-hover.mat', 'L3_iii0';
-      'hover', 'INDI-DE', 'gd10/C2-hover.mat', 'H3', 'gd7/static-hover.mat', 'H3'};
+fh = newfig('double', 13.0);
+ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.335 0.635 0.645 0.335]);  hold(ax, 'on');  sty(ax);
+cl = repmat([0.45 0.45 0.45], n, 1);  ic = [FR{:, 5}];  cl(ic, :) = repmat(ctrl_colour('PAW-MOBADC'), sum(ic), 1);
+forest(ax, FR(:, 1), R, cl);
+xlabel(ax, ['h = 1 ' char(8722) ' PAW-MOBADC / PA-MOBADC [%]']);  plab(ax, '(a)');
+CF = {'MOBADC-W', 'gd10/D2.mat', 'L2', 'gd6/d2_p2.mat', 'L2';
+      'PA-MOBADC', 'gd10/D2.mat', 'L3', 'gd6/d2_p2.mat', 'L3';
+      'PAW-MOBADC', 'gd10/C2-circle.mat', 'L3_iii0', 'gd7/static-circle.mat', 'L3_iii0';
+      'INDI-DE', 'gd10/C2-circle.mat', 'H3', 'gd7/H3-circle.mat', 'H3';
+      'PA-MOBADC', 'gd10/C2-hover.mat', 'L3', 'gd7/static-hover.mat', 'L3';
+      'PAW-MOBADC', 'gd10/C2-hover.mat', 'L3_iii0', 'gd7/static-hover.mat', 'L3_iii0';
+      'INDI-DE', 'gd10/C2-hover.mat', 'H3', 'gd7/static-hover.mat', 'H3'};
 x = [1 2 3 4 5.6 6.6 7.6];
-col = colcols();  ci = [1 2 3 4 2 3 4];
 Q = {'u_osc', 'theta_rms_stat_deg', 'theta_max_stat_deg'};
-YL = {'u_{osc} [N]', '\theta RMS [deg]', '\theta max [deg]'};
-TT = {'(b) control effort u_{osc} (CONFIRM2 only: not stored on dev)', '(c) payload swing, RMS', ...
-      '(d) payload swing, max'};
+YL = {'rotor-force oscillation u_{osc} [N]', 'cable angle, RMS [\circ]', 'cable angle, maximum [\circ]'};
 for q = 1:3
-    ax = axes('Parent', fh, 'Position', [0.07 + (q - 1) * 0.325, 0.09, 0.26, 0.36]);  hold(ax, 'on');
+    ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.075 + (q - 1) * 0.325, 0.135, 0.245, 0.37]);
+    hold(ax, 'on');  sty(ax);
     for i = 1:size(CF, 1)
-        v = colvals(opt, CF{i, 3}, CF{i, 4}, Q{q});
+        col = ctrl_colour(CF{i, 1});
+        v = colvals(opt, CF{i, 2}, CF{i, 3}, Q{q});
         if ~isempty(v)
             if q == 3, b = median(v); else, b = sqrt(mean(v.^2)); end
             if q == 3                                       % log axis: the median as a bar-wide tick
-                plot(ax, x(i) + [-0.3 0.3], [b b], '-', 'Color', col(ci(i), :), 'LineWidth', 2);
+                plot(ax, x(i) + [-0.3 0.3], [b b], '-', 'Color', col, 'LineWidth', 2);
             else
-                vbar(ax, x(i), b, 0.6, 0.45 + 0.55 * col(ci(i), :), col(ci(i), :));
+                vbar(ax, x(i), b, 0.62, 0.65 + 0.35 * col, col);
             end
-            jit = 0.18 * (mod((1:numel(v))', 7) / 6 - 0.5);
-            plot(ax, x(i) + jit, v, '.', 'Color', col(ci(i), :), 'MarkerSize', 3);
+            jit = 0.2 * (mod((1:numel(v))', 7) / 6 - 0.5);
+            plot(ax, x(i) + jit, v, '.', 'Color', 0.75 * col, 'MarkerSize', 4);
         end
         if q > 1
-            w = colvals(opt, CF{i, 5}, CF{i, 6}, Q{q});
+            w = colvals(opt, CF{i, 4}, CF{i, 5}, Q{q});
             if ~isempty(w)
                 if q == 3, b = median(w); else, b = sqrt(mean(w.^2)); end
-                plot(ax, x(i) + 0.38, b, 'd', 'Color', [0.2 0.2 0.2], 'MarkerSize', 4);
+                plot(ax, x(i) + 0.42, b, 'd', 'Color', [0.1 0.1 0.1], 'MarkerSize', 3.5, 'LineWidth', 0.5);
             end
         end
     end
-    set(ax, 'XTick', x, 'XTickLabel', CF(:, 2), 'XLim', [0.4 8.2]);
-    if q == 3, set(ax, 'YScale', 'log'); end
+    set(ax, 'XTick', x, 'XTickLabel', CF(:, 1), 'XLim', [0.4 8.2], 'XTickLabelRotation', 40, 'YGrid', 'on');
+    if q == 3, set(ax, 'YScale', 'log', 'YMinorGrid', 'off', 'YMinorTick', 'off'); end
     yl = get(ax, 'YLim');
-    text(2.5, yl(2), 'circle', 'Parent', ax, 'FontSize', 5, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
-    text(6.6, yl(2), 'hover', 'Parent', ax, 'FontSize', 5, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
-    ylabel(ax, YL{q});  title(ax, TT{q}, 'FontSize', 5.6);
+    if q == 3, yl(2) = yl(2) * 1.35; else, yl(2) = yl(1) + 1.15 * diff(yl); end
+    plot(ax, [4.8 4.8], yl, '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.5);  set(ax, 'YLim', yl);
+    text(ax, 2.5, yl(2), 'circle', 'FontSize', 8, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
+    text(ax, 6.6, yl(2), 'hover', 'FontSize', 8, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
+    ylabel(ax, YL{q});  plab(ax, sprintf('(%s)', char('a' + q)));
 end
-annotation(fh, 'textbox', [0.07 0.0 0.9 0.04], 'String', ['bars: CONFIRM2, one set of each file, quadratic mean ' ...
-    '(max: median); dots: CONFIRM2 segments; diamonds: dev where the swing is stored (circle PAW-MOBADC S40, INDI-DE ' ...
-    'circle\_main; hover N6\_hover; the dev D2 rows carry no swing field); MOBADC-W not run on hover in CONFIRM2. ' ...
-    'DESCRIPTIVE.'], 'EdgeColor', 'none', 'FontSize', 4.8);
-style_axes(fh);
 msg = 'C2 forest (CLAIM on CONFIRM2, POST-HOC on dev) + descriptive effort / swing';
 end
 
@@ -565,58 +613,71 @@ v = v(keep);  v = v(isfinite(v));
 end
 
 %% =====================================================================
-%  7  fast measurement (H3) vs prediction (L3, (iii-0))
+%  7  fast measurement (INDI-DE) vs prediction (PA-MOBADC, PAW-MOBADC)
 %% =====================================================================
 function [fh, msg] = fig7_fast(opt)
 fh = [];
-G = {'circle CONFIRM2', 'gd10/C2-circle.mat', {'L3', 'L3_iii0', 'H3'};
-     'circle dev (circle\_main)', 'gd7/H3-circle.mat', {'L3', 'H3'};
-     'circle dev (S40)', 'gd7/static-circle.mat', {'L3', 'L3_iii0'};
-     'hover CONFIRM2', 'gd10/C2-hover.mat', {'L3', 'L3_iii0', 'H3'};
-     'hover dev (N6\_hover)', 'gd7/static-hover.mat', {'L3', 'L3_iii0', 'H3'}};
+G = {'circle\newlineheld-out', 'gd10/C2-circle.mat', {'L3', 'L3_iii0', 'H3'};
+     'circle\newlinedev.', 'gd7/H3-circle.mat', {'L3', 'H3'};
+     'circle\newlinedev.\newline1/day', 'gd7/static-circle.mat', {'L3', 'L3_iii0'};
+     'hover\newlineheld-out', 'gd10/C2-hover.mat', {'L3', 'L3_iii0', 'H3'};
+     'hover\newlinedev.', 'gd7/static-hover.mat', {'L3', 'L3_iii0', 'H3'}};
 rel = @(p) p(1) / p(2) - 1;
-RT = {'INDI-DE / PA-MOBADC - 1, dev circle\_main', 'gd7/H3-circle.mat', {'H3', 'L3'};
-      'INDI-DE / PA-MOBADC - 1, CONFIRM2 circle', 'gd10/C2-circle.mat', {'H3', 'L3'};
-      'INDI-DE / PA-MOBADC - 1, dev N6\_hover', 'gd7/H3-hover.mat', {'H3', 'L3'};
-      'INDI-DE / PA-MOBADC - 1, CONFIRM2 hover', 'gd10/C2-hover.mat', {'H3', 'L3'};
-      'PAW-MOBADC / INDI-DE - 1, CONFIRM2 circle', 'gd10/C2-circle.mat', {'L3_iii0', 'H3'};
-      'PAW-MOBADC / INDI-DE - 1, dev N6\_hover', 'gd7/static-hover.mat', {'L3_iii0', 'H3'};
-      'PAW-MOBADC / INDI-DE - 1, CONFIRM2 hover', 'gd10/C2-hover.mat', {'L3_iii0', 'H3'}};
+RT = {'circle, development', 'gd7/H3-circle.mat', {'H3', 'L3'}, 1;
+      'circle, held-out', 'gd10/C2-circle.mat', {'H3', 'L3'}, 1;
+      'hover, development', 'gd7/H3-hover.mat', {'H3', 'L3'}, 1;
+      'hover, held-out', 'gd10/C2-hover.mat', {'H3', 'L3'}, 1;
+      'circle, held-out', 'gd10/C2-circle.mat', {'L3_iii0', 'H3'}, 2;
+      'hover, development', 'gd7/static-hover.mat', {'L3_iii0', 'H3'}, 2;
+      'hover, held-out', 'gd10/C2-hover.mat', {'L3_iii0', 'H3'}, 2};
 R = cell(size(RT, 1), 1);
 for i = 1:numel(R), R{i} = rstat(opt, RT{i, 2}, RT{i, 3}, rel, 'one4'); end
 if all(cellfun(@isempty, R)), msg = 'no H3 / C2 file found'; return; end
-fh = newfig(7.5);
-col = colcols();  cn = {'L3', 'L3_iii0', 'H3'};  cc = [2 3 4];
-ax = axes('Parent', fh, 'Position', [0.07 0.22 0.40 0.68]);  hold(ax, 'on');
-hb = zeros(1, 3);  NT = nan(size(G, 1), 2);  lo = Inf;  hi = 0;
+fh = newfig('double', 7.5);
+tl = tiledlayout(fh, 1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+cn = {'L3', 'L3_iii0', 'H3'};  ln = p2_names(cn);
+ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
+hb = gobjects(1, 3);  NT = nan(size(G, 1), 2);  lo = Inf;  hi = 0;
 for g = 1:size(G, 1)
     [Z, cols, ok] = p2r_load(opt.Root, G{g, 2});
     if ~ok, continue; end
     [E, ~, ~, keep] = p2r_subset(Z, cols, G{g, 3}, 'one4');
-    P = sqrt(mean(E(keep, :).^2, 1));
+    P = 1000 * sqrt(mean(E(keep, :).^2, 1));
     for c = 1:numel(G{g, 3})
         k = find(strcmp(cn, G{g, 3}{c}));
-        hb(k) = plot(ax, g + (k - 2) * 0.26, P(c), 's', 'MarkerFaceColor', col(cc(k), :), 'Color', col(cc(k), :), ...
-            'MarkerSize', 5);
+        hb(k) = plot(ax, g + (k - 2) * 0.24, P(c), 'o', 'MarkerFaceColor', ctrl_colour(ln{k}), ...
+            'MarkerEdgeColor', ctrl_colour(ln{k}), 'MarkerSize', 5);
     end
     NT(g, :) = [sum(keep), max(P)];  lo = min(lo, min(P));  hi = max(hi, max(P));
 end
-if isfinite(lo), set(ax, 'YLim', [lo / 1.6, hi * 2.2]); end
-for g = find(isfinite(NT(:, 1)))'
-    text(g, NT(g, 2) * 1.35, sprintf('n %d', NT(g, 1)), 'Parent', ax, 'FontSize', 4.6, 'HorizontalAlignment', 'center');
+if isfinite(lo)
+    set(ax, 'YLim', [lo / 1.6, hi * 2.0]);
+    tk = [1 2 5 10 20 50 100];  tk = tk(tk >= lo / 1.6 & tk <= hi * 2.0);
+    set(ax, 'YTick', tk, 'YTickLabel', arrayfun(@num2str, tk, 'UniformOutput', false), 'YMinorTick', 'off', ...
+        'YMinorGrid', 'off');
 end
-set(ax, 'YScale', 'log', 'XTick', 1:size(G, 1), 'XTickLabel', G(:, 1), 'XLim', [0.5 size(G, 1) + 0.5]);
-try, set(ax, 'XTickLabelRotation', 25); catch, end
-ylabel(ax, 'pooled mean error [m] (one set of each file)');
-title(ax, '(a) pooled mean error: PA-MOBADC, PAW-MOBADC, INDI-DE');
-k = hb ~= 0;
-ln = p2_names({'L3', 'L3_iii0', 'H3'});
-legend(ax, hb(k), ln(k), 'Location', 'southwest', 'FontSize', 5);
-ax = axes('Parent', fh, 'Position', [0.68 0.22 0.29 0.68]);  hold(ax, 'on');
-forest(ax, RT(:, 1), R, repmat([0.35 0.35 0.35], numel(R), 1));
-xlabel(ax, 'relative difference [%]  (\pm1.65 SE)');
-title(ax, '(b) ratios (DESCRIPTIVE)');
-style_axes(fh);
+for g = 1:size(G, 1)
+    if isfinite(NT(g, 1))
+        text(ax, g, NT(g, 2) * 1.3, sprintf('n = %d', NT(g, 1)), 'FontSize', 8, 'HorizontalAlignment', 'center', ...
+            'VerticalAlignment', 'bottom');
+    end
+end
+set(ax, 'YScale', 'log', 'XTick', 1:size(G, 1), 'XTickLabel', G(:, 1), 'TickLabelInterpreter', 'tex', ...
+    'XLim', [0.5 size(G, 1) + 0.5], 'YGrid', 'on', 'XTickLabelRotation', 0);
+ylabel(ax, 'pooled error [mm]');  plab(ax, '(a)');
+k = isgraphics(hb);
+leg(ax, hb(k), ln(k), 'Location', 'northoutside', 'Orientation', 'horizontal', 'Token', [8 8]);
+ax = nexttile(tl);  hold(ax, 'on');  sty(ax);
+cl = repmat(ctrl_colour('INDI-DE'), numel(R), 1);  cl([RT{:, 4}] == 2, :) = repmat(ctrl_colour('PAW-MOBADC'), 3, 1);
+forest(ax, RT(:, 1), R, cl);
+yl = get(ax, 'YLim');
+plot(ax, get(ax, 'XLim'), [3.5 3.5], '-', 'Color', [0.8 0.8 0.8], 'LineWidth', 0.5, 'HandleVisibility', 'off');
+set(ax, 'YLim', yl);
+p = [plot(ax, NaN, NaN, 'o', 'MarkerFaceColor', ctrl_colour('INDI-DE'), 'MarkerEdgeColor', ctrl_colour('INDI-DE')), ...
+     plot(ax, NaN, NaN, 'o', 'MarkerFaceColor', ctrl_colour('PAW-MOBADC'), 'MarkerEdgeColor', ctrl_colour('PAW-MOBADC'))];
+leg(ax, p, {['INDI-DE / PA-MOBADC ' char(8722) ' 1'], ['PAW-MOBADC / INDI-DE ' char(8722) ' 1']}, ...
+    'Location', 'southoutside', 'Box', 'off', 'FontSize', 8, 'Token', [8 8]);
+xlabel(ax, 'relative difference [%]');  plab(ax, '(b)');
 msg = 'DESCRIPTIVE; dev circle PAW-MOBADC only on S40, INDI-DE only on circle_main';
 end
 
@@ -624,42 +685,44 @@ end
 %  8  C3: map of the 12 wind groups
 %% =====================================================================
 function [fh, msg] = fig8_c3(opt)
-G = {'#1 N5-A-Weak', 'N5-A-Weak';  '#2 N5-A-Medium', 'N5-A-Medium';  '#3 N5-A-Strong', '';
-     '#4 N5-B-Weak', 'N5-B-Weak';  '#5 N5-B-Medium', 'N5-B-Medium';  '#6 N4b-P2-base', 'N4b-P2-base';
-     '#7 N4b-P2-d200', 'N4b-P2-d200';  '#8 N4b-P2-L15', 'N4b-P2-L15';  '#9 N4b-P2-K10', 'N4b-P2-K10';
-     '#10 N6', 'N6';  '#11 N5-A-StrongRel (post hoc)', 'N5-A-StrongRel';  '#12 N5-H-StrongRel (post hoc)', 'N5-H-StrongRel'};
+G = {'circle, K = 0, weak wind', 'N5-A-Weak';  'circle, K = 0, medium wind', 'N5-A-Medium';
+     'circle, K = 0, strong wind', '';  'circle, K = 0.5, weak wind', 'N5-B-Weak';
+     'circle, K = 0.5, medium wind', 'N5-B-Medium';  'circle, main set', 'N4b-P2-base';
+     'circle, wind-sensor delay 200 ms', 'N4b-P2-d200';  'circle, L = 1.5 m', 'N4b-P2-L15';
+     'circle, K = 1.0', 'N4b-P2-K10';  'hover, wind-to-payload term', 'N6';
+     'circle, strong relative wind (post hoc)', 'N5-A-StrongRel';
+     'hover, strong relative wind (post hoc)', 'N5-H-StrongRel'};
 hh = @(p) 1 - p(2) / p(1);
 n = size(G, 1);  R = cell(n, 1);  V = repmat({''}, n, 1);
 for i = 1:n
-    if isempty(G{i, 2}), V{i} = 'empty under A2'; continue; end
+    if isempty(G{i, 2}), V{i} = 'empty (outside the envelope)'; continue; end
     c = {'L3', 'O'};  if strcmp(G{i, 2}, 'N6'), c = {'L3_6', 'O_6'}; end
     R{i} = rstat(opt, ['gd7/' G{i, 2} '.mat'], c, hh, 'one4');
     r = R{i};
-    if isempty(r), V{i} = 'no file / < 2 segments'; continue; end
+    if isempty(r), V{i} = 'no data'; continue; end
     if r.n < 15 || r.nd < 6
-        V{i} = sprintf('n %d (%d d): not evaluable', r.n, r.nd);
+        V{i} = sprintf('%d seg., %d days: not evaluable', r.n, r.nd);
     else
         hr = r.val >= 0.10 && all(sign(r.loo) == sign(r.val)) && r.med >= 0.05;
-        V{i} = sprintf('n %d (%d d): %s', r.n, r.nd, tern(hr, 'HEADROOM', 'no headroom'));
+        V{i} = sprintf('%d seg., %d days: %s', r.n, r.nd, tern(hr, 'headroom', 'no headroom'));
     end
 end
-fh = newfig(8.5);
-ax = axes('Parent', fh, 'Position', [0.24 0.11 0.50 0.82]);  hold(ax, 'on');
-forest(ax, G(:, 1), R, repmat([0.35 0.35 0.35], n, 1));
+fh = newfig('double', 8.6);
+ax = axes('Parent', fh, 'Units', 'normalized', 'Position', [0.30 0.13 0.42 0.83]);  hold(ax, 'on');  sty(ax);
+forest(ax, G(:, 1), R, repmat([0.30 0.30 0.30], n, 1));
 yl = get(ax, 'YLim');
-plot(ax, [10 10], yl, '--', 'Color', [0.2 0.4 0.7], 'HandleVisibility', 'off');
+plot(ax, [10 10], yl, '--', 'Color', ctrl_colour('PAW-MOBADC'), 'LineWidth', 0.75, 'HandleVisibility', 'off');
+text(ax, 10, yl(2), ' threshold', 'FontSize', 8, 'Color', ctrl_colour('PAW-MOBADC'), 'VerticalAlignment', 'top');
 xl = get(ax, 'XLim');
 for i = 1:n
-    text(xl(2) + 0.03 * diff(xl), n - i + 1, V{i}, 'Parent', ax, 'FontSize', 5, 'Clipping', 'off');
+    text(ax, xl(2) + 0.04 * diff(xl), n - i + 1, V{i}, 'FontSize', 8, 'Clipping', 'off');
 end
-xlabel(ax, 'h = 1 - oracle(\tau_w*) / PA-MOBADC  [%]  (\pm1.65 SE); group N6: both with the N6 term');
-title(ax, 'C3: headroom of advance wind knowledge, 12 registered groups (sec 0.6, 0.8); dashed: 10 %');
-style_axes(fh);
+xlabel(ax, ['h = 1 ' char(8722) ' oracle / PA-MOBADC [%]']);
 msg = 'C3 map; rule sec 0.6 (h >= 10 %, LOO sign, by-day median >= 5 %; n >= 15, days >= 6)';
 end
 
 %% =====================================================================
-%  helpers
+%  helpers: statistics
 %% =====================================================================
 function r = rstat(opt, f, cols, fun, sub)
 %RSTAT  p2r_stat on one file's subset, or [] if the file / column is missing or fewer than 2 segments.
@@ -671,60 +734,105 @@ if sum(keep) < 2, return; end
 r = p2r_stat(fun, E(keep, :), day(keep));
 end
 
+%% =====================================================================
+%  helpers: drawing (one style for every figure)
+%% =====================================================================
+function c = ctrl_colour(name)
+%CTRL_COLOUR  One colour per controller in every figure (Okabe-Ito palette, readable in grey and by colour-blind
+%  readers): the proposed method vermillion, its delay-compensated predecessor orange, the measured-wind baseline
+%  blue, the published baseline black, the acceleration-based comparison green.
+name = regexprep(name, ' \(proposed\)$', '');
+switch name
+    case {'PID', 'PID + trim'},     c = [0.70 0.70 0.70];
+    case {'DO', 'DO + trim'},       c = [0.80 0.47 0.65];
+    case 'ESO',                     c = [0.40 0.40 0.40];
+    case 'MOBADC',                  c = [0.00 0.00 0.00];
+    case 'MOBADC-DC',               c = [0.30 0.30 0.30];
+    case 'MOBADC-W',                c = [0.00 0.45 0.70];
+    case 'MOBADC-W + preview',      c = [0.34 0.71 0.91];
+    case 'PA-MOBADC',               c = [0.90 0.62 0.00];
+    case 'PAW-MOBADC',              c = [0.84 0.37 0.00];
+    case 'INDI-DE',                 c = [0.00 0.62 0.45];
+    otherwise,                      c = [0.45 0.45 0.45];
+end
+end
+
+function lg = leg(ax, h, labels, varargin)
+%LEG  Legend of the paper: no box, 8 pt; 'Token', [w h] sets the length of the line samples.
+tok = [];
+k = find(strcmp(varargin, 'Token'), 1);
+if ~isempty(k), tok = varargin{k + 1};  varargin(k:k + 1) = []; end
+lg = legend(ax, h, labels, 'Box', 'off', 'FontSize', 8, varargin{:});
+if ~isempty(tok), try, lg.ItemTokenSize = tok; catch, end, end
+end
+
+function fh = newfig(w, hcm)
+fh = figure('Visible', 'off', 'Color', 'w');
+paper_size(fh, w, hcm);
+end
+
+function sty(ax)
+%STY  The axes style of the paper: 8 pt, thin axes, ticks outside, no box.
+set(ax, 'FontSize', 8, 'LineWidth', 0.5, 'TickDir', 'out', 'TickLength', [0.012 0.012], 'Box', 'off', ...
+    'XColor', [0.15 0.15 0.15], 'YColor', [0.15 0.15 0.15], 'Layer', 'top', 'LabelFontSizeMultiplier', 1, ...
+    'TitleFontSizeMultiplier', 1, 'TitleFontWeight', 'bold', 'GridColor', [0.85 0.85 0.85], 'GridAlpha', 1);
+try, set(ax, 'TitleHorizontalAlignment', 'left'); catch, end
+end
+
+function plab(ax, s)
+%PLAB  Panel label "(a) a few words", left-aligned above the panel (the figure itself carries no title).
+title(ax, s, 'FontSize', 8, 'FontWeight', 'bold');
+end
+
+function s = num(v, fmt)
+%NUM  A number with a typographic minus sign.
+s = strrep(sprintf(fmt, v), '-', char(8722));
+end
+
 function forest(ax, labels, R, cl)
 %FOREST  value (percent) +-1.65 SE per row, top to bottom; a missing row is labelled.
 n = numel(labels);
 for i = 1:n
     y = n - i + 1;  r = R{i};
     if isempty(r)
-        text(0, y, ' no data', 'Parent', ax, 'FontSize', 5, 'Color', [0.5 0.5 0.5]);
+        text(ax, 0, y, '  no data', 'FontSize', 8, 'Color', [0.5 0.5 0.5], 'VerticalAlignment', 'middle');
         continue
     end
     v = 100 * r.val;  e = 165 * r.se;
-    if isfinite(e), plot(ax, [v - e, v + e], [y y], '-', 'Color', cl(i, :), 'LineWidth', 1.1); end
-    plot(ax, v, y, 'o', 'MarkerFaceColor', cl(i, :), 'Color', cl(i, :), 'MarkerSize', 3.5);
-    text(v, y + 0.32, sprintf('%+.1f', v), 'Parent', ax, 'FontSize', 4.6, 'HorizontalAlignment', 'center');
+    if isfinite(e), plot(ax, [v - e, v + e], [y y], '-', 'Color', cl(i, :), 'LineWidth', 1.0); end
+    plot(ax, v, y, 'o', 'MarkerFaceColor', cl(i, :), 'MarkerEdgeColor', cl(i, :), 'MarkerSize', 4);
+    text(ax, v, y + 0.18, num(v, '%+.1f'), 'FontSize', 8, 'HorizontalAlignment', 'center', ...
+        'VerticalAlignment', 'bottom');
 end
-set(ax, 'YTick', 1:n, 'YTickLabel', labels(end:-1:1), 'YLim', [0.4 n + 0.6]);
+set(ax, 'YTick', 1:n, 'YTickLabel', labels(end:-1:1), 'YLim', [0.4 n + 0.75], 'XGrid', 'on', ...
+    'TickLabelInterpreter', 'tex');
 xl = get(ax, 'XLim');  xl = [min(xl(1), -5), max(xl(2), 5)];
-plot(ax, [0 0], [0.4 n + 0.6], ':', 'Color', [0.4 0.4 0.4], 'HandleVisibility', 'off');
+plot(ax, [0 0], [0.4 n + 0.75], '-', 'Color', [0.55 0.55 0.55], 'LineWidth', 0.5, 'HandleVisibility', 'off');
 set(ax, 'XLim', xl);
 end
 
-function h = vpoint(ax, x, r, col, mk)
-h = 0;
+function h = vpoint(ax, x, r, col, mk, side)
+if nargin < 6, side = 'right'; end
+h = [];
 if isempty(r), return; end
 v = 100 * r.val;  e = 165 * r.se;
-if isfinite(e), plot(ax, [x x], [v - e, v + e], '-', 'Color', col, 'LineWidth', 1.1); end
-h = plot(ax, x, v, mk, 'MarkerFaceColor', col, 'Color', col, 'MarkerSize', 4);
-text(x + 0.05, v, sprintf(' %+.1f', v), 'Parent', ax, 'FontSize', 4.6);
+if isfinite(e), plot(ax, [x x], [v - e, v + e], '-', 'Color', col, 'LineWidth', 1.0); end
+h = plot(ax, x, v, mk, 'MarkerFaceColor', col, 'MarkerEdgeColor', col, 'MarkerSize', 4.5);
+if strcmp(side, 'left')
+    text(ax, x - 0.07, v, num(v, '%.1f'), 'FontSize', 8, 'HorizontalAlignment', 'right');
+else
+    text(ax, x + 0.07, v, num(v, '%.1f'), 'FontSize', 8, 'HorizontalAlignment', 'left');
+end
 end
 
 function vbar(ax, x, y, w, fc, ec)
 %VBAR  One bar from 0 (bar() with a scalar x ignores the width in Octave).
 if ~(y > 0), return; end
-rectangle('Parent', ax, 'Position', [x - w / 2, 0, w, y], 'FaceColor', fc, 'EdgeColor', ec);
-end
-
-function c = colcols()
-%COLCOLS  L2, L3, (iii-0), H3.
-c = [0.25 0.45 0.75; 0.85 0.33 0.10; 0.20 0.60 0.30; 0.50 0.30 0.65];
-end
-
-function fh = newfig(hcm)
-fh = figure('Visible', 'off', 'Color', 'w');
-paper_size(fh, 'double', hcm);
-end
-
-function style_axes(fh)
-ax = findall(fh, 'Type', 'axes');
-for k = 1:numel(ax)
-    try, set(ax(k), 'FontSize', 5.6, 'Box', 'on', 'TickDir', 'out'); catch, end
-end
+rectangle('Parent', ax, 'Position', [x - w / 2, 0, w, y], 'FaceColor', fc, 'EdgeColor', ec, 'LineWidth', 0.5);
 end
 
 function save_p2(fh, opt, stem)
-paper_style(fh);
+paper_style(fh, 'Sans', true);
 if ~opt.Save
     fprintf('    [view only] %s not written\n', stem);
     return
@@ -761,40 +869,51 @@ for k = 1:numel(ax)
         end
     end
 end
-fid = fopen(fn, 'w');
+tl = findall(fh, 'Type', 'tiledlayout');
+for k = 1:numel(tl)
+    for pr = {'XLabel', 'YLabel', 'Title'}
+        try, S = [S; cellstr(get(get(tl(k), pr{1}), 'String'))]; catch, end %#ok<AGROW>
+    end
+end
+fid = fopen(fn, 'w', 'n', 'UTF-8');
 if fid < 0, return; end
 fprintf(fid, '%s\n', S{:});
 fclose(fid);
 end
 
-function bx(ax, x, y, w, h, lines, col, fs)
-rectangle('Parent', ax, 'Position', [x y w h], 'FaceColor', col, 'EdgeColor', [0.25 0.25 0.25], 'LineWidth', 0.6);
+function txt(ax, x, y, s, varargin)
+text(ax, x, y, s, 'FontSize', 8, 'VerticalAlignment', 'middle', 'Interpreter', 'tex', varargin{:});
+end
+
+function blk(ax, x, y, w, h, lines, fc, ec, ls)
+%BLK  A block of the diagram: rounded box, centred lines of text (3.4 mm apart).
+if nargin < 9, ls = '-'; end
+rectangle('Parent', ax, 'Position', [x y w h], 'Curvature', [min(1, 2.4 / w), min(1, 2.4 / h)], ...
+    'FaceColor', fc, 'EdgeColor', ec, 'LineWidth', 0.75, 'LineStyle', ls);
 n = numel(lines);
 for i = 1:n
-    text(x + w / 2, y + h - h * (i - 0.5) / n, lines{i}, 'Parent', ax, 'HorizontalAlignment', 'center', ...
-        'VerticalAlignment', 'middle', 'FontSize', fs, 'Interpreter', 'tex');
+    text(ax, x + w / 2, y + h / 2 + ((n + 1) / 2 - i) * 3.4, lines{i}, 'HorizontalAlignment', 'center', ...
+        'VerticalAlignment', 'middle', 'FontSize', 8, 'Interpreter', 'tex');
 end
 end
 
-function sumnode(ax, x, y, fs)
-t = linspace(0, 2 * pi, 60);
-patch('Parent', ax, 'XData', x + 1.8 * cos(t), 'YData', y + 1.8 * sin(t), 'FaceColor', 'w', 'EdgeColor', [0.25 0.25 0.25]);
-text(x, y, '\Sigma', 'Parent', ax, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', fs);
+function arr(ax, x1, y1, x2, y2, col, lw, ls)
+%ARR  Arrow from (x1, y1) to (x2, y2), any direction; filled head 1.8 mm long.
+if nargin < 7, lw = 0.75; end
+if nargin < 8, ls = '-'; end
+d = [x2 - x1, y2 - y1];  L = norm(d);
+if L == 0, return; end
+u = d / L;  nv = [-u(2) u(1)];  hl = min(1.8, 0.6 * L);  hw = 0.65;
+b = [x2 y2] - hl * u;
+plot(ax, [x1 b(1)], [y1 b(2)], ls, 'Color', col, 'LineWidth', lw);
+patch(ax, [x2, b(1) + hw * nv(1), b(1) - hw * nv(1)], [y2, b(2) + hw * nv(2), b(2) - hw * nv(2)], col, ...
+    'EdgeColor', col, 'LineWidth', 0.3);
 end
 
-function arrow(ax, x1, y1, x2, y2, col)
-plot(ax, [x1 x2], [y1 y2], '-', 'Color', col, 'LineWidth', 0.6);
-d = [x2 - x1, y2 - y1];
-if all(d == 0), return; end
-if abs(d(1)) >= abs(d(2))
-    s = sign(d(1));
-    patch('Parent', ax, 'XData', [x2, x2 - s * 1.1, x2 - s * 1.1], 'YData', [y2, y2 + 0.6, y2 - 0.6], ...
-        'FaceColor', col, 'EdgeColor', col);
-else
-    s = sign(d(2));
-    patch('Parent', ax, 'XData', [x2 - 0.45, x2 + 0.45, x2], 'YData', [y2 - s * 1.2, y2 - s * 1.2, y2], ...
-        'FaceColor', col, 'EdgeColor', col);
-end
+function polyarr(ax, xs, ys, col)
+%POLYARR  A polyline whose last segment ends in an arrow head.
+plot(ax, xs(1:end - 1), ys(1:end - 1), '-', 'Color', col, 'LineWidth', 0.75);
+arr(ax, xs(end - 1), ys(end - 1), xs(end), ys(end), col);
 end
 
 function s = tern(c, a, b)

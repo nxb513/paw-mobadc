@@ -60,8 +60,8 @@ AI-assisted tools were used to help write the simulation and analysis code and t
 the study, the registered claims, the analyses and the conclusions are the authors', who checked every result and take
 full responsibility for the content. (Also described in Section 5.5 of the manuscript.)
 
-ETHICS APPROVAL / CONSENT TO PARTICIPATE / CONSENT FOR PUBLICATION
-Not applicable.
+ETHICS STATEMENT (in the submission system only; not in any file of the submission)
+Not applicable. This is a simulation study; it does not involve human participants, animals or plants.
 
 FILES TO UPLOAD
 - ijdc_latex.zip   LaTeX source (anonymised): manuscript.tex, sn-jnl.cls, sn-nature.bst, references.bib,

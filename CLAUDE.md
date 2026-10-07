@@ -105,7 +105,8 @@ Sửa mã Simulink: không sửa tay trong `baseline1.slx` rồi bỏ đó - ngu
 - Đã dọn file không theo dõi trên máy cũ (`tools/local_tidy.py --apply`): 2357 file sang `E:\windataset_archive\`,
   28 log vào `logs/`, 169 file cache xoá; journal `E:\windataset_archive\tidy_journal.tsv` (`--undo` trả lại).
 - Trước khi nộp: người dùng tick các dòng EQUATIONS_TABLE (Sreenath đã đối chiếu trên bản IEEE 2026-10-07, không còn
-  CẦN KIỂM); vẽ lại hình 3-9 theo kiểu IJDC từ 39 file kết quả gốc (máy mới chưa có `results/` gốc); đưa
-  `results/` lên Zenodo. `check_reading.py --final` đã PASS (2026-10-07): mọi bài được trích đã đọc toàn văn.
-  Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
+  CẦN KIỂM). Hình 2-9 bản IJDC đã vẽ lại từ `results/final` (`make_ijdc_figures`, REGISTER_P2 §68.1-68.2).
+  Dữ liệu (quyết định người dùng 2026-10-07): không cần DOI/Zenodo - Data availability trỏ ra link dữ liệu gió M5
+  (`https://wind.nlr.gov/MetData/135mData/M5Twr/`); code công khai trên GitHub khi bài được chấp nhận.
+  `check_reading.py --final` đã PASS (2026-10-07). Tạp chí đã chọn (IJDC); phân tích bị chặn đã có (bản thảo §4.5).
 - Bước 6 dọn repo (fast-forward `main`, đổi nhánh mặc định): CHƯA làm, chờ người dùng cho phép rõ ràng.

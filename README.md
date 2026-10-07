@@ -151,8 +151,9 @@ pandoc-crossref filter: `--filter pandoc-crossref`).
 - **Held-out days:** `CONFIRM2_MANIFEST.json` (read by `core/p2_segset.m`). `CONFIRM_MANIFEST.json` and
   `used_days.txt` record the days an earlier confirmation used, which CONFIRM2 excludes.
 - **Result files:** `results/gd6`, `results/gd7`, `results/gd10` are not in git. `data/SHA256SUMS.txt` lists the
-  size and SHA-256 of each; `python tools/data_manifest.py --check` verifies a local copy. They will be deposited on
-  Zenodo at submission, and the DOI added here and in the paper.
+  size and SHA-256 of each; `python tools/data_manifest.py --check` verifies a local copy. The paper's data statement
+  points to the public M5 records (https://wind.nlr.gov/MetData/135mData/M5Twr/); the code and the result files are
+  made public with the repository upon acceptance (decision of 2026-10-07, no separate DOI).
 - **In git:** `field_grid_K050.mat` (5 KB; `core/p2_segset.m` builds the development pool from it) and the frozen
   wind predictor `w4_frozen_20hz_t150_train2345_s0.pt` (SHA-256
   `0bc4b5b8ce39ef442506f82070c02c67c13efa3254f9932d9f00ad4882ea7fad`), trained on synthetic wind only and never

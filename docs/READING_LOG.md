@@ -9,7 +9,9 @@ the user downloads it), **DROP** (read, not relevant / not needed).
 ## READ
 
 ### sreenath2013 - Sreenath, Lee, Kumar, CDC 2013
-- Version read: author copy, hybrid-robotics.berkeley.edu/publications/CDC2013.pdf (6 pp.), 2026-10-07.
+- Version read: author copy, hybrid-robotics.berkeley.edu/publications/CDC2013.pdf (6 pp.), 2026-10-07; equation
+  numbers and sections checked on the IEEE Xplore version (pp. 2269-2274, downloaded by the user, 2026-10-07):
+  identical, eqs. (1), (5)-(8) on p. 2270, (12)-(14) and Sec. II-C on p. 2271.
 - Supports: coordinate-free model of a quadrotor with a cable-suspended point-mass load on SE(3) x S^2 when the cable
   is taut, 8 DOF / 4 underactuated, derived with the Lagrange-d'Alembert principle (Sec. II-A, eqs. (5)-(10)); zero
   tension = load in free fall, the system is hybrid (Sec. II-B, II-C); differential flatness with load position and yaw

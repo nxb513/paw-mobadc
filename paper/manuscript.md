@@ -81,10 +81,12 @@ held responsible for the lag of the load [@notter2016], and in recent cooperativ
 uncompensated load drag was the identified cause of the larger tracking error in wind [@sun2025]. The force balance
 of the coupled system states how large this force is, so it can be fed forward with the airframe's.
 
-A claim about wind rejection is only as strong as the wind it was tested in. Laboratory fans and jets produce flows
-that vary across space and are steady in time [@byun2021], whereas outdoor wind varies in time at a fixed point. The
-evaluation here therefore uses wind measured at a meteorological tower, and every claim is tested on data that were
-not used to find it [@nosek2018; @munafo2017].
+A claim about wind rejection is only as strong as the wind it was tested in, and as the separation between the data
+that suggested it and the data that test it. Laboratory fans and jets produce flows that vary across space and are
+steady in time [@byun2021], whereas outdoor wind varies in time at a fixed point; the evaluation here therefore uses
+wind measured at a meteorological tower. Each claim was registered with its test and threshold before its data were
+opened, and the three claims of C1 and C2 were tested on fourteen held-out days, opened once after every claim,
+threshold and controller had been frozen [@nosek2018; @munafo2017].
 
 The contributions are:
 

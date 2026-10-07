@@ -112,7 +112,7 @@ end
 function envmark(ax, ENV, yl)
 for k = 1:size(ENV, 1)
     plot(ax, ENV{k, 1} * [1 1], yl, ':', 'Color', [0.35 0.35 0.35], 'LineWidth', 0.6);
-    text(ax, ENV{k, 1}, yl(2), [' ' ENV{k, 2}], 'FontSize', 7, 'Color', [0.35 0.35 0.35], ...
+    text(ax, ENV{k, 1}, yl(2), [' ' ENV{k, 2}], 'FontSize', 7.5, 'Color', [0.35 0.35 0.35], ...
         'Rotation', 90, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
 end
 end
@@ -155,7 +155,7 @@ for g = 1:ng
         x = g + (c - (nc + 1) / 2) * w;
         rectangle('Parent', ax, 'Position', [x - 0.42 * w, 0, 0.84 * w, P(g, c)], 'FaceColor', ctrl(nm{c}), ...
             'EdgeColor', 'none');
-        text(ax, x, P(g, c), [' ' num(P(g, c), tern(P(g, c) < 10, '%.2f', '%.1f'))], 'FontSize', 6.5, ...
+        text(ax, x, P(g, c), [' ' num(P(g, c), tern(P(g, c) < 10, '%.2f', '%.1f'))], 'FontSize', 7, ...
             'Rotation', 90, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle');
     end
 end
@@ -172,7 +172,7 @@ for k = 1:numel(x)
         if isempty(s), continue; end
         off = (0.12 + 0.33 * (j - 1)) / p(4);              % cm below the axis, as a fraction of the axes height
         if lg, y = 10 ^ (log10(yl(1)) - off * diff(log10(yl))); else, y = yl(1) - off * diff(yl); end
-        text(ax, x(k), y, s, 'FontSize', 7.5 - 0.5 * (j - 1), 'HorizontalAlignment', 'center', ...
+        text(ax, x(k), y, s, 'FontSize', 8 - 0.5 * (j - 1), 'HorizontalAlignment', 'center', ...
             'VerticalAlignment', 'top', 'Color', tern(j == 1, [0.15 0.15 0.15], [0.4 0.4 0.4]), 'Clipping', 'off');
     end
 end
@@ -272,13 +272,13 @@ plot(a, x, kc.P(2:4), '-o', 'Color', ctrl('PAW-MOBADC'), 'MarkerFaceColor', ctrl
 plot(a, [0.62 1.38], kh.P(1) * [1 1], '--', 'Color', ctrl('PA-MOBADC'), 'LineWidth', 0.9);
 plot(a, x, kh.P(2:4), '--s', 'Color', ctrl('PAW-MOBADC'), 'MarkerFaceColor', 'w', 'MarkerSize', 4, 'LineWidth', 0.9);
 set(a, 'XLim', [0.62 1.38], 'XTick', x, 'XTickLabel', {['0.7 ' k7], k7, ['1.3 ' k7]}, 'YLim', [0 18], 'YGrid', 'on');
-text(a, 0.64, kc.P(1) + 0.5, sprintf('PA-MOBADC, circle (%d)', kc.n), 'FontSize', 6.5, 'Color', ctrl('PA-MOBADC'), ...
+text(a, 0.64, kc.P(1) + 0.5, sprintf('PA-MOBADC, circle (%d)', kc.n), 'FontSize', 7, 'Color', ctrl('PA-MOBADC'), ...
     'VerticalAlignment', 'bottom');
-text(a, 0.64, kh.P(1) + 0.5, sprintf('PA-MOBADC, hover (%d)', kh.n), 'FontSize', 6.5, 'Color', ctrl('PA-MOBADC'), ...
+text(a, 0.64, kh.P(1) + 0.5, sprintf('PA-MOBADC, hover (%d)', kh.n), 'FontSize', 7, 'Color', ctrl('PA-MOBADC'), ...
     'VerticalAlignment', 'bottom');
-text(a, 1.0, kc.P(3) - 0.55, 'PAW-MOBADC, circle', 'FontSize', 6.5, 'Color', ctrl('PAW-MOBADC'), ...
+text(a, 1.0, kc.P(3) - 0.55, 'PAW-MOBADC, circle', 'FontSize', 7, 'Color', ctrl('PAW-MOBADC'), ...
     'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
-text(a, 1.0, kh.P(3) - 0.55, 'PAW-MOBADC, hover', 'FontSize', 6.5, 'Color', ctrl('PAW-MOBADC'), ...
+text(a, 1.0, kh.P(3) - 0.55, 'PAW-MOBADC, hover', 'FontSize', 7, 'Color', ctrl('PAW-MOBADC'), ...
     'HorizontalAlignment', 'center', 'VerticalAlignment', 'top');
 xlabel(a, 'drag ratio assumed by the controller');  ylabel(a, 'pooled position error (mm)');
 panel(a, 'a', 'assumed drag ratio');
@@ -291,7 +291,7 @@ ylabel(b, 'error reduction by C2 (%)');
 panel(b, 'b', 'trajectory');
 lb = legend(b, [patch(b, NaN, NaN, ctrl('PAW-MOBADC'), 'EdgeColor', 'none'), ...
     patch(b, NaN, NaN, mix(ctrl('PAW-MOBADC'), 0.55), 'EdgeColor', 'none')], ...
-    {'added to PA-MOBADC', 'added to MOBADC-W + preview'}, 'Box', 'off', 'FontSize', 6.5, 'Location', 'north');
+    {'added to PA-MOBADC', 'added to MOBADC-W + preview'}, 'Box', 'off', 'FontSize', 7, 'Location', 'north');
 lb.ItemTokenSize = [10 8];
 % ---- c: payload mass and cable length ----
 c3 = newax(fh, [1.25 1.25 4.6 3.6]);
@@ -304,7 +304,7 @@ xlabel(c3, 'cable length');  ylabel(c3, 'error reduction by C2 (%)');
 panel(c3, 'c', 'payload mass and cable length, circle');
 lc = legend(c3, [patch(c3, NaN, NaN, mix(ctrl('PAW-MOBADC'), 0.65), 'EdgeColor', 'none'), ...
     patch(c3, NaN, NaN, ctrl('PAW-MOBADC'), 'EdgeColor', 'none'), patch(c3, NaN, NaN, 0.6 * ctrl('PAW-MOBADC'), 'EdgeColor', 'none')], ...
-    {'0.25 kg', '0.5 kg', '0.65 kg'}, 'Box', 'off', 'FontSize', 6.5, 'Orientation', 'horizontal', 'Location', 'north');
+    {'0.25 kg', '0.5 kg', '0.65 kg'}, 'Box', 'off', 'FontSize', 7, 'Orientation', 'horizontal', 'Location', 'north');
 lc.ItemTokenSize = [10 8];
 % ---- d: wind-sensor noise ----
 d = newax(fh, [7.75 1.25 4.85 3.6]);
@@ -315,7 +315,7 @@ ylabel(d, 'error reduction by C2 (%)');
 panel(d, 'd', 'wind-sensor noise');
 ld = legend(d, [patch(d, NaN, NaN, ctrl('PAW-MOBADC'), 'EdgeColor', 'none'), ...
     patch(d, NaN, NaN, mix(ctrl('PAW-MOBADC'), 0.55), 'EdgeColor', 'none')], ...
-    {'no noise', '0.1 m s^{-1} noise'}, 'Box', 'off', 'FontSize', 6.5, 'Orientation', 'horizontal', 'Location', 'north');
+    {'no noise', '0.1 m s^{-1} noise'}, 'Box', 'off', 'FontSize', 7, 'Orientation', 'vertical', 'Location', 'northwest');
 ld.ItemTokenSize = [10 8];
 msg = sprintf('K-hat on S40 (%d) / S40hover (%d); E1, E4 of RESULTS_FINAL', kc.n, kh.n);
 end
@@ -337,7 +337,7 @@ for s = 1:ns
         v = V(s, 2 * g - 1);  e = 1.65 * V(s, 2 * g);  x = g + (s - (ns + 1) / 2) * w;
         rectangle('Parent', ax, 'Position', [x - 0.42 * w, 0, 0.84 * w, v], 'FaceColor', cols{s}, 'EdgeColor', 'none');
         plot(ax, [x x], v + [-e e], '-', 'Color', [0.2 0.2 0.2], 'LineWidth', 0.6);
-        text(ax, x, v + e, [' ' num(v, '%.1f')], 'FontSize', 6, 'Rotation', 90, 'HorizontalAlignment', 'left', ...
+        text(ax, x, v + e, [' ' num(v, '%.1f')], 'FontSize', 7, 'Rotation', 90, 'HorizontalAlignment', 'left', ...
             'VerticalAlignment', 'middle');
     end
 end
@@ -370,15 +370,15 @@ for i = 1:n
     v = 100 * r.val;  e = 165 * r.se;
     rectangle('Parent', a, 'Position', [min(v, 0), y - 0.32, abs(v), 0.64], 'FaceColor', col, 'EdgeColor', 'none');
     plot(a, v + [-e e], [y y], '-', 'Color', [0.15 0.15 0.15], 'LineWidth', 0.6);
-    text(a, -0.6, y, G{i, 1}, 'FontSize', 7, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', ...
+    text(a, -0.6, y, G{i, 1}, 'FontSize', 7.5, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', ...
         'Clipping', 'off');
-    text(a, 25.8, y, sprintf('%s   %d (%d d)', num(v, '%+.1f'), r.n, r.nd), 'FontSize', 7, ...
+    text(a, 25.8, y, sprintf('%s   %d (%d d)', num(v, '%+.1f'), r.n, r.nd), 'FontSize', 7.5, ...
         'VerticalAlignment', 'middle', 'Clipping', 'off');
 end
 plot(a, [10 10], [0.4 n + 0.6], '--', 'Color', ctrl('PAW-MOBADC'), 'LineWidth', 0.8);
-text(a, 10.4, n + 0.55, 'registered threshold', 'FontSize', 7, 'Color', ctrl('PAW-MOBADC'), 'VerticalAlignment', 'top');
+text(a, 10.4, n + 0.55, 'registered threshold', 'FontSize', 7.5, 'Color', ctrl('PAW-MOBADC'), 'VerticalAlignment', 'top');
 set(a, 'YLim', [0.4 n + 0.6], 'YTick', [], 'XLim', [0 25], 'XTick', 0:5:25, 'YColor', 'none', 'XGrid', 'on');
-text(a, 25.8, n + 0.95, 'h (%)   segments', 'FontSize', 7, 'Clipping', 'off');
+text(a, 25.8, n + 0.95, 'h (%)   segments', 'FontSize', 7.5, 'Clipping', 'off');
 xlabel(a, ['improvement with perfect wind foresight {\ith} = 1 ' char(8722) ' oracle / PA-MOBADC (%)']);
 msg = sprintf('%d groups (group 3 had no segment)', n);
 end
@@ -493,8 +493,8 @@ f0 = 2 * abs(sin(sg * 0.290 / 2));
 plot(a, [290 290], [0 f0], '-', 'Color', [0.45 0.45 0.45], 'LineWidth', 0.5);
 plot(a, [0 290], [f0 f0], '-', 'Color', [0.45 0.45 0.45], 'LineWidth', 0.5);
 plot(a, 290, f0, 'o', 'MarkerSize', 4.5, 'MarkerFaceColor', ctrl('MOBADC-W'), 'MarkerEdgeColor', 'w');
-text(a, 305, f0 - 0.04, sprintf('290 ms: %s', num(f0, '%.2f')), 'FontSize', 7, 'VerticalAlignment', 'top');
-text(a, 1000 * (x1 + 0.9) / 2, 0.55, {'late', 'cancellation', 'adds error'}, 'FontSize', 7, ...
+text(a, 305, f0 - 0.04, sprintf('290 ms: %s', num(f0, '%.2f')), 'FontSize', 7.5, 'VerticalAlignment', 'top');
+text(a, 1000 * (x1 + 0.9) / 2, 0.55, {'late', 'cancellation', 'adds error'}, 'FontSize', 7.5, ...
     'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'Color', [0.35 0.35 0.35]);
 set(a, 'XLim', [0 900], 'YLim', [0 1.4], 'XTick', 0:300:900, 'YTick', 0:0.5:1.5);
 xlabel(a, 'loop delay \tau_d (ms)');  ylabel(a, 'uncancelled fraction of the force');
@@ -523,7 +523,7 @@ set(b, 'XLim', [0 400], 'YLim', yl, 'XTick', 0:100:400, 'YTick', 0.5:0.1:1.3);
 for i = 2:numel(ys), ys(i) = max(ys(i), ys(i - 1) + 0.115); end   % labels at the right end, not overlapping
 for i = 1:numel(o)
     k = yy(o(i), 2);  t = T(strcmp({T.label}, LB{k, 1}));
-    text(b, 410, ys(i), {LB{k, 2}, sprintf('\\tau* = %s ms', num(1000 * t.tau_star, '%.0f'))}, 'FontSize', 6.5, ...
+    text(b, 410, ys(i), {LB{k, 2}, sprintf('\\tau* = %s ms', num(1000 * t.tau_star, '%.0f'))}, 'FontSize', 7, ...
         'Color', LB{k, 3}, 'VerticalAlignment', 'middle', 'Clipping', 'off');
 end
 plot(b, [0 400], [1 1], ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 0.6);
@@ -570,8 +570,6 @@ set(b, 'YScale', 'log', 'YLim', [0.3 400], 'YTick', [1 2 5 10 20 50 100 200], ..
     'YTickLabel', string([1 2 5 10 20 50 100 200]), 'XLim', [0 11], 'YGrid', 'on', 'YMinorGrid', 'off');
 xlabel(b, 'mean wind speed {\itU} (m s^{-1})');
 panel(b, 'b', sprintf('hover, development, %d segments', numel(Uh)));
-text(b, 0.3, 300, sprintf('open: PA-MOBADC at its tilt clamp (%d)', sum(sat)), 'FontSize', 7, ...
-    'Color', [0.35 0.35 0.35], 'VerticalAlignment', 'top');
 h = gobjects(1, 4);
 for c = 1:4, h(c) = plot(a, NaN, NaN, 'o-', 'MarkerSize', 3.5, 'Color', ctrl(nm{c}), 'MarkerFaceColor', ctrl(nm{c}), 'LineWidth', 1); end
 topleg(fh, h, nm);
@@ -619,10 +617,10 @@ xlabel(a, 'accelerometer bias (m s^{-2}), equivalent attitude error', 'Units', '
     'Position', [2.45 -0.85]);
 ylabel(a, 'pooled error, hover (mm)');
 lb = {'INDI-DE', 'PA-MOBADC', 'PAW-MOBADC'};  yy = [yh(3), ph(1), ph(2)];  cc = {ctrl('INDI-DE'), ctrl('PA-MOBADC'), ctrl('PAW-MOBADC')};
-for i = 1:3, text(a, 0.181, yy(i), lb{i}, 'FontSize', 7, 'Color', cc{i}, 'Clipping', 'off'); end
+for i = 1:3, text(a, 0.181, yy(i), lb{i}, 'FontSize', 7.5, 'Color', cc{i}, 'Clipping', 'off'); end
 hl = [plot(a, NaN, NaN, '-', 'Color', [0.2 0.2 0.2]), plot(a, NaN, NaN, '--', 'Color', [0.2 0.2 0.2])];
 lg = legend(a, hl, {'held-out, 56 segments', sprintf('development, %d segments', sum(k))}, 'Box', 'off', ...
-    'FontSize', 7, 'Location', 'northwest');
+    'FontSize', 7.5, 'Location', 'northwest');
 lg.ItemTokenSize = [14 8];
 msg = sprintf('held-out one set 56; dev S40hover %d', sum(k));
 end
@@ -711,9 +709,9 @@ end
 function ax = newax(fh, pos)
 ax = axes('Parent', fh, 'Units', 'centimeters', 'Position', pos);
 hold(ax, 'on');
-set(ax, 'FontName', 'Arial', 'FontSize', 7.5, 'LineWidth', 0.5, 'TickDir', 'out', 'TickLength', [0.018 0.018], ...
+set(ax, 'FontName', 'Arial', 'FontSize', 8, 'LineWidth', 0.5, 'TickDir', 'out', 'TickLength', [0.018 0.018], ...
     'Box', 'off', 'XColor', [0.2 0.2 0.2], 'YColor', [0.2 0.2 0.2], 'Layer', 'bottom', ...
-    'GridColor', [0.90 0.90 0.90], 'GridAlpha', 1, 'LabelFontSizeMultiplier', 8 / 7.5, ...
+    'GridColor', [0.90 0.90 0.90], 'GridAlpha', 1, 'LabelFontSizeMultiplier', 1, ...
     'XMinorTick', 'off', 'YMinorTick', 'off', 'TickLabelInterpreter', 'tex');
 end
 
@@ -730,7 +728,7 @@ end
 end
 
 function topleg(fh, h, labels)
-lg = legend(h, labels, 'Box', 'off', 'FontSize', 7.5, 'Orientation', 'horizontal', 'FontName', 'Arial');
+lg = legend(h, labels, 'Box', 'off', 'FontSize', 8, 'Orientation', 'horizontal', 'FontName', 'Arial');
 lg.ItemTokenSize = [12 8];
 lg.Units = 'centimeters';
 fp = get(fh, 'Position');
